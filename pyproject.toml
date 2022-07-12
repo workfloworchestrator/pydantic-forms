@@ -1,0 +1,127 @@
+[build-system]
+requires = ["flit"]
+build-backend = "flit.buildapi"
+
+[tool.flit.metadata]
+module = "pydantic_forms"
+dist-name = "pydantic-forms"
+author = "SURF"
+author-email = "automation-beheer@surf.nl"
+home-page = "https://github.com/workfloworchestrator/pydantic-forms"
+classifiers = [
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python",
+    "Topic :: Internet",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development",
+    "Typing :: Typed",
+    "Development Status :: 3 - Alpha",
+    "Environment :: Web Environment",
+    "Framework :: AsyncIO",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Telecommunications Industry",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.8",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Topic :: Internet :: WWW/HTTP",
+]
+requires = [
+    "pydantic[email]==1.9.0",
+    "python-dateutil==2.8.2",
+    "pytz==2020.5",
+    "rapidjson==1.0.0",
+    "orjson==3.6.2",
+
+
+]
+description-file = "README.md"
+requires-python = ">=3.7,<3.11"
+
+[tool.flit.metadata.urls]
+Documentation = "https://workfloworchestrator.org/orchestrator-core/"
+
+[tool.flit.metadata.requires-extra]
+test = [
+    "apache-license-check",
+    "black",
+    "flake8",
+    "flake8-bandit",
+    "flake8-bugbear",
+    "flake8-comprehensions",
+    "flake8-docstrings",
+    "flake8-junit-report",
+    "flake8-logging-format",
+    "flake8-pep3101",
+    "flake8-print",
+    "flake8-rst",
+    "flake8-rst-docstrings",
+    "flake8-tidy-imports",
+    "isort",
+    "structlog~=20.2.0",
+    "jsonref",
+    "mypy==0.910",
+    "pytest",
+    "pytest-cov",
+    "pytest-xdist",
+    "types-Deprecated",
+    "types-certifi",
+    "types-itsdangerous",
+    "types-pkg_resources",
+    "types-python-dateutil",
+    "types-pytz",
+    "types-toml",
+    "types-ujson",
+    "types-orjson"
+]
+doc = [
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocs-render-swagger-plugin",
+    "mkdocs-include-markdown-plugin"
+]
+dev = [
+    "toml",
+    "bumpversion",
+    "mypy_extensions",
+    "pre-commit",
+    "pydocstyle",
+    "python-dotenv",
+    "watchdog",
+]
+
+
+[tool.isort]
+profile = "black"
+line_length = 120
+skip = ["src", "venv"]
+known_third_party = ["pynso", "pydantic"]
+known_first_party = ["migrations", "test"]
+
+[tool.black]
+line-length = 120
+target-version = ["py39"]
+exclude = '''
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | venv
+    | src
+  )/
+)
+'''
+
+[tool.nitpick]
+style="github://workfloworchestrator/nitpick-style@main/nitpick-style-orchestrator-core.toml"
