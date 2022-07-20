@@ -1,4 +1,4 @@
-from typing import cast, List, Dict, Any, TypedDict, Union
+from typing import cast, List, Dict, Any, TypedDict, Union, Tuple
 
 from pydantic_forms.types import InputForm, JSON
 
@@ -37,3 +37,33 @@ class FormValidationError(FormException):
             f'{no_errors} validation error{"" if no_errors == 1 else "s"} for {self.validator_name}\n'
             f"{display_errors(cast(List[Dict[str, Any]], self.errors))}"  # type: ignore
         )
+
+
+Loc = Tuple[Union[int, str], ...]
+
+
+class _ErrorDictRequired(TypedDict):
+    loc: Loc
+    msg: str
+    type: str
+
+
+class ErrorDict(_ErrorDictRequired, total=False):
+    ctx: Dict[str, Any]
+
+
+def display_errors(errors: List['ErrorDict']) -> str:
+    return '\n'.join(f'{_display_error_loc(e)}\n  {e["msg"]} ({_display_error_type_and_ctx(e)})' for e in errors)
+
+
+def _display_error_loc(error: 'ErrorDict') -> str:
+    return ' -> '.join(str(e) for e in error['loc'])
+
+
+def _display_error_type_and_ctx(error: 'ErrorDict') -> str:
+    t = 'type=' + error['type']
+    ctx = error.get('ctx')
+    if ctx:
+        return t + ''.join(f'; {k}={v}' for k, v in ctx.items())
+    else:
+        return t

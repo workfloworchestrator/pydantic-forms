@@ -21,7 +21,7 @@ from pydantic.error_wrappers import ValidationError
 from pydantic.fields import Field, Undefined, ModelField
 from pydantic.main import BaseModel
 
-from pydantic_forms.exceptions import FormNotCompleteError
+from pydantic_forms.exceptions import FormNotCompleteError, FormValidationError
 from pydantic_forms.types import InputForm, StateInputFormGenerator, State
 from pydantic_forms.utils.json import json_dumps, json_loads
 

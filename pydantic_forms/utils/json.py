@@ -83,7 +83,7 @@ from typing import Any, Dict, List, Sequence, Set, Tuple, Union
 from uuid import UUID
 
 import orjson as json
-import rapidjson as rjson
+# import rapidjson as rjson
 import structlog
 from pydantic import BaseModel
 
@@ -108,11 +108,12 @@ def json_dumps(obj: PY_JSON_TYPES) -> str:
             option=json.OPT_PASSTHROUGH_DATETIME | json.OPT_OMIT_MICROSECONDS | json.OPT_NON_STR_KEYS,
         ).decode("utf8")
     except TypeError as e:
+        raise e
         # When Recursion limit is not configurable in orjson, falling back to the next best lib.
-        if str(e) == "default serializer exceeds recursion limit":
-            return rjson.dumps(obj, default=to_serializable)
-        else:
-            raise e
+        # if str(e) == "default serializer exceeds recursion limit":
+        #     return rjson.dumps(obj, default=to_serializable)
+        # else:
+        #     raise e
 
 
 def to_serializable(o: Any) -> Any:
