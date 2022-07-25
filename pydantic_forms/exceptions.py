@@ -1,3 +1,4 @@
+import traceback
 from typing import Any, Dict, List, Tuple, TypedDict, Union, cast
 
 from pydantic_forms.types import JSON
@@ -38,7 +39,7 @@ class FormValidationError(FormException):
         no_errors = len(self.errors)
         return (
             f'{no_errors} validation error{"" if no_errors == 1 else "s"} for {self.validator_name}\n'
-            f"{display_errors(cast(List[ErrorDict], self.errors))}"  # type: ignore
+            f"{display_errors(cast(List[ErrorDict], self.errors))}"
         )
 
 
@@ -70,3 +71,18 @@ def _display_error_type_and_ctx(error: "ErrorDict") -> str:
         return t + "".join(f"; {k}={v}" for k, v in ctx.items())
     else:
         return t
+
+
+def show_ex(ex: Exception, stacklimit: Union[int, None] = None) -> str:
+    """
+    Show an exception, including its class name, message and (limited) stacktrace.
+
+    >>> try:
+    ...     raise Exception("Something went wrong")
+    ... except Exception as e:
+    ...     print(show_ex(e))
+    Exception: Something went wrong
+    ...
+    """
+    tbfmt = "".join(traceback.format_tb(ex.__traceback__, stacklimit))
+    return "{}: {}\n{}".format(type(ex).__name__, ex, tbfmt)

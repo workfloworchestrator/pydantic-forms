@@ -110,7 +110,7 @@ if IS_ORJSON:
             return [from_serializable(dikt) for dikt in o]
         return from_serializable(o)
 
-    def orjson_dumps(obj: PY_JSON_TYPES) -> str:
+    def json_dumps(obj: PY_JSON_TYPES) -> str:
         try:
             return orjson.dumps(
                 obj,
