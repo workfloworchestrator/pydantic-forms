@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Type, TypeVar, Generator, Callable, Union, Dict, List, Any, Tuple, TypedDict
+from typing import Any, Callable, Dict, Generator, List, Tuple, Type, TypedDict, TypeVar, Union
 
 try:
     # python3.10 introduces types.UnionType for the new union and optional type defs.
@@ -10,11 +10,9 @@ except ImportError:
     union_types = [Union]
 from pydantic.main import BaseModel
 
-
 UUIDstr = str
 State = Dict[str, Any]
 JSON = Any
-
 
 
 class strEnum(str, Enum):

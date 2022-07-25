@@ -1,6 +1,8 @@
-from typing import cast, List, Dict, Any, TypedDict, Union, Tuple
+from typing import Any, Dict, List, Tuple, TypedDict, Union, cast
 
-from pydantic_forms.types import InputForm, JSON
+from pydantic_forms.types import JSON
+
+# from pydantic_forms.types import InputForm
 
 
 class FormException(Exception):
@@ -8,7 +10,8 @@ class FormException(Exception):
 
 
 class FormNotCompleteError(FormException):
-    form: InputForm
+    # form: InputForm  # TODO this is a basemodel but it's initialized to JSON
+    form: JSON
 
     def __init__(self, form: JSON):
         super().__init__(form)
@@ -35,7 +38,7 @@ class FormValidationError(FormException):
         no_errors = len(self.errors)
         return (
             f'{no_errors} validation error{"" if no_errors == 1 else "s"} for {self.validator_name}\n'
-            f"{display_errors(cast(List[Dict[str, Any]], self.errors))}"  # type: ignore
+            f"{display_errors(cast(List[ErrorDict], self.errors))}"  # type: ignore
         )
 
 
@@ -52,18 +55,18 @@ class ErrorDict(_ErrorDictRequired, total=False):
     ctx: Dict[str, Any]
 
 
-def display_errors(errors: List['ErrorDict']) -> str:
-    return '\n'.join(f'{_display_error_loc(e)}\n  {e["msg"]} ({_display_error_type_and_ctx(e)})' for e in errors)
+def display_errors(errors: List["ErrorDict"]) -> str:
+    return "\n".join(f'{_display_error_loc(e)}\n  {e["msg"]} ({_display_error_type_and_ctx(e)})' for e in errors)
 
 
-def _display_error_loc(error: 'ErrorDict') -> str:
-    return ' -> '.join(str(e) for e in error['loc'])
+def _display_error_loc(error: "ErrorDict") -> str:
+    return " -> ".join(str(e) for e in error["loc"])
 
 
-def _display_error_type_and_ctx(error: 'ErrorDict') -> str:
-    t = 'type=' + error['type']
-    ctx = error.get('ctx')
+def _display_error_type_and_ctx(error: "ErrorDict") -> str:
+    t = "type=" + error["type"]
+    ctx = error.get("ctx")
     if ctx:
-        return t + ''.join(f'; {k}={v}' for k, v in ctx.items())
+        return t + "".join(f"; {k}={v}" for k, v in ctx.items())
     else:
         return t

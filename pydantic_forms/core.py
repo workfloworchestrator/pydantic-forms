@@ -11,27 +11,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from copy import deepcopy
-from typing import Any, Optional, Union, List, Generator
+from typing import Any, Generator, List, Optional, Union
 
 import structlog
 from pydantic.config import Extra
 from pydantic.error_wrappers import ValidationError
 
 # from cim.forms.forms import get_form
-from pydantic.fields import Field, Undefined, ModelField
+from pydantic.fields import Field, ModelField, Undefined
 from pydantic.main import BaseModel
 
 from pydantic_forms.exceptions import FormNotCompleteError, FormValidationError
-from pydantic_forms.types import InputForm, StateInputFormGenerator, State
-from pydantic_forms.utils.json import json_dumps, json_loads
-
+from pydantic_forms.types import InputForm, State, StateInputFormGenerator
+from pydantic_forms.utils.json_utils import json_dumps, json_loads
 
 logger = structlog.get_logger(__name__)
 
 
 def generate_form(
     form_generator: Union[StateInputFormGenerator, None], state: State, user_inputs: List[State]
-) -> Union[StateInputFormGenerator, None]:
+) -> Union[State, None]:
     """Generate form using form generator as defined by a form definition."""
     try:
         # Generate form is basically post_form
@@ -81,6 +80,7 @@ def post_form(form_generator: Union[StateInputFormGenerator, None], state: State
     except StopIteration as e:
         # Form is completely filled so we can return the last of the data and
         return e.value
+
 
 #
 # def start_form(
