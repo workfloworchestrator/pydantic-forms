@@ -82,38 +82,53 @@ from ipaddress import IPv4Address, IPv4Network, IPv6Address, IPv6Network
 from typing import Any, Dict, List, Sequence, Set, Tuple, Union
 from uuid import UUID
 
-import orjson as json
-# import rapidjson as rjson
 import structlog
 from pydantic import BaseModel
 
+try:
+    import orjson
+
+    IS_ORJSON = True
+except ImportError:
+    import json
+
+    IS_ORJSON = False
+
+# import rapidjson as rjson
 
 PY_JSON_TYPES = Union[Dict[str, Any], List, str, int, float, bool, None, object]  # pragma: no mutate
 
 logger = structlog.get_logger(__name__)
 
 
-def json_loads(s: Union[str, bytes, bytearray]) -> PY_JSON_TYPES:
-    o = json.loads(s)
-    if isinstance(o, list):
-        return [from_serializable(dikt) for dikt in o]
-    return from_serializable(o)
+if IS_ORJSON:
+    print("Using orjson")  # noqa
 
+    def json_loads(s: Union[str, bytes, bytearray]) -> PY_JSON_TYPES:
+        o = orjson.loads(s)
+        if isinstance(o, list):
+            return [from_serializable(dikt) for dikt in o]
+        return from_serializable(o)
 
-def json_dumps(obj: PY_JSON_TYPES) -> str:
-    try:
-        return json.dumps(
-            obj,
-            default=to_serializable,
-            option=json.OPT_PASSTHROUGH_DATETIME | json.OPT_OMIT_MICROSECONDS | json.OPT_NON_STR_KEYS,
-        ).decode("utf8")
-    except TypeError as e:
-        raise e
-        # When Recursion limit is not configurable in orjson, falling back to the next best lib.
-        # if str(e) == "default serializer exceeds recursion limit":
-        #     return rjson.dumps(obj, default=to_serializable)
-        # else:
-        #     raise e
+    def orjson_dumps(obj: PY_JSON_TYPES) -> str:
+        try:
+            return orjson.dumps(
+                obj,
+                default=to_serializable,
+                option=orjson.OPT_PASSTHROUGH_DATETIME | orjson.OPT_OMIT_MICROSECONDS | orjson.OPT_NON_STR_KEYS,
+            ).decode("utf8")
+        except TypeError as e:
+            raise e
+            # When Recursion limit is not configurable in orjson, falling back to the next best lib.
+            # if str(e) == "default serializer exceeds recursion limit":
+            #     return rjson.dumps(obj, default=to_serializable)
+            # else:
+            #     raise e
+
+else:
+    print("Using stdlib json")  # noqa
+    json_loads = json.loads
+    json_dumps = json.dumps
 
 
 def to_serializable(o: Any) -> Any:
