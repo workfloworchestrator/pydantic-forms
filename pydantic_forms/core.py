@@ -11,27 +11,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from copy import deepcopy
-from typing import Any, Optional, Union, List, Generator
+from typing import Any, Callable, Dict, Generator, List, Optional, Union
 
 import structlog
 from pydantic.config import Extra
 from pydantic.error_wrappers import ValidationError
 
 # from cim.forms.forms import get_form
-from pydantic.fields import Field, Undefined, ModelField
+from pydantic.fields import Field, ModelField, Undefined
 from pydantic.main import BaseModel
 
 from pydantic_forms.exceptions import FormNotCompleteError, FormValidationError
-from pydantic_forms.types import InputForm, StateInputFormGenerator, State
-from pydantic_forms.utils.json import json_dumps, json_loads
-
+from pydantic_forms.types import InputForm, State, StateInputFormGenerator
+from pydantic_forms.utils.json_utils import json_dumps, json_loads
 
 logger = structlog.get_logger(__name__)
 
 
 def generate_form(
     form_generator: Union[StateInputFormGenerator, None], state: State, user_inputs: List[State]
-) -> Union[StateInputFormGenerator, None]:
+) -> Union[State, None]:
     """Generate form using form generator as defined by a form definition."""
     try:
         # Generate form is basically post_form
@@ -82,44 +81,44 @@ def post_form(form_generator: Union[StateInputFormGenerator, None], state: State
         # Form is completely filled so we can return the last of the data and
         return e.value
 
-#
-# def start_form(
-#     form_key: str,
-#     user_inputs: list[State] | None = None,
-#     user: str = "Just a user",  # Todo: check if we need users inside form logic?
-# ) -> State:
-#     """Start a process for workflow.
-#
-#     Args:
-#         form_key: name of workflow
-#         user_inputs: List of form inputs from frontend
-#         user: User who starts this process
-#
-#     Returns:
-#         The data that the user entered into the form
-#
-#     """
-#     if not user_inputs or user_inputs == [{}]:
-#         # Ensure the first FormNotComplete is raised from Swagger and when a POST is done without user_inputs:
-#         user_inputs = []
-#
-#     form = get_form(form_key)
-#
-#     if not form:
-#         raise_status(HTTPStatus.NOT_FOUND, "Form does not exist")
-#
-#     # Todo: decide what we want for initial input
-#     initial_state = {
-#         "form_key": form_key,
-#     }
-#
-#     try:
-#         state = post_form(form, initial_state, user_inputs)
-#     except FormValidationError:
-#         logger.exception("Validation errors", user_inputs=user_inputs)
-#         raise
-#
-#     return state
+
+def start_form(
+    form_key: str,
+    user_inputs: Union[List[State], None] = None,
+    user: str = "Just a user",  # Todo: check if we need users inside form logic?
+    **extra_state: Dict[str, Any],
+) -> State:
+    """Start a process for workflow.
+
+    Args:
+        form_key: name of workflow
+        user_inputs: List of form inputs from frontend
+        user: User who starts this process
+        extra_state: Optional initial state variables
+
+    Returns:
+        The data that the user entered into the form
+
+    """
+    if user_inputs is None:
+        # Ensure the first FormNotComplete is raised from Swagger and when a POST is done without user_inputs:
+        user_inputs = []
+
+    form = get_form(form_key)
+
+    if not form:
+        # raise_status(HTTPStatus.NOT_FOUND, "Form does not exist")
+        raise Exception(f"Form {form_key} does not exist.")  # TODO decide on exception to raise for this
+
+    initial_state = dict(form_key=form_key, **extra_state)
+
+    try:
+        state = post_form(form, initial_state, user_inputs)
+    except FormValidationError:
+        logger.exception("Validation errors", user_inputs=user_inputs)
+        raise
+
+    return state
 
 
 class DisplayOnlyFieldType:
@@ -161,3 +160,20 @@ def ReadOnlyField(
     **extra: Any,
 ) -> Any:
     return Field(default, const=True, uniforms={"disabled": True, "value": default}, **extra)
+
+
+FORMS: Dict[str, Callable] = {}
+
+
+def get_form(key: str) -> Union[Callable, None]:
+    return FORMS.get(key)
+
+
+def register_form(key: str, form: Callable) -> None:
+    if key in FORMS and form is not FORMS[key]:
+        raise Exception(f"Trying to re-register form {key} with a different function")
+    FORMS[key] = form
+
+
+def list_forms() -> List[str]:
+    return list(FORMS.keys())

@@ -23,7 +23,7 @@ from pydantic.utils import update_not_none
 from pydantic.validators import str_validator, uuid_validator
 
 from pydantic_forms.core import DisplayOnlyFieldType
-from pydantic_forms.types import AcceptData, strEnum, SummaryData
+from pydantic_forms.types import AcceptData, SummaryData, strEnum
 
 logger = structlog.get_logger(__name__)
 
@@ -151,10 +151,7 @@ class Accept(str):
 
 
 class Choice(strEnum):
-    """Let the user choose from an enum and submit the label.
-
-
-    """
+    """Let the user choose from an enum and submit the label."""
 
     label: ClassVar[str]
 

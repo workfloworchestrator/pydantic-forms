@@ -73,11 +73,11 @@ flit install --deps develop --symlink --python /path/to/a/project/venv/bin/pytho
 
 When your PR is accepted you will get a version number.
 
-You can do the necessary change with a clean, e.g. every change committed, branch: 
+You can do the necessary change with a clean, e.g. every change committed, branch:
 
 ```shell
 bumpversion patch --new-version 0.0.1
 ```
 
-Note: specifying it like this, instead of relying on bumpversion itself to increase the version, allows you to 
+Note: specifying it like this, instead of relying on bumpversion itself to increase the version, allows you to
 set a "RC1" version if needed.
