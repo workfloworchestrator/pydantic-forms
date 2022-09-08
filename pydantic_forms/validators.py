@@ -241,8 +241,6 @@ class ContactPersonList(ConstrainedList):
         yield from super().__get_validators__()
         yield remove_empty_items
 
-    # TODO: Validatie organisation?
-
 
 def contact_person_list(
     organisation: Optional[UUID] = None, organisation_key: Optional[str] = "organisation"

@@ -17,7 +17,6 @@ import structlog
 from pydantic.config import Extra
 from pydantic.error_wrappers import ValidationError
 
-# from cim.forms.forms import get_form
 from pydantic.fields import Field, ModelField, Undefined
 from pydantic.main import BaseModel
 
@@ -44,14 +43,14 @@ def generate_form(
 
 
 def post_form(form_generator: Union[StateInputFormGenerator, None], state: State, user_inputs: List[State]) -> State:
-    """Post process user_input based on form definition."""
+    """Post user_input based ond serve a new form if the form wizard logic dictates it."""
     # there is no form_generator so we return no validated data
     if not form_generator:
         return {}
 
     current_state = deepcopy(state)
 
-    logger.debug("Post process form", state=state, user_inputs=user_inputs)
+    logger.debug("Post form", state=state, user_inputs=user_inputs)
 
     # Generate generator
     generator = form_generator(current_state)
@@ -88,12 +87,12 @@ def start_form(
     user: str = "Just a user",  # Todo: check if we need users inside form logic?
     **extra_state: Dict[str, Any],
 ) -> State:
-    """Start a process for workflow.
+    """Handle the logic for the endpoint that the frontend uses to render a form with or without prefilled input.
 
     Args:
-        form_key: name of workflow
+        form_key: name of form in the FORM dict
         user_inputs: List of form inputs from frontend
-        user: User who starts this process
+        user: User who starts this form
         extra_state: Optional initial state variables
 
     Returns:
@@ -101,7 +100,7 @@ def start_form(
 
     """
     if user_inputs is None:
-        # Ensure the first FormNotComplete is raised from Swagger and when a POST is done without user_inputs:
+        # Ensure the first FormNotComplete is raised from Swagger when a POST is done without user_inputs:
         user_inputs = []
 
     form = get_form(form_key)
@@ -170,6 +169,7 @@ def get_form(key: str) -> Union[Callable, None]:
 
 
 def register_form(key: str, form: Callable) -> None:
+    logger.info("Current Forms", forms=FORMS, new_key=key)
     if key in FORMS and form is not FORMS[key]:
         raise Exception(f"Trying to re-register form {key} with a different function")
     FORMS[key] = form
