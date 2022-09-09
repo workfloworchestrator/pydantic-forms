@@ -137,7 +137,7 @@ class FormPage(BaseModel):
         validate_all = True
 
     def __init_subclass__(cls, /, **kwargs: Any) -> None:
-        super().__init_subclass__(**kwargs)  # type:ignore
+        super().__init_subclass__(**kwargs)
 
         # The default and requiredness of a field is not a property of a field
         # In the case of DisplayOnlyFieldTypes, we do kind of want that.
@@ -157,7 +157,7 @@ def ReadOnlyField(
     const: Optional[bool] = None,
     **extra: Any,
 ) -> Any:
-    return Field(default, const=True, uniforms={"disabled": True, "value": default}, **extra)
+    return Field(default, const=True, uniforms={"disabled": True, "value": default}, **extra)  # type: ignore
 
 
 FORMS: Dict[str, Callable] = {}

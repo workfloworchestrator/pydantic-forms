@@ -3,7 +3,7 @@ from typing import Any, Callable, Dict, Generator, List, Tuple, Type, TypedDict,
 
 try:
     # python3.10 introduces types.UnionType for the new union and optional type defs.
-    from types import UnionType  # type: ignore
+    from types import UnionType
 
     union_types = [Union, UnionType]
 except ImportError:
