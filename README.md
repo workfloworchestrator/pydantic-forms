@@ -1,5 +1,23 @@
+# Pydantic forms
 
-To add features to the repository follow the following procedure to setup a working development environment.
+A python package that lets you add smart forms to [FastAPI](https://fastapi.tiangolo.com/)
+and [Flask](https://palletsprojects.com/p/flask/). Forms will respond with a JSON scheme that
+contains all info needed in a Recat frontend with uniforms to render the forms and handle all validation tasks.
+
+Forms can also consist out of wizard; so you can create complex form flows consisting out of multiple
+consecutive forms. The forms and the validation logic are defined by
+using [Pydantic](https://pydantic-docs.helpmanual.io/) models.
+
+### Todo
+
+This package is not ready for use in other projects. To make it production ready:
+
+- [ ] Add tests for the Flask and FastAPI Exception handlers
+- [ ] Add Flask example; a reference implementation is available in
+  the [pricelist-backend](https://github.com/acidjunk/pricelist-backend/blob/master/server/main.py)
+- [ ] Setup docs boilerplate
+- [ ] Copy orchestrator core form docs
+- [ ] Publish package
 
 ### Installation (Development standalone)
 Install the project and its dependencies to develop on the code.
