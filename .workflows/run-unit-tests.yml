@@ -1,0 +1,34 @@
+name: Unit tests
+on:
+  push:
+  workflow_call:
+
+jobs:
+  container_job:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10']
+      fail-fast: false
+    container: python:${{ matrix.python-version }}-slim
+    steps:
+      # Downloads a copy of the code in your repository before running CI tests
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          apt update
+          apt install curl git build-essential libpq-dev libffi-dev -y
+          python -m pip install --upgrade pip
+          pip install flit
+          flit install --deps develop --symlink
+        env:
+          FLIT_ROOT_INSTALL: 1
+      - name: Run Unit tests
+        run: pytest --cov-branch --cov=pydantic_forms --cov-report=xml
+      - name: "Upload coverage to Codecov"
+        uses: codecov/codecov-action@v2
+        with:
+          fail_ci_if_error: true
+          files: ./coverage.xml

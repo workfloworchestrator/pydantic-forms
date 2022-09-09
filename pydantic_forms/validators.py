@@ -309,3 +309,47 @@ class ListOfOne(UniqueConstrainedList[T]):
 class ListOfTwo(UniqueConstrainedList[T]):
     min_items = 2
     max_items = 2
+
+
+class Timestamp(int):
+    show_time_select: ClassVar[Optional[bool]] = True
+    locale: ClassVar[Optional[str]] = None  # example: nl-nl
+    min: ClassVar[Optional[int]] = None
+    max: ClassVar[Optional[int]] = None
+    date_format: ClassVar[Optional[str]] = None  # example: DD-MM-YYYY HH:mm
+    time_format: ClassVar[Optional[str]] = None  # example: HH:mm
+
+    @classmethod
+    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
+        field_schema.update(
+            format="timestamp",
+            type="number",
+            uniforms={
+                # Using JS naming convention to increase DX on the JS side
+                "showTimeSelect": cls.show_time_select,
+                "locale": cls.locale,
+                "min": cls.min,
+                "max": cls.max,
+                "dateFormat": cls.date_format,
+                "timeFormat": cls.time_format,
+            },
+        )
+
+
+def timestamp(
+    show_time_select: Optional[bool] = True,
+    locale: Optional[str] = None,
+    min: Optional[int] = None,
+    max: Optional[int] = None,
+    date_format: Optional[str] = None,
+    time_format: Optional[str] = None,
+) -> Type[Timestamp]:
+    namespace = {
+        "show_time_select": show_time_select,
+        "locale": locale,
+        "min": min,
+        "max": max,
+        "date_format": date_format,
+        "time_format": time_format,
+    }
+    return new_class("TimestampValue", (Timestamp,), {}, lambda ns: ns.update(namespace))

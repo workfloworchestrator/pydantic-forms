@@ -16,13 +16,12 @@ from typing import Any, Callable, Dict, Generator, List, Optional, Union
 import structlog
 from pydantic.config import Extra
 from pydantic.error_wrappers import ValidationError
-
 from pydantic.fields import Field, ModelField, Undefined
 from pydantic.main import BaseModel
 
 from pydantic_forms.exceptions import FormNotCompleteError, FormValidationError
 from pydantic_forms.types import InputForm, State, StateInputFormGenerator
-from pydantic_forms.utils.json_utils import json_dumps, json_loads
+from pydantic_forms.utils.json import json_dumps, json_loads
 
 logger = structlog.get_logger(__name__)
 

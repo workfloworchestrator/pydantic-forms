@@ -3,9 +3,8 @@ import pytest
 from pydantic_forms.core import FormNotCompleteError, FormPage, FormValidationError, generate_form, post_form
 from pydantic_forms.types import strEnum
 
-
 # TODO: Remove when generic forms of pydantic_forms are ready
-from pydantic_forms.utils.json_utils import json_loads, json_dumps
+from pydantic_forms.utils.json import json_dumps, json_loads
 
 
 class TestChoices(strEnum):
@@ -136,7 +135,7 @@ def test_post_form_wizard():
     validated_data = post_form(input_form, {"previous": True}, [{"generic_select1": "b"}, {"generic_select3": "a"}])
 
     expected = {"generic_select1": "b", "generic_select3": "a"}
-    assert expected == post_form(json_dumps(validated_data))
+    assert expected == json_loads(json_dumps(validated_data))
 
     # Submit overcomplete
     validated_data = post_form(

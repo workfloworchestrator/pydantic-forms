@@ -1,11 +1,11 @@
 from typing import TypeVar
-from unittest import mock
 from uuid import uuid4
 
 import pytest
 from pydantic import ValidationError
 
 from pydantic_forms.core import FormPage, ReadOnlyField
+from pydantic_forms.utils.json import json_dumps, json_loads
 from pydantic_forms.validators import (
     Accept,
     Choice,
@@ -18,10 +18,12 @@ from pydantic_forms.validators import (
     LongText,
     MigrationSummary,
     OrganisationId,
+    Timestamp,
     UniqueConstrainedList,
     choice_list,
     contact_person_list,
     migration_summary,
+    timestamp,
     unique_conlist,
 )
 
@@ -706,6 +708,49 @@ def test_migration_summary_schema():
             "ms1": {"format": "summary", "title": "Ms1", "type": "string", "uniforms": {"data": "foo"}},
             "ms2": {"format": "summary", "title": "Ms2", "type": "string", "uniforms": {"data": "bar"}},
         },
+        "title": "unknown",
+        "type": "object",
+    }
+
+
+def test_timestamp_schema():
+    class Form(FormPage):
+        t1: Timestamp
+        t2: timestamp(
+            locale="nl-nl", min=1652751600, max=1672751600, date_format="DD-MM-YYYY HH:mm", time_format="HH:mm"  # noqa
+        )
+
+    assert Form.schema() == {
+        "additionalProperties": False,
+        "properties": {
+            "t1": {
+                "format": "timestamp",
+                "title": "T1",
+                "type": "number",
+                "uniforms": {
+                    "dateFormat": None,
+                    "locale": None,
+                    "max": None,
+                    "min": None,
+                    "showTimeSelect": True,
+                    "timeFormat": None,
+                },
+            },
+            "t2": {
+                "format": "timestamp",
+                "title": "T2",
+                "type": "number",
+                "uniforms": {
+                    "dateFormat": "DD-MM-YYYY HH:mm",
+                    "locale": "nl-nl",
+                    "max": 1672751600,
+                    "min": 1652751600,
+                    "showTimeSelect": True,
+                    "timeFormat": "HH:mm",
+                },
+            },
+        },
+        "required": ["t1", "t2"],
         "title": "unknown",
         "type": "object",
     }

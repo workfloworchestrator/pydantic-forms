@@ -23,7 +23,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from pydantic_forms.exceptions import FormException, FormNotCompleteError, FormValidationError, show_ex
-from pydantic_forms.utils.json_utils import json_dumps, json_loads
+from pydantic_forms.utils.json import json_dumps, json_loads
 
 
 class ProblemDetailException(HTTPException):
