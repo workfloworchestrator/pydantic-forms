@@ -643,8 +643,6 @@ def test_read_only_field_schema():
     class Form(FormPage):
         read_only: int = ReadOnlyField(1, const=False)
 
-    print(Form.schema())
-
     assert Form.schema() == {
         "title": "unknown",
         "type": "object",
