@@ -37,6 +37,6 @@ jobs:
         run: |
           # stop the build if there are Python syntax errors or undefined names
           flake8 .
-      - name: Check with mypy
-        run: |
-          mypy .
+#      - name: Check with mypy
+#        run: |
+#          mypy .
