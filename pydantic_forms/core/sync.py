@@ -11,17 +11,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from copy import deepcopy
-from typing import Any, Callable, Dict, Generator, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 import structlog
-from pydantic.config import Extra
-from pydantic.error_wrappers import ValidationError
-from pydantic.fields import Field, ModelField, Undefined
-from pydantic.main import BaseModel
+from pydantic import ValidationError
 
-from pydantic_forms.exceptions import FormNotCompleteError, FormValidationError
+from pydantic_forms.core.shared import get_form
+from pydantic_forms.exceptions import FormException, FormNotCompleteError, FormValidationError
 from pydantic_forms.types import InputForm, State, StateInputFormGenerator
-from pydantic_forms.utils.json import json_dumps, json_loads
 
 logger = structlog.get_logger(__name__)
 
@@ -105,8 +102,7 @@ def start_form(
     form = get_form(form_key)
 
     if not form:
-        # raise_status(HTTPStatus.NOT_FOUND, "Form does not exist")
-        raise Exception(f"Form {form_key} does not exist.")  # TODO decide on exception to raise for this
+        raise FormException(f"Form {form_key} does not exist.")
 
     initial_state = dict(form_key=form_key, **extra_state)
 
@@ -117,62 +113,3 @@ def start_form(
         raise
 
     return state
-
-
-class DisplayOnlyFieldType:
-    @classmethod
-    def __get_validators__(cls) -> Generator:
-        yield cls.nothing
-
-    def nothing(cls, v: Any, field: ModelField) -> Any:
-        return field.default
-
-
-class FormPage(BaseModel):
-    class Config:
-        json_loads = json_loads
-        json_dumps = json_dumps
-        title = "unknown"
-        extra = Extra.forbid
-        validate_all = True
-
-    def __init_subclass__(cls, /, **kwargs: Any) -> None:
-        super().__init_subclass__(**kwargs)
-
-        # The default and requiredness of a field is not a property of a field
-        # In the case of DisplayOnlyFieldTypes, we do kind of want that.
-        # Using this method we set the right properties after the form is created
-        for field in cls.__fields__.values():
-            try:
-                if issubclass(field.type_, DisplayOnlyFieldType):
-                    field.required = False
-                    field.allow_none = True
-            except TypeError:
-                pass
-
-
-def ReadOnlyField(
-    default: Any = Undefined,
-    *,
-    const: Optional[bool] = None,
-    **extra: Any,
-) -> Any:
-    return Field(default, const=True, uniforms={"disabled": True, "value": default}, **extra)  # type: ignore
-
-
-FORMS: Dict[str, Callable] = {}
-
-
-def get_form(key: str) -> Union[Callable, None]:
-    return FORMS.get(key)
-
-
-def register_form(key: str, form: Callable) -> None:
-    logger.info("Current Forms", forms=FORMS, new_key=key)
-    if key in FORMS and form is not FORMS[key]:
-        raise Exception(f"Trying to re-register form {key} with a different function")
-    FORMS[key] = form
-
-
-def list_forms() -> List[str]:
-    return list(FORMS.keys())

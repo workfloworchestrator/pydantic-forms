@@ -8,7 +8,7 @@ Forms can also consist out of wizard; so you can create complex form flows consi
 consecutive forms. The forms and the validation logic are defined by
 using [Pydantic](https://pydantic-docs.helpmanual.io/) models.
 
-Documentation regarding the usage of Forms can be found 
+Documentation regarding the usage of Forms can be found
 [here](https://github.com/workfloworchestrator/orchestrator-core/blob/main/docs/architecture/application/forms.md)
 
 ### Todo
