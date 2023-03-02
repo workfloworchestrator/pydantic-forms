@@ -17,7 +17,7 @@ import structlog
 from pydantic import ValidationError
 
 from pydantic_forms.core.shared import get_form
-from pydantic_forms.exceptions import FormException, FormNotCompleteError, FormValidationError
+from pydantic_forms.exceptions import FormException, FormNotCompleteError, FormOverflowError, FormValidationError
 from pydantic_forms.types import InputForm, State, StateInputFormGenerator
 
 logger = structlog.get_logger(__name__)
@@ -51,13 +51,15 @@ def post_form(form_generator: Union[StateInputFormGenerator, None], state: State
     # Generate generator
     generator = form_generator(current_state)
 
+    user_inputs = user_inputs.copy()
     try:
         # Generate first form (we need to send None here, since the arguments are already given
         # when we generated the generator)
         generated_form: InputForm = generator.send(None)
 
         # Loop through user inputs and for each input validate and update current state and validation results
-        for user_input in user_inputs:
+        while user_inputs:
+            user_input = user_inputs.pop(0)
             # Validate
             try:
                 form_validated_data = generated_form(**user_input)
@@ -67,12 +69,15 @@ def post_form(form_generator: Union[StateInputFormGenerator, None], state: State
             # Update state with validated_data
             current_state.update(form_validated_data.dict())
 
-            # Make next form
+            # Make next form or trigger StopIteration
             generated_form = generator.send(form_validated_data)
-        else:
-            # Form is not completely filled raise next form
-            raise FormNotCompleteError(generated_form.schema())
+
+        # Form is not completely filled; raise next form
+        raise FormNotCompleteError(generated_form.schema())
     except StopIteration as e:
+        if user_inputs:
+            raise FormOverflowError(f"Did not process all user_inputs ({len(user_inputs)} remaining)")
+
         # Form is completely filled so we can return the last of the data and
         return e.value
 

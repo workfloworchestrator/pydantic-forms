@@ -12,13 +12,12 @@
 # limitations under the License.
 from copy import deepcopy
 from typing import Any, Dict, List, Union
-from unittest.mock import MagicMock
 
 import structlog
 from pydantic import ValidationError
 
 from pydantic_forms.core.shared import get_form
-from pydantic_forms.exceptions import FormException, FormNotCompleteError, FormValidationError
+from pydantic_forms.exceptions import FormException, FormNotCompleteError, FormOverflowError, FormValidationError
 from pydantic_forms.types import InputForm, State, StateInputFormGenerator
 
 logger = structlog.get_logger(__name__)
@@ -58,11 +57,14 @@ async def post_form(
     # when we initialized the generator)
     generated_form: InputForm = await generator.asend(None)
 
-    # Loop through user inputs and for each input validate and update current state and validation results
-    for user_input in user_inputs:
+    def filled_all_forms() -> bool:
         # Check last item (asyncgenerator can only yield, not return)
-        if isinstance(generated_form, dict):
-            break
+        return isinstance(generated_form, dict)
+
+    # Loop through user inputs and for each input validate and update current state and validation results
+    user_inputs = user_inputs.copy()
+    while user_inputs and not filled_all_forms():
+        user_input = user_inputs.pop(0)
 
         # Validate
         try:
@@ -76,15 +78,14 @@ async def post_form(
         # Make next form
         generated_form = await generator.asend(form_validated_data)
 
-    try:
-        # Send something into the asyncgenerator.
-        await generator.asend(MagicMock())
-    except StopAsyncIteration:
-        # Form is completely filled so we can return the last of the data
+    if user_inputs:
+        raise FormOverflowError(f"Did not process all user_inputs ({len(user_inputs)} remaining)")
+
+    if filled_all_forms():
         return generated_form
-    else:
-        # Form is not completely filled raise next form
-        raise FormNotCompleteError(generated_form.schema())
+
+    # Form is not completely filled raise next form
+    raise FormNotCompleteError(generated_form.schema())
 
 
 async def start_form(

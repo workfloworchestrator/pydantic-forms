@@ -73,6 +73,10 @@ def register_form(key: str, form: Callable) -> None:
     logger.info("Current Forms", forms=FORMS, new_key=key)
     if key in FORMS and form is not FORMS[key]:
         raise Exception(f"Trying to re-register form {key} with a different function")
+
+    # TODO validate?
+    #  inspect.isasyncgenfunction(form) -> true for async forms
+    #  inspect.isgeneratorfunction(form) -> true for sync forms
     FORMS[key] = form
 
 
