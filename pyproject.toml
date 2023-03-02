@@ -65,6 +65,7 @@ test = [
     "mypy",
     "pytest",
     "pytest-cov",
+    "pytest-asyncio",
     "pytest-xdist",
     "types-Deprecated",
     "types-certifi",
@@ -108,7 +109,7 @@ known_first_party = ["migrations", "test"]
 
 [tool.black]
 line-length = 120
-target-version = ["py39"]
+target-version = ["py310"]
 exclude = '''
 (
   /(
