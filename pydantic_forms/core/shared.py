@@ -10,7 +10,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Dict, Generator, List, Optional, Union
+from inspect import isasyncgenfunction, isgeneratorfunction
+from typing import Any, Callable, Dict, Generator, List, Optional
 
 import structlog
 from pydantic import BaseModel, Extra, Field
@@ -65,18 +66,14 @@ def ReadOnlyField(
 FORMS: Dict[str, Callable] = {}
 
 
-def get_form(key: str) -> Union[Callable, None]:
-    return FORMS.get(key)
-
-
 def register_form(key: str, form: Callable) -> None:
     logger.info("Current Forms", forms=FORMS, new_key=key)
     if key in FORMS and form is not FORMS[key]:
         raise Exception(f"Trying to re-register form {key} with a different function")
 
-    # TODO validate?
-    #  inspect.isasyncgenfunction(form) -> true for async forms
-    #  inspect.isgeneratorfunction(form) -> true for sync forms
+    if not isasyncgenfunction(form) and not isgeneratorfunction(form):
+        raise Exception(f"Trying to register form {key} function {form} which is not an (async) generator function")
+
     FORMS[key] = form
 
 

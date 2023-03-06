@@ -11,20 +11,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from copy import deepcopy
-from typing import Any, Dict, List, Union
+from inspect import isasyncgenfunction
+from typing import Any, List, Union
 
 import structlog
 from pydantic import ValidationError
 
-from pydantic_forms.core.shared import get_form
+from pydantic_forms.core.shared import FORMS
 from pydantic_forms.exceptions import FormException, FormNotCompleteError, FormOverflowError, FormValidationError
-from pydantic_forms.types import InputForm, State, StateInputFormGenerator
+from pydantic_forms.types import InputForm, State, StateInputFormGeneratorAsync
 
 logger = structlog.get_logger(__name__)
 
 
 async def generate_form(
-    form_generator: Union[StateInputFormGenerator, None], state: State, user_inputs: List[State]
+    form_generator: Union[StateInputFormGeneratorAsync, None], state: State, user_inputs: List[State]
 ) -> Union[State, None]:
     """Generate form using form generator as defined by a form definition."""
     try:
@@ -39,7 +40,7 @@ async def generate_form(
 
 
 async def post_form(
-    form_generator: Union[StateInputFormGenerator, None], state: State, user_inputs: List[State]
+    form_generator: Union[StateInputFormGeneratorAsync, None], state: State, user_inputs: List[State]
 ) -> State:
     """Post user_input based ond serve a new form if the form wizard logic dictates it."""
     # there is no form_generator so we return no validated data
@@ -55,15 +56,11 @@ async def post_form(
 
     # Generate first form (we need to send None here, since the arguments are already given
     # when we initialized the generator)
-    generated_form: InputForm = await generator.asend(None)
-
-    def filled_all_forms() -> bool:
-        # Check last item (asyncgenerator can only yield, not return)
-        return isinstance(generated_form, dict)
+    generated_form: InputForm | dict = await generator.asend(None)
 
     # Loop through user inputs and for each input validate and update current state and validation results
     user_inputs = user_inputs.copy()
-    while user_inputs and not filled_all_forms():
+    while user_inputs and not isinstance(generated_form, dict):
         user_input = user_inputs.pop(0)
 
         # Validate
@@ -81,18 +78,31 @@ async def post_form(
     if user_inputs:
         raise FormOverflowError(f"Did not process all user_inputs ({len(user_inputs)} remaining)")
 
-    if filled_all_forms():
+    if isinstance(generated_form, dict):
+        # Check whether the result was yielded. (AsyncGenerator can only yield, not return)
+        # This is a downside of using AsyncGenerator; we cannot enforce the last returned item
+        # to be of `State`
         return generated_form
 
     # Form is not completely filled raise next form
     raise FormNotCompleteError(generated_form.schema())
 
 
+def _get_form(key: str) -> StateInputFormGeneratorAsync:
+    if not (func := FORMS.get(key)):
+        raise FormException(f"Form {key} does not exist.")
+
+    if not isasyncgenfunction(func):
+        raise FormException(f"Form {key} is not an asyncgenerator function")
+
+    return func
+
+
 async def start_form(
     form_key: str,
     user_inputs: Union[List[State], None] = None,
     user: str = "Just a user",  # Todo: check if we need users inside form logic?
-    **extra_state: Dict[str, Any],
+    **extra_state: Any,
 ) -> State:
     """Handle the logic for the endpoint that the frontend uses to render a form with or without prefilled input.
 
@@ -110,10 +120,7 @@ async def start_form(
         # Ensure the first FormNotComplete is raised from Swagger when a POST is done without user_inputs:
         user_inputs = []
 
-    form = get_form(form_key)
-
-    if not form:
-        raise FormException(f"Form {form_key} does not exist.")
+    form: StateInputFormGeneratorAsync = _get_form(form_key)
 
     initial_state = dict(form_key=form_key, **extra_state)
 

@@ -11,12 +11,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from copy import deepcopy
+from inspect import isgeneratorfunction
 from typing import Any, Dict, List, Union
 
 import structlog
 from pydantic import ValidationError
 
-from pydantic_forms.core.shared import get_form
+from pydantic_forms.core.shared import FORMS
 from pydantic_forms.exceptions import FormException, FormNotCompleteError, FormOverflowError, FormValidationError
 from pydantic_forms.types import InputForm, State, StateInputFormGenerator
 
@@ -82,6 +83,16 @@ def post_form(form_generator: Union[StateInputFormGenerator, None], state: State
         return e.value
 
 
+def _get_form(key: str) -> StateInputFormGenerator:
+    if not (func := FORMS.get(key)):
+        raise FormException(f"Form {key} does not exist.")
+
+    if not isgeneratorfunction(func):
+        raise FormException(f"Form {key} is not a generator function")
+
+    return func
+
+
 def start_form(
     form_key: str,
     user_inputs: Union[List[State], None] = None,
@@ -104,10 +115,7 @@ def start_form(
         # Ensure the first FormNotComplete is raised from Swagger when a POST is done without user_inputs:
         user_inputs = []
 
-    form = get_form(form_key)
-
-    if not form:
-        raise FormException(f"Form {form_key} does not exist.")
+    form: StateInputFormGenerator = _get_form(form_key)
 
     initial_state = dict(form_key=form_key, **extra_state)
 
