@@ -56,7 +56,7 @@ async def post_form(
 
     # Generate first form (we need to send None here, since the arguments are already given
     # when we initialized the generator)
-    generated_form: InputForm | dict = await generator.asend(None)
+    generated_form: Union[InputForm, dict] = await generator.asend(None)
 
     # Loop through user inputs and for each input validate and update current state and validation results
     user_inputs = user_inputs.copy()

@@ -3,7 +3,7 @@ from typing import Any, AsyncGenerator, Callable, Dict, Generator, List, Tuple, 
 
 try:
     # python3.10 introduces types.UnionType for the new union and optional type defs.
-    from types import UnionType
+    from types import UnionType  # type: ignore  # 3.9 compatibility
 
     union_types = [Union, UnionType]
 except ImportError:
@@ -58,5 +58,5 @@ StateInputFormGenerator = Callable[[State], FormGenerator]
 StateInputStepFunc = Union[StateSimpleInputFormGenerator, StateInputFormGenerator]
 SubscriptionMapping = Dict[str, List[Dict[str, str]]]
 
-FormGeneratorAsync = AsyncGenerator[Type[T] | State, T]  # [YieldType, SendType]
+FormGeneratorAsync = AsyncGenerator[Union[Type[T], State], T]  # [YieldType, SendType]
 StateInputFormGeneratorAsync = Callable[[State], FormGeneratorAsync]
