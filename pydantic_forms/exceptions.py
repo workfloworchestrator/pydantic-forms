@@ -11,12 +11,21 @@ class FormException(Exception):
 
 
 class FormNotCompleteError(FormException):
+    """Raised when fewer inputs are provided than the form can process.
+
+    This exception is part of the normal forms workflow.
+    """
+
     # form: InputForm  # TODO this is a basemodel but it's initialized to JSON
     form: JSON
 
     def __init__(self, form: JSON):
         super().__init__(form)
         self.form = form
+
+
+class FormOverflowError(FormException):
+    """Raised when more inputs are provided than the form can process."""
 
 
 class PydanticErrorDict(TypedDict):

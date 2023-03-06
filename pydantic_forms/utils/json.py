@@ -1,4 +1,4 @@
-# Copyright 2019-2020 SURF.
+# Copyright 2019-2023 SURF.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -75,9 +75,11 @@ decoding functions differently then `default` and `object_hook` is that they are
 
 """
 import re
+from collections.abc import Callable
 from contextlib import suppress
 from dataclasses import asdict, is_dataclass
 from datetime import datetime
+from functools import partial
 from ipaddress import IPv4Address, IPv4Network, IPv6Address, IPv6Network
 from typing import Any, Dict, List, Sequence, Set, Tuple, Union
 from uuid import UUID
@@ -99,36 +101,6 @@ except ImportError:
 PY_JSON_TYPES = Union[Dict[str, Any], List, str, int, float, bool, None, object]  # pragma: no mutate
 
 logger = structlog.get_logger(__name__)
-
-
-if IS_ORJSON:
-    print("Using orjson")  # noqa
-
-    def json_loads(s: Union[str, bytes, bytearray]) -> PY_JSON_TYPES:
-        o = orjson.loads(s)
-        if isinstance(o, list):
-            return [from_serializable(dikt) for dikt in o]
-        return from_serializable(o)
-
-    def json_dumps(obj: PY_JSON_TYPES) -> str:
-        try:
-            return orjson.dumps(
-                obj,
-                default=to_serializable,
-                option=orjson.OPT_PASSTHROUGH_DATETIME | orjson.OPT_OMIT_MICROSECONDS | orjson.OPT_NON_STR_KEYS,
-            ).decode("utf8")
-        except TypeError as e:
-            raise e
-            # When Recursion limit is not configurable in orjson, falling back to the next best lib.
-            # if str(e) == "default serializer exceeds recursion limit":
-            #     return rjson.dumps(obj, default=to_serializable)
-            # else:
-            #     raise e
-
-else:
-    print("Using stdlib json")  # noqa
-    json_loads = json.loads
-    json_dumps = json.dumps
 
 
 def to_serializable(o: Any) -> Any:
@@ -192,6 +164,36 @@ def from_serializable(dct: Dict[str, Any]) -> Dict[str, Any]:
                 assert timestamp.tzinfo is not None, "All timestamps should contain timezone information."  # noqa: S101
                 dct[k] = timestamp
     return dct
+
+
+if IS_ORJSON:
+    print("Using orjson")  # noqa
+
+    def json_loads(s: Union[str, bytes, bytearray]) -> PY_JSON_TYPES:
+        o = orjson.loads(s)
+        if isinstance(o, list):
+            return [from_serializable(dikt) for dikt in o]
+        return from_serializable(o)
+
+    def json_dumps(obj: PY_JSON_TYPES, default: Callable = to_serializable) -> str:
+        try:
+            return orjson.dumps(
+                obj,
+                default=default,
+                option=orjson.OPT_PASSTHROUGH_DATETIME | orjson.OPT_OMIT_MICROSECONDS | orjson.OPT_NON_STR_KEYS,
+            ).decode("utf8")
+        except TypeError as e:
+            raise e
+            # When Recursion limit is not configurable in orjson, falling back to the next best lib.
+            # if str(e) == "default serializer exceeds recursion limit":
+            #     return rjson.dumps(obj, default=to_serializable)
+            # else:
+            #     raise e
+
+else:
+    print("Using stdlib json")  # noqa
+    json_loads = json.loads
+    json_dumps = partial(json.dumps, default=to_serializable)
 
 
 def non_none_dict(dikt: Sequence[Tuple[str, Any]]) -> Dict[Any, Any]:

@@ -1,4 +1,4 @@
-# Copyright 2019-2022 SURF.
+# Copyright 2019-2023 SURF.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,17 +11,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from copy import deepcopy
-from typing import Any, Callable, Dict, Generator, List, Optional, Union
+from inspect import isgeneratorfunction
+from typing import Any, Dict, List, Union
 
 import structlog
-from pydantic.config import Extra
-from pydantic.error_wrappers import ValidationError
-from pydantic.fields import Field, ModelField, Undefined
-from pydantic.main import BaseModel
+from pydantic import ValidationError
 
-from pydantic_forms.exceptions import FormNotCompleteError, FormValidationError
+from pydantic_forms.core.shared import FORMS
+from pydantic_forms.exceptions import FormException, FormNotCompleteError, FormOverflowError, FormValidationError
 from pydantic_forms.types import InputForm, State, StateInputFormGenerator
-from pydantic_forms.utils.json import json_dumps, json_loads
 
 logger = structlog.get_logger(__name__)
 
@@ -54,13 +52,15 @@ def post_form(form_generator: Union[StateInputFormGenerator, None], state: State
     # Generate generator
     generator = form_generator(current_state)
 
+    user_inputs = user_inputs.copy()
     try:
         # Generate first form (we need to send None here, since the arguments are already given
         # when we generated the generator)
         generated_form: InputForm = generator.send(None)
 
         # Loop through user inputs and for each input validate and update current state and validation results
-        for user_input in user_inputs:
+        while user_inputs:
+            user_input = user_inputs.pop(0)
             # Validate
             try:
                 form_validated_data = generated_form(**user_input)
@@ -70,14 +70,27 @@ def post_form(form_generator: Union[StateInputFormGenerator, None], state: State
             # Update state with validated_data
             current_state.update(form_validated_data.dict())
 
-            # Make next form
+            # Make next form or trigger StopIteration
             generated_form = generator.send(form_validated_data)
-        else:
-            # Form is not completely filled raise next form
-            raise FormNotCompleteError(generated_form.schema())
+
+        # Form is not completely filled; raise next form
+        raise FormNotCompleteError(generated_form.schema())
     except StopIteration as e:
+        if user_inputs:
+            raise FormOverflowError(f"Did not process all user_inputs ({len(user_inputs)} remaining)")
+
         # Form is completely filled so we can return the last of the data and
         return e.value
+
+
+def _get_form(key: str) -> StateInputFormGenerator:
+    if not (func := FORMS.get(key)):
+        raise FormException(f"Form {key} does not exist.")
+
+    if not isgeneratorfunction(func):
+        raise FormException(f"Form {key} is not a generator function")
+
+    return func
 
 
 def start_form(
@@ -102,11 +115,7 @@ def start_form(
         # Ensure the first FormNotComplete is raised from Swagger when a POST is done without user_inputs:
         user_inputs = []
 
-    form = get_form(form_key)
-
-    if not form:
-        # raise_status(HTTPStatus.NOT_FOUND, "Form does not exist")
-        raise Exception(f"Form {form_key} does not exist.")  # TODO decide on exception to raise for this
+    form: StateInputFormGenerator = _get_form(form_key)
 
     initial_state = dict(form_key=form_key, **extra_state)
 
@@ -117,62 +126,3 @@ def start_form(
         raise
 
     return state
-
-
-class DisplayOnlyFieldType:
-    @classmethod
-    def __get_validators__(cls) -> Generator:
-        yield cls.nothing
-
-    def nothing(cls, v: Any, field: ModelField) -> Any:
-        return field.default
-
-
-class FormPage(BaseModel):
-    class Config:
-        json_loads = json_loads
-        json_dumps = json_dumps
-        title = "unknown"
-        extra = Extra.forbid
-        validate_all = True
-
-    def __init_subclass__(cls, /, **kwargs: Any) -> None:
-        super().__init_subclass__(**kwargs)
-
-        # The default and requiredness of a field is not a property of a field
-        # In the case of DisplayOnlyFieldTypes, we do kind of want that.
-        # Using this method we set the right properties after the form is created
-        for field in cls.__fields__.values():
-            try:
-                if issubclass(field.type_, DisplayOnlyFieldType):
-                    field.required = False
-                    field.allow_none = True
-            except TypeError:
-                pass
-
-
-def ReadOnlyField(
-    default: Any = Undefined,
-    *,
-    const: Optional[bool] = None,
-    **extra: Any,
-) -> Any:
-    return Field(default, const=True, uniforms={"disabled": True, "value": default}, **extra)  # type: ignore
-
-
-FORMS: Dict[str, Callable] = {}
-
-
-def get_form(key: str) -> Union[Callable, None]:
-    return FORMS.get(key)
-
-
-def register_form(key: str, form: Callable) -> None:
-    logger.info("Current Forms", forms=FORMS, new_key=key)
-    if key in FORMS and form is not FORMS[key]:
-        raise Exception(f"Trying to re-register form {key} with a different function")
-    FORMS[key] = form
-
-
-def list_forms() -> List[str]:
-    return list(FORMS.keys())

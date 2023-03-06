@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Callable, Dict, Generator, List, Tuple, Type, TypedDict, TypeVar, Union
+from typing import Any, AsyncGenerator, Callable, Dict, Generator, List, Tuple, Type, TypedDict, TypeVar, Union
 
 try:
     # python3.10 introduces types.UnionType for the new union and optional type defs.
@@ -49,7 +49,7 @@ AcceptData = List[Union[Tuple[str, AcceptItemType], Tuple[str, AcceptItemType, D
 
 T = TypeVar("T", bound=BaseModel)
 
-FormGenerator = Generator[Type[T], T, State]
+FormGenerator = Generator[Type[T], T, State]  # [YieldType, SendType, ReturnType]
 SimpleInputFormGenerator = Callable[..., InputForm]
 InputFormGenerator = Callable[..., FormGenerator]
 InputStepFunc = Union[SimpleInputFormGenerator, InputFormGenerator]
@@ -57,3 +57,6 @@ StateSimpleInputFormGenerator = Callable[[State], InputForm]
 StateInputFormGenerator = Callable[[State], FormGenerator]
 StateInputStepFunc = Union[StateSimpleInputFormGenerator, StateInputFormGenerator]
 SubscriptionMapping = Dict[str, List[Dict[str, str]]]
+
+FormGeneratorAsync = AsyncGenerator[Type[T] | State, T]  # [YieldType, SendType]
+StateInputFormGeneratorAsync = Callable[[State], FormGeneratorAsync]

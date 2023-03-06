@@ -1,4 +1,4 @@
-# Copyright 2019-2020 SURF.
+# Copyright 2019-2023 SURF.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -134,7 +134,7 @@ class Accept(str):
         yield cls.must_be_complete
 
     @classmethod
-    def enum_validator(cls, v: Any, field: "ModelField") -> str:
+    def enum_validator(cls, v: Any, field: ModelField) -> str:
         try:
             enum_v = cls.Values(v)
         except ValueError:
@@ -151,7 +151,22 @@ class Accept(str):
 
 
 class Choice(strEnum):
-    """Let the user choose from an enum and submit the label."""
+    """Let the user choose from an enum and submit the label.
+
+    As of March 2023 mypy does not yet support functional API on Enum subclasses
+    https://github.com/python/mypy/issues/6037
+
+    This means that:
+        MyChoice1 = Choice("MyChoice1", {"option1": "value1", "option2": "value2"})
+
+    Will result in the (invalid) mypy error
+        error: Argument 2 to "Choice" has incompatible type "Dict[str, str]"; expected "Optional[str]"  [arg-type]
+
+    Because it maps to Choice.__new__ instead of Enum.__call__
+
+    Workaround is to be explicit:
+        MyChoice1 = Choice.__call__("MyChoice1", {"option1": "value1", "option2": "value2"})
+    """
 
     label: ClassVar[str]
 
@@ -163,7 +178,6 @@ class Choice(strEnum):
 
     @classmethod
     def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-
         kwargs = {}
 
         options = dict(map(lambda i: (i.value, i.label), cls.__members__.values()))
