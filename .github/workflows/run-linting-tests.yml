@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.10']
+        python-version: ['3.9', '3.10', '3.11']
       fail-fast: false
 
     steps:
@@ -37,6 +37,6 @@ jobs:
         run: |
           # stop the build if there are Python syntax errors or undefined names
           flake8 .
-#      - name: Check with mypy
-#        run: |
-#          mypy .
+      - name: Check with mypy
+        run: |
+          mypy pydantic_forms
