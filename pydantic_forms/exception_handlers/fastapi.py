@@ -15,39 +15,12 @@
 # TODO Decide how to expose this so pydantic-forms can be framework agnostic
 
 from http import HTTPStatus
-from typing import Any, Dict, NoReturn, Optional, Union
 
-from fastapi.exceptions import HTTPException
-from starlette.datastructures import MutableHeaders
-from starlette.requests import Request
-from starlette.responses import JSONResponse
+from fastapi.requests import Request
+from fastapi.responses import JSONResponse
 
 from pydantic_forms.exceptions import FormException, FormNotCompleteError, FormValidationError, show_ex
 from pydantic_forms.utils.json import json_dumps, json_loads
-
-
-class ProblemDetailException(HTTPException):
-    def __init__(
-        self,
-        status: int,
-        title: Optional[str] = None,
-        detail: Any = None,
-        headers: Optional[dict] = None,
-        error_type: Optional[str] = None,
-    ) -> None:
-        if headers is None:
-            headers = {}
-
-        super().__init__(status_code=status, detail=detail, headers=headers)
-        self.title = title
-        self.type = error_type
-
-
-def raise_status(status: int, detail: Any = None, headers: Optional[Union[MutableHeaders, Dict]] = None) -> NoReturn:
-    status = HTTPStatus(status)
-    if isinstance(headers, MutableHeaders):
-        headers = dict(**headers)
-    raise ProblemDetailException(status=status.value, title=status.phrase, detail=detail, headers=headers)
 
 
 async def form_error_handler(request: Request, exc: FormException) -> JSONResponse:
