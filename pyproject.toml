@@ -40,7 +40,7 @@ requires = [
 
 ]
 description-file = "README.md"
-requires-python = ">=3.9,<=3.11"
+requires-python = ">=3.9,<=3.12"
 
 [tool.flit.metadata.urls]
 Documentation = "https://github.com/workfloworchestrator/pydantic-forms/blob/main/README.md"
@@ -99,6 +99,9 @@ rapidjson = [
 ]
 orjson = [
     "orjson >=3.6.0,<4.0.0",
+]
+fastapi = [
+    "fastapi >=0.80.0,<1.0.0"
 ]
 
 

@@ -10,6 +10,11 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.9', '3.10', '3.11']
+        pydantic-version: ['1.9.0', '1.10.0', 'lockfile']
+        fastapi-version: ['0.80.0', '0.90.0', 'lockfile']
+        exclude:
+          - python-version: '3.11'
+            pydantic-version: '1.9.0'
       fail-fast: false
     container: python:${{ matrix.python-version }}-slim
     steps:
@@ -22,7 +27,15 @@ jobs:
           apt install curl git build-essential libpq-dev libffi-dev -y
           python -m pip install --upgrade pip
           pip install flit
-          flit install --deps develop --symlink
+          flit install --deps develop
+          if [ "${{ matrix.pydantic-version }}" != "lockfile" ]; then
+            pip install pydantic[email]~=${{ matrix.pydantic-version }}
+          fi
+          if [ "${{ matrix.fastapi-version }}" != "lockfile" ]; then
+            pip install fastapi~=${{ matrix.fastapi-version }}
+          else
+            flit install --extras fastapi
+          fi
         env:
           FLIT_ROOT_INSTALL: 1
       - name: Run Unit tests

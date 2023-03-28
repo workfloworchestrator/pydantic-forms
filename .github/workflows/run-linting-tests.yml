@@ -28,7 +28,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install flit
-          flit install --deps develop --symlink
+          flit install --deps develop --extras fastapi
       - name: Check formatting
         run: |
           isort -c .
