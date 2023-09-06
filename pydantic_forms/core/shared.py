@@ -14,7 +14,7 @@ from inspect import isasyncgenfunction, isgeneratorfunction
 from typing import Any, Callable, Dict, Generator, List, Optional
 
 import structlog
-from pydantic import BaseModel, Extra, Field
+from pydantic import BaseModel, Field
 from pydantic.v1.fields import Undefined
 
 from pydantic_forms.utils.json import json_dumps, json_loads
@@ -37,8 +37,8 @@ class FormPage(BaseModel):
         json_loads = json_loads
         json_dumps = json_dumps
         title = "unknown"
-        extra = Extra.forbid
-        validate_all = True
+        extra = "forbid"
+        validate_default = True
 
     def __init_subclass__(cls, /, **kwargs: Any) -> None:
         super().__init_subclass__(**kwargs)
