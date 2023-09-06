@@ -3,11 +3,11 @@
 [![pypi_version](https://img.shields.io/pypi/v/pydantic-forms?color=%2334D058&label=pypi%20package)](https://pypi.org/project/pydantic-forms)
 [![Supported python versions](https://img.shields.io/pypi/pyversions/pydantic-forms.svg?color=%2334D058)](https://pypi.org/project/pydantic-forms)
 
-A python package that lets you add smart forms to [FastAPI](https://fastapi.tiangolo.com/)
+A Python package that lets you add smart forms to [FastAPI](https://fastapi.tiangolo.com/)
 and [Flask](https://palletsprojects.com/p/flask/). Forms will respond with a JSON scheme that
-contains all info needed in a Recat frontend with uniforms to render the forms and handle all validation tasks.
+contains all info needed in a React frontend with uniforms to render the forms and handle all validation tasks.
 
-Forms can also consist out of wizard; so you can create complex form flows consisting out of multiple
+Forms can also consist out of a wizard, so you can create complex form flows consisting out of multiple
 consecutive forms. The forms and the validation logic are defined by
 using [Pydantic](https://pydantic-docs.helpmanual.io/) models.
 
@@ -60,13 +60,13 @@ Run the unit-test suite to verify a correct setup.
 
 #### Step 2 - Run tests
 ```shell
-pytest test/unit_tests
+pytest tests/unit_tests
 ```
 
 or with xdist:
 
 ```shell
-pytest -n auto test/unit_tests
+pytest -n auto tests/unit_tests
 ```
 
 If you do not encounter any failures in the test, you should be able to develop features in the pydantic-forms.

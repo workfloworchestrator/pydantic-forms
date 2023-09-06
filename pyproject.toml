@@ -36,7 +36,7 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP",
 ]
 requires = [
-    "pydantic[email] >=1.9.0,<2.0.0",
+    "pydantic[email] >=1.9.0",
 
 ]
 description-file = "README.md"
@@ -101,7 +101,7 @@ orjson = [
     "orjson >=3.6.0,<4.0.0",
 ]
 fastapi = [
-    "fastapi >=0.80.0,<1.0.0"
+    "fastapi >=0.80.0"
 ]
 
 
