@@ -15,7 +15,7 @@ from typing import Any, Callable, Dict, Generator, List, Optional
 
 import structlog
 from pydantic import BaseModel, Extra, Field
-from pydantic.fields import Undefined
+from pydantic.v1.fields import Undefined
 
 from pydantic_forms.utils.json import json_dumps, json_loads
 
