@@ -18,7 +18,6 @@ from uuid import UUID
 import structlog
 from pydantic import BaseModel, EmailStr
 from pydantic.errors import EnumMemberError
-from pydantic.fields import ModelField
 from pydantic.utils import update_not_none
 from pydantic.v1 import ConstrainedList
 from pydantic.validators import str_validator, uuid_validator
@@ -135,7 +134,7 @@ class Accept(str):
         yield cls.must_be_complete
 
     @classmethod
-    def enum_validator(cls, v: Any, field: ModelField) -> str:
+    def enum_validator(cls, v: Any) -> str:
         try:
             enum_v = cls.Values(v)
         except ValueError:

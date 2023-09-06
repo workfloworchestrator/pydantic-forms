@@ -15,7 +15,7 @@ from typing import Any, Callable, Dict, Generator, List, Optional
 
 import structlog
 from pydantic import BaseModel, Extra, Field
-from pydantic.fields import ModelField, Undefined
+from pydantic.fields import Undefined
 
 from pydantic_forms.utils.json import json_dumps, json_loads
 
@@ -27,7 +27,8 @@ class DisplayOnlyFieldType:
     def __get_validators__(cls) -> Generator:
         yield cls.nothing
 
-    def nothing(cls, v: Any, field: ModelField) -> Any:
+    @staticmethod
+    def nothing(v: Any, field: Any) -> Any:
         return field.default
 
 
@@ -45,7 +46,7 @@ class FormPage(BaseModel):
         # The default and requiredness of a field is not a property of a field
         # In the case of DisplayOnlyFieldTypes, we do kind of want that.
         # Using this method we set the right properties after the form is created
-        for field in cls.__fields__.values():
+        for field in cls.model_fields.values():
             try:
                 if issubclass(field.type_, DisplayOnlyFieldType):
                     field.required = False
