@@ -48,9 +48,9 @@ class FormPage(BaseModel):
         # Using this method we set the right properties after the form is created
         for field in cls.model_fields.values():
             try:
-                if issubclass(field.type_, DisplayOnlyFieldType):
-                    field.required = False
-                    field.allow_none = True
+                if issubclass(field.type_, DisplayOnlyFieldType):  # type: ignore
+                    field.required = False  # type: ignore
+                    field.allow_none = True  # type: ignore
             except TypeError:
                 pass
 

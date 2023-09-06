@@ -36,6 +36,7 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP",
 ]
 requires = [
+    "pydantic",
     "pydantic[email]",
 ]
 description-file = "README.md"
