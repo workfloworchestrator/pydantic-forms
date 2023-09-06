@@ -16,10 +16,11 @@ from typing import Any, ClassVar, Dict, Generator, List, Optional, Type, TypeVar
 from uuid import UUID
 
 import structlog
-from pydantic import BaseModel, ConstrainedList, EmailStr
+from pydantic import BaseModel, EmailStr
 from pydantic.errors import EnumMemberError
 from pydantic.fields import ModelField
 from pydantic.utils import update_not_none
+from pydantic.v1 import ConstrainedList
 from pydantic.validators import str_validator, uuid_validator
 
 from pydantic_forms.core import DisplayOnlyFieldType
