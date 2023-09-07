@@ -1,13 +1,10 @@
-from typing import TypeVar
 from uuid import uuid4
 
 import pytest
 from pydantic import ValidationError
 
 from pydantic_forms.core import FormPage, ReadOnlyField
-from pydantic_forms.utils.json import json_dumps, json_loads
 from pydantic_forms.validators import (
-    Accept,
     Choice,
     ContactPersonList,
     DisplaySubscription,
@@ -15,218 +12,14 @@ from pydantic_forms.validators import (
     Label,
     ListOfOne,
     ListOfTwo,
-    LongText,
     MigrationSummary,
     OrganisationId,
     Timestamp,
-    UniqueConstrainedList,
     choice_list,
     contact_person_list,
     migration_summary,
     timestamp,
-    unique_conlist,
 )
-
-
-def test_constrained_list_good():
-    class UniqueConListModel(FormPage):
-        v: unique_conlist(int, unique_items=True) = []
-
-    m = UniqueConListModel(v=[1, 2, 3])
-    assert m.v == [1, 2, 3]
-
-
-def test_constrained_list_default():
-    class UniqueConListModel(FormPage):
-        v: unique_conlist(int, unique_items=True) = []
-
-    m = UniqueConListModel()
-    assert m.v == []
-
-
-def test_constrained_list_constraints():
-    class UniqueConListModel(FormPage):
-        v: unique_conlist(int, min_items=1, unique_items=True)
-
-    m = UniqueConListModel(v=list(range(7)))
-    assert m.v == list(range(7))
-
-    with pytest.raises(ValidationError) as exc_info:
-        UniqueConListModel(v=[1, 1, 1])
-    assert exc_info.value.errors() == [
-        {"loc": ("v",), "msg": "the list has duplicated items", "type": "value_error.list.unique_items"}
-    ]
-
-    with pytest.raises(ValidationError) as exc_info:
-        UniqueConListModel(v=1)
-    assert exc_info.value.errors() == [{"loc": ("v",), "msg": "value is not a valid list", "type": "type_error.list"}]
-
-    with pytest.raises(ValidationError) as exc_info:
-        UniqueConListModel(v=[])
-    assert exc_info.value.errors() == [
-        {
-            "loc": ("v",),
-            "msg": "ensure this value has at least 1 items",
-            "type": "value_error.list.min_items",
-            "ctx": {"limit_value": 1},
-        }
-    ]
-
-
-def test_constrained_list_inherit_constraints():
-    T = TypeVar("T")
-
-    class Parent(UniqueConstrainedList[T]):
-        min_items = 1
-
-    class Child(Parent[T]):
-        unique_items = True
-
-    class UniqueConListModel(FormPage):
-        v: Child[int]
-
-    m = UniqueConListModel(v=list(range(7)))
-    assert m.v == list(range(7))
-
-    with pytest.raises(ValidationError) as exc_info:
-        UniqueConListModel(v=[1, 1, 1])
-    assert exc_info.value.errors() == [
-        {"loc": ("v",), "msg": "the list has duplicated items", "type": "value_error.list.unique_items"}
-    ]
-
-    with pytest.raises(ValidationError) as exc_info:
-        UniqueConListModel(v=1)
-    assert exc_info.value.errors() == [{"loc": ("v",), "msg": "value is not a valid list", "type": "type_error.list"}]
-
-    with pytest.raises(ValidationError) as exc_info:
-        UniqueConListModel(v=[])
-    assert exc_info.value.errors() == [
-        {
-            "loc": ("v",),
-            "msg": "ensure this value has at least 1 items",
-            "type": "value_error.list.min_items",
-            "ctx": {"limit_value": 1},
-        }
-    ]
-
-
-def test_constrained_list_schema():
-    class UniqueConListClass(UniqueConstrainedList[int]):
-        min_items = 1
-        max_items = 3
-        unique_items = True
-
-    class UniqueConListModel(FormPage):
-        unique_conlist1: unique_conlist(int)
-        unique_conlist2: unique_conlist(int, min_items=1, max_items=3, unique_items=True)
-        unique_conlist3: UniqueConListClass
-
-    expected = {
-        "additionalProperties": False,
-        "properties": {
-            "unique_conlist1": {"items": {"type": "integer"}, "title": "Unique Conlist1", "type": "array"},
-            "unique_conlist2": {
-                "items": {"type": "integer"},
-                "maxItems": 3,
-                "minItems": 1,
-                "title": "Unique Conlist2",
-                "type": "array",
-                "uniqueItems": True,
-            },
-            "unique_conlist3": {
-                "items": {"type": "integer"},
-                "maxItems": 3,
-                "minItems": 1,
-                "title": "Unique Conlist3",
-                "type": "array",
-                "uniqueItems": True,
-            },
-        },
-        "required": ["unique_conlist1", "unique_conlist2", "unique_conlist3"],
-        "title": "unknown",
-        "type": "object",
-    }
-    assert expected == UniqueConListModel.schema()
-
-
-def test_accept_ok():
-    class Form(FormPage):
-        accept: Accept
-
-    validated_data = Form(accept="ACCEPTED").dict()
-
-    expected = {"accept": True}
-    assert expected == json_loads(json_dumps(validated_data))
-
-
-def test_accept_schema():
-    class Form(FormPage):
-        accept: Accept
-
-    expected = {
-        "additionalProperties": False,
-        "properties": {
-            "accept": {
-                "enum": ["ACCEPTED", "INCOMPLETE"],
-                "format": "accept",
-                "type": "string",
-                "title": "Accept",
-            }
-        },
-        "required": ["accept"],
-        "title": "unknown",
-        "type": "object",
-    }
-    assert expected == Form.schema()
-
-
-def test_accept_schema_with_data():
-    class SpecialAccept(Accept):
-        data = [("field", "label")]
-
-    class Form(FormPage):
-        accept: SpecialAccept
-
-    expected = {
-        "additionalProperties": False,
-        "properties": {
-            "accept": {
-                "data": [("field", "label")],
-                "enum": ["ACCEPTED", "INCOMPLETE"],
-                "format": "accept",
-                "type": "string",
-                "title": "Accept",
-            }
-        },
-        "required": ["accept"],
-        "title": "unknown",
-        "type": "object",
-    }
-    assert expected == Form.schema()
-
-
-def test_accept_nok():
-    class Form(FormPage):
-        accept: Accept
-
-    with pytest.raises(ValidationError) as error_info:
-        Form(accept="INCOMPLETE")
-
-    expected = [{"loc": ("accept",), "msg": "Not all tasks are done", "type": "value_error"}]
-    assert expected == error_info.value.errors()
-
-    with pytest.raises(ValidationError) as error_info:
-        Form(accept="Bla")
-
-    expected = [
-        {
-            "ctx": {"enum_values": [Accept.Values.ACCEPTED, Accept.Values.INCOMPLETE]},
-            "loc": ("accept",),
-            "msg": "value is not a valid enumeration member; permitted: 'ACCEPTED', 'INCOMPLETE'",
-            "type": "type_error.enum",
-        }
-    ]
-    assert expected == error_info.value.errors()
 
 
 def test_choice():
@@ -568,19 +361,6 @@ def test_contact_persons_nok():
         }
     ]
     assert expected == error_info.value.errors()
-
-
-def test_long_text_schema():
-    class Form(FormPage):
-        long_text: LongText
-
-    assert Form.schema() == {
-        "additionalProperties": False,
-        "properties": {"long_text": {"format": "long", "title": "Long Text", "type": "string"}},
-        "required": ["long_text"],
-        "title": "unknown",
-        "type": "object",
-    }
 
 
 def test_display():

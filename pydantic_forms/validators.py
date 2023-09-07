@@ -16,11 +16,12 @@ from typing import Any, ClassVar, Dict, Generator, List, Optional, Type, TypeVar
 from uuid import UUID
 
 import structlog
-from pydantic import BaseModel, EmailStr
-from pydantic.errors import EnumMemberError
+from pydantic import BaseModel, EmailStr, GetCoreSchemaHandler, GetJsonSchemaHandler
 from pydantic.utils import update_not_none
 from pydantic.v1 import ConstrainedList
-from pydantic.validators import str_validator, uuid_validator
+from pydantic.v1.errors import EnumMemberError
+from pydantic.v1.validators import uuid_validator
+from pydantic_core import CoreSchema, core_schema
 
 from pydantic_forms.core import DisplayOnlyFieldType
 from pydantic_forms.types import AcceptData, SummaryData, strEnum
@@ -119,19 +120,33 @@ class Accept(str):
         ACCEPTED = "ACCEPTED"
         INCOMPLETE = "INCOMPLETE"
 
+    # @classmethod
+    # def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
+    #     field_schema.update(
+    #         format="accept",
+    #         type="string",
+    #         enum=[v.value for v in cls.Values],
+    #         **({"data": cls.data} if cls.data else {}),
+    #     )
+
     @classmethod
-    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-        field_schema.update(
-            format="accept",
-            type="string",
-            enum=[v.value for v in cls.Values],
-            **({"data": cls.data} if cls.data else {}),
+    def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:
+        json_schema = handler.resolve_ref_schema(core_schema["schema"])
+        return (
+            json_schema
+            | {"format": "accept", "type": "string", "enum": [v for v in cls.Values]}
+            | ({"data": cls.data} if cls.data else {})
         )
 
     @classmethod
-    def __get_validators__(cls) -> Generator:
-        yield cls.enum_validator
-        yield cls.must_be_complete
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler: GetCoreSchemaHandler) -> CoreSchema:
+        return core_schema.no_info_after_validator_function(cls._validate, handler(str))
+
+    @classmethod
+    def _validate(cls, value: str) -> "Accept":
+        value = cls.enum_validator(value)
+        value = cls.must_be_complete(value)
+        return Accept(value)
 
     @classmethod
     def enum_validator(cls, v: Any) -> str:
@@ -221,8 +236,14 @@ def choice_list(
 
 class ContactPersonName(str):
     @classmethod
-    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-        field_schema.update(format="contactPersonName")
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler: GetCoreSchemaHandler) -> CoreSchema:
+        return core_schema.no_info_after_validator_function(cls, handler(str))
+
+    @classmethod
+    def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:
+        json_schema = handler.resolve_ref_schema(core_schema)
+        json_schema["format"] = "contactPersonName"
+        return json_schema
 
 
 class ContactPerson(BaseModel):
@@ -266,12 +287,13 @@ def contact_person_list(
 
 class LongText(str):
     @classmethod
-    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-        field_schema.update(format="long", type="string")
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler: GetCoreSchemaHandler) -> CoreSchema:
+        return core_schema.no_info_after_validator_function(cls, handler(str))
 
     @classmethod
-    def __get_validators__(cls) -> Generator:
-        yield str_validator
+    def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:
+        json_schema = handler.resolve_ref_schema(core_schema["schema"])
+        return json_schema | {"format": "long", "type": "string"}
 
 
 class DisplaySubscription(DisplayOnlyFieldType):
