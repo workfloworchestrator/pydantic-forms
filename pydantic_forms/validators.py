@@ -36,9 +36,14 @@ class UniqueConstrainedList(ConstrainedList, List[T]):
     unique_items: Optional[bool] = None
 
     @classmethod
-    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-        super().__modify_schema__(field_schema)
-        update_not_none(field_schema, uniqueItems=cls.unique_items)
+    def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:
+        json_schema = handler.resolve_ref_schema(core_schema["schema"])
+        return json_schema
+
+    # @classmethod
+    # def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
+    #     super().__modify_schema__(field_schema)
+    #     update_not_none(field_schema, uniqueItems=cls.unique_items)
 
     @classmethod
     def __get_validators__(cls) -> Generator:  # noqa: B902
@@ -120,15 +125,6 @@ class Accept(str):
         ACCEPTED = "ACCEPTED"
         INCOMPLETE = "INCOMPLETE"
 
-    # @classmethod
-    # def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-    #     field_schema.update(
-    #         format="accept",
-    #         type="string",
-    #         enum=[v.value for v in cls.Values],
-    #         **({"data": cls.data} if cls.data else {}),
-    #     )
-
     @classmethod
     def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:
         json_schema = handler.resolve_ref_schema(core_schema["schema"])
@@ -192,7 +188,13 @@ class Choice(strEnum):
         return obj
 
     @classmethod
-    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler: GetCoreSchemaHandler) -> CoreSchema:
+        return core_schema.no_info_after_validator_function(cls, handler(strEnum))
+
+    @classmethod
+    def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:
+        json_schema = handler.resolve_ref_schema(core_schema["schema"])
+
         kwargs = {}
 
         options = dict(map(lambda i: (i.value, i.label), cls.__members__.values()))
@@ -200,7 +202,18 @@ class Choice(strEnum):
         if not all(map(lambda o: o[0] == o[1], options.items())):
             kwargs["options"] = options
 
-        field_schema.update(type="string", **kwargs)
+        return json_schema | {"type": "string"} | kwargs
+
+    # @classmethod
+    # def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
+    #     kwargs = {}
+    #
+    #     options = dict(map(lambda i: (i.value, i.label), cls.__members__.values()))
+    #
+    #     if not all(map(lambda o: o[0] == o[1], options.items())):
+    #         kwargs["options"] = options
+    #
+    #     field_schema.update(type="string", **kwargs)
 
 
 class ChoiceList(UniqueConstrainedList[T]):
@@ -316,12 +329,13 @@ class Divider(DisplayOnlyFieldType):
 
 class OrganisationId(UUID):
     @classmethod
-    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-        field_schema.update(format="organisationId")
+    def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:
+        json_schema = handler.resolve_ref_schema(core_schema["schema"])
+        return json_schema | {"format": "organisationId"}
 
     @classmethod
-    def __get_validators__(cls) -> Generator:
-        yield uuid_validator
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler: GetCoreSchemaHandler) -> CoreSchema:
+        return core_schema.no_info_after_validator_function(uuid_validator, handler(UUID))
 
 
 class MigrationSummary(DisplayOnlyFieldType):
@@ -356,8 +370,9 @@ class Timestamp(int):
     time_format: ClassVar[Optional[str]] = None  # example: HH:mm
 
     @classmethod
-    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-        field_schema.update(
+    def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:
+        json_schema = handler.resolve_ref_schema(core_schema["schema"])
+        json_schema.update(
             format="timestamp",
             type="number",
             uniforms={
@@ -370,6 +385,23 @@ class Timestamp(int):
                 "timeFormat": cls.time_format,
             },
         )
+        return json_schema
+
+    # @classmethod
+    # def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
+    #     field_schema.update(
+    #         format="timestamp",
+    #         type="number",
+    #         uniforms={
+    #             # Using JS naming convention to increase DX on the JS side
+    #             "showTimeSelect": cls.show_time_select,
+    #             "locale": cls.locale,
+    #             "min": cls.min,
+    #             "max": cls.max,
+    #             "dateFormat": cls.date_format,
+    #             "timeFormat": cls.time_format,
+    #         },
+    #     )
 
 
 def timestamp(
@@ -379,7 +411,7 @@ def timestamp(
     max: Optional[int] = None,
     date_format: Optional[str] = None,
     time_format: Optional[str] = None,
-) -> Type[Timestamp]:
+) -> type[Timestamp]:
     namespace = {
         "show_time_select": show_time_select,
         "locale": locale,
