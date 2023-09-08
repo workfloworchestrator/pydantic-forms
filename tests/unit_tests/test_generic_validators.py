@@ -1,12 +1,7 @@
 from uuid import uuid4
 
 from pydantic_forms.core import FormPage
-from pydantic_forms.validators import (
-    DisplaySubscription,
-    Divider,
-    Label,
-    migration_summary,
-)
+from pydantic_forms.validators import DisplaySubscription, Divider, Label, migration_summary
 
 
 def test_display():

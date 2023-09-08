@@ -23,23 +23,30 @@ def test_constrained_list_default():
     assert m.v == []
 
 
-def test_constrained_list_constraints():
-    class UniqueConListModel(FormPage):
-        v: unique_conlist(int, min_items=1, unique_items=True)
+class UniqueConListModel(FormPage):
+    v: unique_conlist(int, min_items=1, unique_items=True)
 
+
+def test_constrained_list_ok():
     m = UniqueConListModel(v=list(range(7)))
     assert m.v == list(range(7))
 
+
+def test_constrained_list_with_duplicates():
     with raises(ValidationError) as exc_info:
         UniqueConListModel(v=[1, 1, 1])
     assert exc_info.value.errors() == [
         {"loc": ("v",), "msg": "the list has duplicated items", "type": "value_error.list.unique_items"}
     ]
 
+
+def test_constrained_list_invalid_value():
     with raises(ValidationError) as exc_info:
         UniqueConListModel(v=1)
     assert exc_info.value.errors() == [{"loc": ("v",), "msg": "value is not a valid list", "type": "type_error.list"}]
 
+
+def test_constrained_list_too_short():
     with raises(ValidationError) as exc_info:
         UniqueConListModel(v=[])
     assert exc_info.value.errors() == [

@@ -61,7 +61,7 @@ def ReadOnlyField(
     const: Optional[bool] = None,
     **extra: Any,
 ) -> Any:
-    return Field(default, const=True, uniforms={"disabled": True, "value": default}, **extra)  # type: ignore
+    return Field(default, uniforms={"disabled": True, "value": default}, **extra)  # type: ignore
 
 
 FORMS: Dict[str, Callable] = {}
