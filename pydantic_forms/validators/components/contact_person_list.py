@@ -14,11 +14,11 @@ from types import new_class
 from typing import Any, ClassVar, Generator, List, Optional, Type, TypeVar
 from uuid import UUID
 
-from pydantic import GetJsonSchemaHandler, GetCoreSchemaHandler
+from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler
 from pydantic.v1 import ConstrainedList
+from pydantic_core import CoreSchema, core_schema
 
 from pydantic_forms.validators import ContactPerson
-from pydantic_core import CoreSchema, core_schema
 
 T = TypeVar("T")  # pragma: no mutate
 
@@ -59,7 +59,7 @@ class ContactPersonList(ConstrainedList):
     #     if cls.organisation_key:
     #         data["organisationKey"] = cls.organisation_key
 
-        # field_schema.update(**data)
+    # field_schema.update(**data)
 
     # @classmethod
     # def __get_validators__(cls) -> Generator:

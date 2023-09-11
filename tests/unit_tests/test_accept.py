@@ -13,7 +13,7 @@ def test_accept_ok():
     validated_data = Form(accept="ACCEPTED").model_dump_json()
 
     expected = {"accept": True}
-    assert json_loads(json_dumps(validated_data)) == expected
+    assert json_loads(validated_data) == expected
 
 
 def test_accept_schema():
@@ -62,21 +62,34 @@ def test_accept_schema_with_data():
     assert Form.model_json_schema() == expected
 
 
-def test_accept_nok():
+def test_accept_nok_incomplete():
     class Form(FormPage):
         accept: Accept
 
     with raises(ValidationError) as error_info:
         Form(accept="INCOMPLETE")
 
-    expected = [{"loc": ("accept",), "msg": "Not all tasks are done", "type": "value_error"}]
-    assert expected == error_info.value.errors()
+    expected = [
+        {
+            "input": "INCOMPLETE",
+            "loc": ("accept",),
+            "msg": "Value error, Not all tasks are done",
+            "type": "value_error"
+        }
+    ]
+    assert error_info.value.errors(include_context=False, include_url=False) == expected
+
+
+def test_accept_nok_invalid():
+    class Form(FormPage):
+        accept: Accept
 
     with raises(ValidationError) as error_info:
         Form(accept="Bla")
 
     expected = [
         {
+            "input": "Bla",
             "ctx": {"enum_values": [Accept.Values.ACCEPTED, Accept.Values.INCOMPLETE]},
             "loc": ("accept",),
             "msg": "value is not a valid enumeration member; permitted: 'ACCEPTED', 'INCOMPLETE'",

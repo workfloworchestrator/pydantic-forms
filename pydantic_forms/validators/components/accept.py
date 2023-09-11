@@ -13,8 +13,8 @@
 from typing import Any, ClassVar, Optional
 
 from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler
-from pydantic.v1 import EnumMemberError
-from pydantic_core import CoreSchema, core_schema
+from pydantic.v1.errors import EnumMemberError
+from pydantic_core import CoreSchema, PydanticCustomError, ValidationError, core_schema
 
 from pydantic_forms.types import AcceptData, strEnum
 
@@ -40,10 +40,10 @@ class Accept(str):
         return core_schema.no_info_after_validator_function(cls._validate, handler(str))
 
     @classmethod
-    def _validate(cls, value: str) -> "Accept":
+    def _validate(cls, value: str) -> bool:
         value = cls.enum_validator(value)
         value = cls.must_be_complete(value)
-        return Accept(value)
+        return value
 
     @classmethod
     def enum_validator(cls, v: Any) -> str:
@@ -51,7 +51,11 @@ class Accept(str):
             enum_v = cls.Values(v)
         except ValueError:
             # cls.Values should be an enum, so will be iterable
-            raise EnumMemberError(enum_values=list(cls.Values))
+            enum_values = list(cls.Values)
+            # TODO: this converts the deprecated v1 error to a generic error. Not clear yet how to handle this in
+            # the future
+            orig = EnumMemberError(enum_values=enum_values)
+            raise PydanticCustomError(f"type_error.{orig.code}", str(orig), dict(enum_values=enum_values))
         return enum_v.value
 
     @classmethod
