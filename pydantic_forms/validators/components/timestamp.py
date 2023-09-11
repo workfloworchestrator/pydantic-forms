@@ -11,10 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from types import new_class
-from typing import Any, ClassVar, Optional
+from typing import ClassVar, Optional, Any
 
-from pydantic import GetJsonSchemaHandler
-from pydantic_core import CoreSchema
+from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler
+from pydantic_core import CoreSchema, core_schema
+from pydantic.json_schema import JsonSchemaValue
 
 
 class Timestamp(int):
@@ -26,12 +27,19 @@ class Timestamp(int):
     time_format: ClassVar[Optional[str]] = None  # example: HH:mm
 
     @classmethod
-    def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:
-        json_schema = handler.resolve_ref_schema(core_schema["schema"])
-        json_schema.update(
-            format="timestamp",
-            type="number",
-            uniforms={
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler: GetCoreSchemaHandler) -> CoreSchema:
+        return core_schema.no_info_after_validator_function(cls, handler(int))
+
+    @classmethod
+    def __get_pydantic_json_schema__(
+        cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler
+    ) -> JsonSchemaValue:
+        json_schema = handler(core_schema)
+        json_schema = handler.resolve_ref_schema(json_schema)
+        return json_schema | {
+            "format": "timestamp",
+            "type": "number",
+            "uniforms": {
                 # Using JS naming convention to increase DX on the JS side
                 "showTimeSelect": cls.show_time_select,
                 "locale": cls.locale,
@@ -40,24 +48,7 @@ class Timestamp(int):
                 "dateFormat": cls.date_format,
                 "timeFormat": cls.time_format,
             },
-        )
-        return json_schema
-
-    # @classmethod
-    # def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-    #     field_schema.update(
-    #         format="timestamp",
-    #         type="number",
-    #         uniforms={
-    #             # Using JS naming convention to increase DX on the JS side
-    #             "showTimeSelect": cls.show_time_select,
-    #             "locale": cls.locale,
-    #             "min": cls.min,
-    #             "max": cls.max,
-    #             "dateFormat": cls.date_format,
-    #             "timeFormat": cls.time_format,
-    #         },
-    #     )
+        }
 
 
 def timestamp(

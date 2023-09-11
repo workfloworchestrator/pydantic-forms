@@ -13,7 +13,7 @@ def test_contact_persons():
 
     validated_data = Form(
         contact_persons=[{"name": "test1", "email": "a@b.nl", "phone": ""}, {"name": "test2", "email": "a@b.nl"}]
-    ).dict()
+    ).model_dump()
 
     expected = {
         "contact_persons": [
@@ -21,7 +21,7 @@ def test_contact_persons():
             {"email": "a@b.nl", "name": "test2", "phone": ""},
         ]
     }
-    assert expected == validated_data
+    assert validated_data == expected
 
 
 def test_contact_persons_schema():
@@ -37,7 +37,7 @@ def test_contact_persons_schema():
         contact_persons_org: OrgContactPersonList
         contact_persons_org2: contact_person_list(org_id, "foo")  # noqa: F821
 
-    assert Form.schema() == {
+    expected = {
         "additionalProperties": False,
         "definitions": {
             "ContactPerson": {
@@ -79,6 +79,8 @@ def test_contact_persons_schema():
         "title": "unknown",
         "type": "object",
     }
+
+    assert Form.model_json_schema() == expected
 
 
 def test_contact_persons_nok():
