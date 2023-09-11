@@ -12,10 +12,18 @@
 # limitations under the License.
 from typing import Any
 
+from pydantic import GetJsonSchemaHandler
+from pydantic_core import CoreSchema
+
 from pydantic_forms.core import DisplayOnlyFieldType
 
 
 class Divider(DisplayOnlyFieldType):
+    # @classmethod
+    # def __modify_schema__(cls, field_schema: dict[str, Any]) -> None:
+    #     field_schema.update(format="divider", type="string")
+
     @classmethod
-    def __modify_schema__(cls, field_schema: dict[str, Any]) -> None:
-        field_schema.update(format="divider", type="string")
+    def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:
+        json_schema = handler.resolve_ref_schema(core_schema["schema"])
+        return json_schema | {"format": "divider", "type": "string"}

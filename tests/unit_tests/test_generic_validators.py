@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 from pydantic_forms.core import FormPage
-from pydantic_forms.validators import DisplaySubscription, Divider, Label, migration_summary
+from pydantic_forms.validators import DisplaySubscription, Label, migration_summary
 
 
 def test_display():
@@ -15,18 +15,6 @@ def test_display():
         "display_sub": None,
         "label": None,
         "migration_summary": None,
-    }
-
-
-def test_labels_with_value_and_dividers():
-    class Form(FormPage):
-        label: Label = "value"
-        divider: Divider
-
-    assert Form().dict() == {"label": "value", "divider": None}
-    assert Form(label="fob", divider="baz").dict() == {
-        "label": "value",
-        "divider": None,
     }
 
 

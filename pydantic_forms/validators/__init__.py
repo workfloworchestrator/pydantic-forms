@@ -3,8 +3,12 @@ from pydantic_forms.validators.components.choice import Choice
 from pydantic_forms.validators.components.choice_list import ChoiceList, choice_list
 from pydantic_forms.validators.components.contact_person import ContactPerson
 from pydantic_forms.validators.components.contact_person_list import ContactPersonList, contact_person_list
+from pydantic_forms.validators.components.display_subscription import DisplaySubscription
+from pydantic_forms.validators.components.divider import Divider
+from pydantic_forms.validators.components.label import Label
 from pydantic_forms.validators.components.list_of_one import ListOfOne
 from pydantic_forms.validators.components.list_of_two import ListOfTwo
+from pydantic_forms.validators.components.long_text import LongText
 from pydantic_forms.validators.components.migration_summary import MigrationSummary, migration_summary
 from pydantic_forms.validators.components.organisation_id import OrganisationId
 from pydantic_forms.validators.components.timestamp import Timestamp, timestamp
