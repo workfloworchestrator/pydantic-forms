@@ -70,7 +70,7 @@ async def post_form(
             raise FormValidationError(e.model.__name__, e.errors()) from e  # type: ignore
 
         # Update state with validated_data
-        current_state.update(form_validated_data.dict())
+        current_state.update(form_validated_data.model_dump())
 
         # Make next form
         generated_form = await generator.asend(form_validated_data)
@@ -85,7 +85,7 @@ async def post_form(
         return generated_form
 
     # Form is not completely filled raise next form
-    raise FormNotCompleteError(generated_form.schema())
+    raise FormNotCompleteError(generated_form.model_json_schema())
 
 
 def _get_form(key: str) -> StateInputFormGeneratorAsync:

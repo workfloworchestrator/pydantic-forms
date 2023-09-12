@@ -10,9 +10,7 @@ class Form(FormPage):
 
 
 def test_contact_person_valid():
-    validated_data = Form(
-        contact_person={"name": "test1", "email": "a@b.nl"}
-    ).model_dump()
+    validated_data = Form(contact_person={"name": "test1", "email": "a@b.nl"}).model_dump()
 
     expected = {"contact_person": {"email": "a@b.nl", "name": "test1", "phone": ""}}
 
@@ -25,12 +23,14 @@ def test_contact_person_invalid_email():
         Form(contact_person={"name": "test1", "email": invalid_email, "phone": ""})
 
     errors = error_info.value.errors(include_url=False, include_context=False)
-    expected = [{
-        "input": "a@b",
-        "loc": ("contact_person", "email"),
-        "msg": "value is not a valid email address: The part after the @-sign is not "
-               "valid. It should have a period.",
-        "type": "value_error"}]
+    expected = [
+        {
+            "input": "a@b",
+            "loc": ("contact_person", "email"),
+            "msg": "value is not a valid email address: The part after the @-sign is not "
+            "valid. It should have a period.",
+            "type": "value_error",
+        }
+    ]
 
     assert errors == expected
-

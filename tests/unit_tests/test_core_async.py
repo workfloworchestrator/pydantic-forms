@@ -1,5 +1,6 @@
 from pytest import raises
 
+from pydantic import ConfigDict
 from pydantic_forms.core import FormPage
 from pydantic_forms.core.asynchronous import generate_form, post_form
 from pydantic_forms.exceptions import FormNotCompleteError, FormOverflowError, FormValidationError
@@ -72,10 +73,9 @@ async def test_post_form_wizard():
 
     async def input_form(state):
         class TestForm1(FormPage):
-            generic_select1: TestChoices
+            model_config = ConfigDict(title="Some title")
 
-            class Config:
-                title = "Some title"
+            generic_select1: TestChoices
 
         class TestForm2(FormPage):
             generic_select2: TestChoices
@@ -148,10 +148,9 @@ async def test_post_form_wizard():
 async def test_generate_form():
     async def input_form(state):
         class TestForm1(FormPage):
-            generic_select1: TestChoices
+            model_config = ConfigDict(title="Some title")
 
-            class Config:
-                title = "Some title"
+            generic_select1: TestChoices
 
         class TestForm2(FormPage):
             generic_select2: TestChoices

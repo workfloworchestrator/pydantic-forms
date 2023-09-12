@@ -1,5 +1,6 @@
 import pytest
 
+from pydantic import ConfigDict
 from pydantic_forms.core import FormPage, generate_form, post_form
 from pydantic_forms.exceptions import FormNotCompleteError, FormOverflowError, FormValidationError
 from pydantic_forms.types import strEnum
@@ -20,7 +21,7 @@ class TestForm(FormPage):
 def test_post_process_yield():
     def input_form(state):
         user_input = yield TestForm
-        return {**user_input.dict(), "extra": 234}
+        return {**user_input.model_dump(), "extra": 234}
 
     validated_data = post_form(input_form, {"previous": True}, [{"generic_select": "a"}])
 
@@ -71,10 +72,9 @@ def test_post_form_wizard():
 
     def input_form(state):
         class TestForm1(FormPage):
-            generic_select1: TestChoices
+            model_config = ConfigDict(title="Some title")
 
-            class Config:
-                title = "Some title"
+            generic_select1: TestChoices
 
         class TestForm2(FormPage):
             generic_select2: TestChoices
@@ -145,10 +145,9 @@ def test_post_form_wizard():
 def test_generate_form():
     def input_form(state):
         class TestForm1(FormPage):
-            generic_select1: TestChoices
+            model_config = ConfigDict(title="Some title")
 
-            class Config:
-                title = "Some title"
+            generic_select1: TestChoices
 
         class TestForm2(FormPage):
             generic_select2: TestChoices
