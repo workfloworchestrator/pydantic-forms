@@ -26,7 +26,7 @@ def test_display_only_schema():
         label: Label
         migration_summary: migration_summary({"headers": ["one"]})  # noqa: F821
 
-    assert Form.model_json_schema() == {
+    expected = {
         "additionalProperties": False,
         "properties": {
             "display_sub": {
@@ -46,3 +46,5 @@ def test_display_only_schema():
         "title": "unknown",
         "type": "object",
     }
+
+    assert Form.model_json_schema() == expected

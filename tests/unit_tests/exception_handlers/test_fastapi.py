@@ -36,7 +36,7 @@ async def test_form_validation(example_form_error_invalid_int):
     assert response.status_code == HTTPStatus.BAD_REQUEST
     body = response.body.decode()
     assert "FormValidationError" in body
-    assert "is not a valid integer" in body
+    assert "should be a valid integer" in body
 
 
 async def test_overflow_error():

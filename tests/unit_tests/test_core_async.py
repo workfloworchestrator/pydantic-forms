@@ -1,6 +1,6 @@
+from pydantic import ConfigDict
 from pytest import raises
 
-from pydantic import ConfigDict
 from pydantic_forms.core import FormPage
 from pydantic_forms.core.asynchronous import generate_form, post_form
 from pydantic_forms.exceptions import FormNotCompleteError, FormOverflowError, FormValidationError

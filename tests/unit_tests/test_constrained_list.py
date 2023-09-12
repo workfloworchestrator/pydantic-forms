@@ -91,22 +91,29 @@ def test_constrained_list_inherit_constraints():
 
     with raises(ValidationError) as exc_info:
         UniqueConListModel(v=[1, 1, 1])
-    assert exc_info.value.errors() == [
-        {"loc": ("v",), "msg": "the list has duplicated items", "type": "value_error.list.unique_items"}
+
+    errors = exc_info.value.errors(include_url=False, include_context=False)
+    assert errors == [
+        {"input": [1, 1, 1], "loc": ("v",), "msg": "Value error, Items must be unique", "type": "value_error"}
     ]
 
     with raises(ValidationError) as exc_info:
         UniqueConListModel(v=1)
-    assert exc_info.value.errors() == [{"loc": ("v",), "msg": "value is not a valid list", "type": "type_error.list"}]
+
+    errors = exc_info.value.errors(include_url=False, include_context=False)
+    assert errors == [{"input": 1, "loc": ("v",), "msg": "Input should be a valid list", "type": "list_type"}]
 
     with raises(ValidationError) as exc_info:
         UniqueConListModel(v=[])
-    assert exc_info.value.errors() == [
+
+    errors = exc_info.value.errors(include_url=False, include_context=False)
+    assert errors == [
         {
+            "input": [],
             "loc": ("v",),
-            "msg": "ensure this value has at least 1 items",
-            "type": "value_error.list.min_items",
-            "ctx": {"limit_value": 1},
+            "msg": "Value error, ensure this value has at least 1 items",
+            "type": "value_error",
+            # "ctx": {"limit_value": 1},
         }
     ]
 
