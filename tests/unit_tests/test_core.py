@@ -89,7 +89,7 @@ def test_post_form_wizard():
         else:
             user_input_2 = yield TestForm3
 
-        return {**user_input_1.dict(), **user_input_2.dict()}
+        return {**user_input_1.model_dump(), **user_input_2.model_dump()}
 
     # Submit 1
     with pytest.raises(FormNotCompleteError) as error_info:
@@ -99,15 +99,14 @@ def test_post_form_wizard():
         "title": "Some title",
         "type": "object",
         "additionalProperties": False,
-        "definitions": {
+        "$defs": {
             "TestChoices": {
-                "description": "An enumeration.",
                 "enum": ["a", "b"],
                 "title": "TestChoices",
                 "type": "string",
             }
         },
-        "properties": {"generic_select1": {"$ref": "#/definitions/TestChoices"}},
+        "properties": {"generic_select1": {"$ref": "#/$defs/TestChoices"}},
         "required": ["generic_select1"],
     }
 
@@ -119,15 +118,14 @@ def test_post_form_wizard():
         "title": "unknown",
         "type": "object",
         "additionalProperties": False,
-        "definitions": {
+        "$defs": {
             "TestChoices": {
-                "description": "An enumeration.",
                 "enum": ["a", "b"],
                 "title": "TestChoices",
                 "type": "string",
             }
         },
-        "properties": {"generic_select3": {"$ref": "#/definitions/TestChoices"}},
+        "properties": {"generic_select3": {"$ref": "#/$defs/TestChoices"}},
         "required": ["generic_select3"],
     }
 
@@ -165,7 +163,7 @@ def test_generate_form():
         else:
             user_input_2 = yield TestForm3
 
-        return {**user_input_1.dict(), **user_input_2.dict()}
+        return {**user_input_1.model_dump(), **user_input_2.model_dump()}
 
     # Submit 1
     form = generate_form(input_form, {"previous": True}, [])
@@ -174,15 +172,14 @@ def test_generate_form():
         "title": "Some title",
         "type": "object",
         "additionalProperties": False,
-        "definitions": {
+        "$defs": {
             "TestChoices": {
-                "description": "An enumeration.",
                 "enum": ["a", "b"],
                 "title": "TestChoices",
                 "type": "string",
             }
         },
-        "properties": {"generic_select1": {"$ref": "#/definitions/TestChoices"}},
+        "properties": {"generic_select1": {"$ref": "#/$defs/TestChoices"}},
         "required": ["generic_select1"],
     }
 
@@ -193,15 +190,14 @@ def test_generate_form():
         "title": "unknown",
         "type": "object",
         "additionalProperties": False,
-        "definitions": {
+        "$defs": {
             "TestChoices": {
-                "description": "An enumeration.",
                 "enum": ["a", "b"],
                 "title": "TestChoices",
                 "type": "string",
             }
         },
-        "properties": {"generic_select3": {"$ref": "#/definitions/TestChoices"}},
+        "properties": {"generic_select3": {"$ref": "#/$defs/TestChoices"}},
         "required": ["generic_select3"],
     }
 

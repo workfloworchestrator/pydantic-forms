@@ -10,8 +10,8 @@ def test_display():
         label: Label
         migration_summary: migration_summary({"headers": ["one"]})  # noqa: F821
 
-    assert Form().dict() == {"display_sub": None, "label": None, "migration_summary": None}
-    assert Form(display_sub="foo", label="bar", migration_summary="baz").dict() == {
+    assert Form().model_dump() == {"display_sub": None, "label": None, "migration_summary": None}
+    assert Form(display_sub="foo", label="bar", migration_summary="baz").model_dump() == {
         "display_sub": None,
         "label": None,
         "migration_summary": None,
@@ -26,7 +26,7 @@ def test_display_only_schema():
         label: Label
         migration_summary: migration_summary({"headers": ["one"]})  # noqa: F821
 
-    assert Form.schema() == {
+    assert Form.model_json_schema() == {
         "additionalProperties": False,
         "properties": {
             "display_sub": {

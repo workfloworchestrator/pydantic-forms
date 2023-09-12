@@ -70,7 +70,7 @@ def test_choice_list_schema():
         choice: choice_list(LegChoice)
         choice_label: choice_list(LegChoiceLabel)
 
-    assert Form.schema() == {
+    assert Form.model_json_schema() == {
         "additionalProperties": False,
         "definitions": {
             "LegChoice": {

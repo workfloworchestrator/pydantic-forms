@@ -100,6 +100,7 @@ def test_contact_persons_nok():
     with pytest.raises(ValidationError) as error_info:
         Form(contact_persons=[{"name": "test1", "email": "a@b"}, {"email": "a@b.nl"}])
 
+    errors = error_info.value.errors()
     expected = [
         {
             "loc": ("contact_persons", 0, "email"),
@@ -108,7 +109,7 @@ def test_contact_persons_nok():
         },
         {"loc": ("contact_persons", 1, "name"), "msg": "field required", "type": "value_error.missing"},
     ]
-    assert expected == error_info.value.errors()
+    assert errors == expected
 
     with pytest.raises(ValidationError) as error_info:
         Form(contact_persons=[])

@@ -68,13 +68,13 @@ def post_form(form_generator: Union[StateInputFormGenerator, None], state: State
                 raise FormValidationError(e.model.__name__, e.errors()) from e  # type: ignore
 
             # Update state with validated_data
-            current_state.update(form_validated_data.dict())
+            current_state.update(form_validated_data.model_dump())
 
             # Make next form or trigger StopIteration
             generated_form = generator.send(form_validated_data)
 
         # Form is not completely filled; raise next form
-        raise FormNotCompleteError(generated_form.schema())
+        raise FormNotCompleteError(generated_form.model_json_schema())
     except StopIteration as e:
         if user_inputs:
             raise FormOverflowError(f"Did not process all user_inputs ({len(user_inputs)} remaining)")
