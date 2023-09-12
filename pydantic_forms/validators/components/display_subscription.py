@@ -10,12 +10,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict
+from typing import Annotated, Any, Dict
+from uuid import UUID
+
+from pydantic import Field
 
 from pydantic_forms.core import DisplayOnlyFieldType
 
+# class DisplaySubscription(DisplayOnlyFieldType):
+#     @classmethod
+#     def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
+#         field_schema.update(format="subscription", type="string")
 
-class DisplaySubscription(DisplayOnlyFieldType):
-    @classmethod
-    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-        field_schema.update(format="subscription", type="string")
+
+DisplaySubscription = Annotated[UUID, Field(json_schema_extra={"format": "subscription", "type": "string"})]

@@ -10,24 +10,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Annotated, Any
+from typing import Annotated
 
-from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler
-from pydantic_core import CoreSchema, core_schema
+from pydantic import Field
 
-from pydantic_forms.core import DisplayOnlyFieldType
-
-
-class Label(DisplayOnlyFieldType):
-    # @classmethod
-    # def __modify_schema__(cls, field_schema: dict[str, Any]) -> None:
-    #     field_schema.update(format="label", type="string")
-
-    @classmethod
-    def __get_pydantic_core_schema__(cls, source_type: Any, handler: GetCoreSchemaHandler) -> CoreSchema:
-        return core_schema.no_info_after_validator_function(cls, handler(str))
-
-    @classmethod
-    def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:
-        json_schema = handler.resolve_ref_schema(core_schema["schema"])
-        return json_schema | {"format": "label", "type": "string"}
+Label = Annotated[str | None, Field(None, frozen=True, json_schema_extra={"format": "label", "type": "string"})]

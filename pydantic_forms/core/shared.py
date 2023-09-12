@@ -41,19 +41,33 @@ class FormPage(BaseModel):
         validate_default=True,
     )
 
-    def __init_subclass__(cls, /, **kwargs: Any) -> None:
-        super().__init_subclass__(**kwargs)
+    def __init__(self, **data: Any):
+        frozen_fields = {k: v for k, v in self.model_fields.items() if v.frozen}
 
+        def get_value(k: str, v: Any) -> Any:
+            if k in frozen_fields:
+                return frozen_fields[k].default
+            else:
+                return v
+
+        mutable_data = {k: get_value(k, v) for k, v in data.items()}
+        super().__init__(**mutable_data)
+
+    @classmethod
+    def __pydantic_init_subclass__(cls, /, **kwargs: Any) -> None:
         # The default and requiredness of a field is not a property of a field
         # In the case of DisplayOnlyFieldTypes, we do kind of want that.
         # Using this method we set the right properties after the form is created
         for field in cls.model_fields.values():
-            try:
-                if issubclass(field.type_, DisplayOnlyFieldType):  # type: ignore
-                    field.required = False  # type: ignore
-                    field.allow_none = True  # type: ignore
-            except TypeError:
+            if field.frozen:
                 pass
+
+                # try:
+            #     # if issubclass(field.type_, DisplayOnlyFieldType):  # type: ignore
+            #     #     field.required = False  # type: ignore
+            #     #     field.allow_none = True  # type: ignore
+            # except TypeError:
+            #     pass
 
 
 def ReadOnlyField(

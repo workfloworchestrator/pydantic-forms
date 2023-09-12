@@ -15,12 +15,13 @@ def test_display_default():
         label: Label = "bla"
         migration_summary: Summary = "foo"
 
-    assert Form().dict() == {
+    assert Form().model_dump() == {
         "display_sub": some_sub_id,
         "label": "bla",
         "migration_summary": "foo",
     }
-    assert Form(display_sub="").dict() == {
+
+    assert Form(display_sub="").model_dump() == {
         "display_sub": some_sub_id,
         "label": "bla",
         "migration_summary": "foo",
@@ -35,7 +36,7 @@ def test_migration_summary_schema():
         ms1: Summary
         ms2: migration_summary("bar")  # noqa: F821
 
-    assert Form.schema() == {
+    expected = {
         "additionalProperties": False,
         "properties": {
             "ms1": {"format": "summary", "title": "Ms1", "type": "string", "uniforms": {"data": "foo"}},
@@ -44,3 +45,5 @@ def test_migration_summary_schema():
         "title": "unknown",
         "type": "object",
     }
+
+    assert Form.model_json_schema() == expected

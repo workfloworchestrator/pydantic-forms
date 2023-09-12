@@ -1,15 +1,16 @@
 from pydantic_forms.core import FormPage
-from pydantic_forms.validators import Divider, Label
+from pydantic_forms.validators import Label
 
 
-def test_labels_with_value_and_dividers():
-    class Form(FormPage):
-        label: Label = "value"
-        # divider: Divider
+class Form(FormPage):
+    label: Label = "value"
 
-    assert Form().model_dump() == {"label": "value", "divider": None}
-    #
-    # assert Form(label="fob", divider="baz").model_dump() == {
-    #     "label": "value",
-    #     "divider": None,
-    # }
+
+def test_label_with_value():
+    assert Form().model_dump() == {"label": "value"}
+
+
+def test_label_update_not_allowed():
+    assert Form(label="fob").model_dump() == {
+        "label": "value",
+    }

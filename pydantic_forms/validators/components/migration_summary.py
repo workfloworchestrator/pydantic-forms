@@ -13,16 +13,31 @@
 from types import new_class
 from typing import Any, ClassVar, Optional, Type
 
+from pydantic import BaseModel, GetCoreSchemaHandler, GetJsonSchemaHandler
+from pydantic_core import CoreSchema, core_schema
+
 from pydantic_forms.core import DisplayOnlyFieldType
 from pydantic_forms.types import SummaryData
 
 
-class MigrationSummary(DisplayOnlyFieldType):
+# class MigrationSummary(DisplayOnlyFieldType):
+class MigrationSummary(BaseModel):
     data: ClassVar[Optional[SummaryData]] = None
 
+    # @classmethod
+    # def __get_pydantic_core_schema__(cls, source_type: Any, handler: GetCoreSchemaHandler) -> CoreSchema:
+    #     return core_schema.no_info_after_validator_function(cls, handler(DisplayOnlyFieldType))
+
     @classmethod
-    def __modify_schema__(cls, field_schema: dict[str, Any]) -> None:
-        field_schema.update(format="summary", type="string", uniforms={"data": cls.data})
+    def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:
+        json_schema = handler(core_schema)
+        json_schema = handler.resolve_ref_schema(json_schema)
+
+        return json_schema | {"format": "summary", "type": "string", "uniforms": {"data": cls.data}}
+
+    # @classmethod
+    # def __modify_schema__(cls, field_schema: dict[str, Any]) -> None:
+    #     field_schema.update(format="summary", type="string", uniforms={"data": cls.data})
 
 
 def migration_summary(data: Optional[SummaryData] = None) -> Type[MigrationSummary]:
