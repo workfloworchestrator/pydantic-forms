@@ -17,27 +17,32 @@ def test_list_of_one_min_items():
     with pytest.raises(ValidationError) as error_info:
         assert Form(one=[])
 
+    errors = error_info.value.errors(include_url=False, include_context=False)
     expected = [
         {
-            "ctx": {"limit_value": 1},
+            # "ctx": {"limit_value": 1},
+            "input": [],
             "loc": ("one",),
-            "msg": "ensure this value has at least 1 items",
-            "type": "value_error.list.min_items",
+            "msg": "Value error, ensure this value has at least 1 items",
+            "type": "value_error",
+            # "ctx": {"error": ListMinLengthError(limit_value=1)},
         }
     ]
-    assert error_info.value.errors() == expected
+    assert errors == expected
 
 
 def test_list_of_one_max_items():
     with pytest.raises(ValidationError) as error_info:
         assert Form(one=[1, 2])
 
+    errors = error_info.value.errors(include_url=False, include_context=False)
     expected = [
         {
-            "ctx": {"limit_value": 1},
+            "input": [1, 2],
             "loc": ("one",),
-            "msg": "ensure this value has at most 1 items",
-            "type": "value_error.list.max_items",
+            "msg": "Value error, ensure this value has at most 1 items",
+            "type": "value_error",
+            # "ctx": {"error": ListMinLengthError(limit_value=1)},
         },
     ]
-    assert error_info.value.errors() == expected
+    assert errors == expected

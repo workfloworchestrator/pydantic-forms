@@ -28,35 +28,49 @@ class UniqueConListModel(FormPage):
 
 
 def test_constrained_list_ok():
-    m = UniqueConListModel(v=list(range(7)))
-    assert m.v == list(range(7))
+    v = list(range(7))
+    m = UniqueConListModel(v=v)
+    assert m.v == v
 
 
 def test_constrained_list_with_duplicates():
+    v = [1, 1, 1]
     with raises(ValidationError) as exc_info:
-        UniqueConListModel(v=[1, 1, 1])
-    assert exc_info.value.errors() == [
-        {"loc": ("v",), "msg": "the list has duplicated items", "type": "value_error.list.unique_items"}
-    ]
+        UniqueConListModel(v=v)
+
+    errors = exc_info.value.errors(include_url=False, include_context=False)
+    expected = [{"input": v, "loc": ("v",), "msg": "Value error, Items must be unique", "type": "value_error"}]
+
+    assert errors == expected
 
 
 def test_constrained_list_invalid_value():
     with raises(ValidationError) as exc_info:
         UniqueConListModel(v=1)
-    assert exc_info.value.errors() == [{"loc": ("v",), "msg": "value is not a valid list", "type": "type_error.list"}]
+
+    errors = exc_info.value.errors(include_url=False, include_context=False)
+    expected = [{"input": 1, "loc": ("v",), "msg": "Input should be a valid list", "type": "list_type"}]
+
+    assert errors == expected
 
 
 def test_constrained_list_too_short():
     with raises(ValidationError) as exc_info:
         UniqueConListModel(v=[])
-    assert exc_info.value.errors() == [
+
+    errors = exc_info.value.errors(include_url=False, include_context=False)
+
+    expected = [
         {
+            # "ctx": {"error": ListMinLengthError(limit_value=1)},
+            "input": [],
             "loc": ("v",),
-            "msg": "ensure this value has at least 1 items",
-            "type": "value_error.list.min_items",
-            "ctx": {"limit_value": 1},
+            "msg": "Value error, ensure this value has at least 1 items",
+            "type": "value_error",
         }
     ]
+
+    assert errors == expected
 
 
 def test_constrained_list_inherit_constraints():
@@ -71,8 +85,9 @@ def test_constrained_list_inherit_constraints():
     class UniqueConListModel(FormPage):
         v: Child[int]
 
-    m = UniqueConListModel(v=list(range(7)))
-    assert m.v == list(range(7))
+    v = list(range(7))
+    m = UniqueConListModel(v=v)
+    assert m.v == v
 
     with raises(ValidationError) as exc_info:
         UniqueConListModel(v=[1, 1, 1])
@@ -132,4 +147,4 @@ def test_constrained_list_schema():
         "title": "unknown",
         "type": "object",
     }
-    assert expected == UniqueConListModel.schema()
+    assert UniqueConListModel.model_json_schema() == expected

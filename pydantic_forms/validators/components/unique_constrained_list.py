@@ -39,17 +39,13 @@ class UniqueConstrainedList(ConstrainedList, list[T]):
 
     @classmethod
     def _validate(cls, value: Any) -> "UniqueConstrainedList":
-        super()
+        # Ugly since we would like to just call the base class validation, but ConstrainedList is deprecated
+        cls.list_length_validator(value)
+
         if cls.unique_items is not None:
             value = cls.check_unique(value)
 
         return UniqueConstrainedList(value)
-
-    # @classmethod
-    # def __get_validators__(cls) -> Generator:  # noqa: B902
-    #     yield from super().__get_validators__()
-    #     if cls.unique_items is not None:
-    #         yield cls.check_unique
 
     @classmethod
     def check_unique(cls, v: list[T]) -> list[T]:

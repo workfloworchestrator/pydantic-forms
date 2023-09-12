@@ -5,37 +5,46 @@ from pydantic_forms.core import FormPage
 from pydantic_forms.validators import ListOfTwo
 
 
-def test_list_of_two():
-    class Form(FormPage):
-        two: ListOfTwo[int]
+class Form(FormPage):
+    two: ListOfTwo[int]
 
+
+def test_list_of_two_ok():
     assert Form(two=[1, 2])
 
+
+def test_list_of_two_min_items():
     with pytest.raises(ValidationError) as error_info:
         assert Form(two=[1])
 
+    errors = error_info.value.errors(include_url=False, include_context=False)
     expected = [
         {
-            "ctx": {"limit_value": 2},
+            "input": [1],
             "loc": ("two",),
-            "msg": "ensure this value has at least 2 items",
-            "type": "value_error.list.min_items",
+            "msg": "Value error, ensure this value has at least 2 items",
+            "type": "value_error",
+            # "ctx": {"limit_value": 2},
         }
     ]
-    assert expected == error_info.value.errors()
+    assert errors == expected
 
+
+def test_list_of_two_max_items():
     with pytest.raises(ValidationError) as error_info:
         assert Form(two=[1, 2, 3])
 
+    errors = error_info.value.errors(include_url=False, include_context=False)
     expected = [
         {
-            "ctx": {"limit_value": 2},
+            "input": [1, 2, 3],
             "loc": ("two",),
-            "msg": "ensure this value has at most 2 items",
-            "type": "value_error.list.max_items",
+            "msg": "Value error, ensure this value has at most 2 items",
+            "type": "value_error",
+            # "ctx": {"limit_value": 2},
         },
     ]
-    assert expected == error_info.value.errors()
+    assert errors == expected
 
 
 def test_list_of_two_schema():
@@ -57,4 +66,4 @@ def test_list_of_two_schema():
         "title": "unknown",
         "type": "object",
     }
-    assert expected == Form.schema()
+    assert Form.model_json_schema() == expected

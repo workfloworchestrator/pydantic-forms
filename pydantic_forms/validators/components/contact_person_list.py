@@ -11,14 +11,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from types import new_class
-from typing import Any, ClassVar, Generator, List, Optional, Type, TypeVar
+from typing import Any, ClassVar, List, Optional, Type, TypeVar
 from uuid import UUID
 
 from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler
 from pydantic.v1 import ConstrainedList
 from pydantic_core import CoreSchema, core_schema
 
-from pydantic_forms.validators import ContactPerson
+from pydantic_forms.validators.components.contact_person import ContactPerson
 
 T = TypeVar("T")  # pragma: no mutate
 
