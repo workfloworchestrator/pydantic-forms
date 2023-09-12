@@ -46,11 +46,14 @@ class Choice(strEnum):
 
     @classmethod
     def __get_pydantic_core_schema__(cls, source_type: Any, handler: GetCoreSchemaHandler) -> CoreSchema:
-        return core_schema.no_info_after_validator_function(cls, handler(strEnum))
+        return core_schema.no_info_after_validator_function(cls, handler(cls), ref=cls.__name__)
 
     @classmethod
     def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:
-        json_schema = handler.resolve_ref_schema(core_schema["schema"])
+        json_schema = handler(core_schema)
+        json_schema = handler.resolve_ref_schema(json_schema)
+
+        # json_schema = handler.resolve_ref_schema(core_schema["schema"])
 
         kwargs = {}
 

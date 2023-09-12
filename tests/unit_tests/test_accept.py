@@ -70,12 +70,7 @@ def test_accept_nok_incomplete():
         Form(accept="INCOMPLETE")
 
     expected = [
-        {
-            "input": "INCOMPLETE",
-            "loc": ("accept",),
-            "msg": "Value error, Not all tasks are done",
-            "type": "value_error"
-        }
+        {"input": "INCOMPLETE", "loc": ("accept",), "msg": "Value error, Not all tasks are done", "type": "value_error"}
     ]
     assert error_info.value.errors(include_context=False, include_url=False) == expected
 

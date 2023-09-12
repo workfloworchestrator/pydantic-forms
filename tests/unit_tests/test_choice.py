@@ -75,15 +75,13 @@ def test_choice_schema():
 
     expected = {
         "additionalProperties": False,
-        "definitions": {
+        "$defs": {
             "LegChoice": {
-                "description": "An enumeration.",
                 "enum": ["Primary", "Secondary"],
                 "title": "LegChoice",
                 "type": "string",
             },
             "LegChoiceLabel": {
-                "description": "An enumeration.",
                 "enum": ["Primary", "Secondary", "Tertiary"],
                 "options": {"Primary": "Primary LP", "Secondary": "Secondary LP", "Tertiary": "Tertiary"},
                 "title": "LegChoiceLabel",
@@ -91,8 +89,8 @@ def test_choice_schema():
             },
         },
         "properties": {
-            "choice": {"$ref": "#/definitions/LegChoice"},
-            "choice_label": {"$ref": "#/definitions/LegChoiceLabel"},
+            "choice": {"$ref": "#/$defs/LegChoice"},
+            "choice_label": {"$ref": "#/$defs/LegChoiceLabel"},
         },
         "required": ["choice", "choice_label"],
         "title": "unknown",
