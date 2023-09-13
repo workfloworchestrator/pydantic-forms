@@ -12,11 +12,8 @@
 # limitations under the License.
 from typing import TypeVar
 
-from pydantic_forms.validators.components.unique_constrained_list import UniqueConstrainedList
+from pydantic_forms.validators.components.unique_constrained_list import unique_conlist
 
 T = TypeVar("T")  # pragma: no mutate
 
-
-class ListOfOne(UniqueConstrainedList[T]):
-    min_items = 1
-    max_items = 1
+ListOfOne = unique_conlist(type(T), min_items=1, max_items=1)
