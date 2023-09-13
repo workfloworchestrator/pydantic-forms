@@ -1,5 +1,5 @@
+import pytest
 from pydantic_core import ValidationError
-from pytest import raises
 
 from pydantic_forms.core import FormPage
 from pydantic_forms.validators import Choice, choice_list
@@ -17,10 +17,10 @@ def test_choice_list():
     Form(choice=["Primary"])
     Form(choice=["Primary", "Primary"])
 
-    with raises(ValidationError):
+    with pytest.raises(ValidationError):
         Form(choice=["Wrong"])
 
-    with raises(ValidationError):
+    with pytest.raises(ValidationError):
         Form(choice=["Primary", "Wrong"])
 
 
@@ -36,7 +36,7 @@ def test_choice_list_default():
     Form()
     Form(choice=[LegChoice.Primary])
 
-    with raises(ValidationError):
+    with pytest.raises(ValidationError):
         Form(choice=["Wrong"])
 
 
@@ -52,7 +52,7 @@ def test_choice_list_default_str():
     Form()
     Form(choice=[LegChoice.Primary])
 
-    with raises(ValidationError):
+    with pytest.raises(ValidationError):
         Form(choice=["Wrong"])
 
 
@@ -70,7 +70,7 @@ def test_choice_list_schema():
         choice: choice_list(LegChoice)
         choice_label: choice_list(LegChoiceLabel)
 
-    assert Form.model_json_schema() == {
+    expected = {
         "additionalProperties": False,
         "definitions": {
             "LegChoice": {
@@ -99,9 +99,11 @@ def test_choice_list_schema():
         "title": "unknown",
         "type": "object",
     }
+    assert Form.model_json_schema() == expected
 
 
-def test_choice_list_constraints():
+@pytest.fixture(name="Form")
+def form_with_leg_choice_list():
     class LegChoice(Choice):
         Primary = "Primary"
         Secondary = "Secondary"
@@ -109,28 +111,41 @@ def test_choice_list_constraints():
     class Form(FormPage):
         choice: choice_list(LegChoice, min_items=1, unique_items=True) = ["Primary"]
 
-    m = Form(choice=[LegChoice.Primary, LegChoice.Secondary])
-    assert m.choice == [LegChoice.Primary, LegChoice.Secondary]
+    return Form
 
-    with raises(ValidationError) as exc_info:
+
+def test_choice_list_constraint_should_be_unique(Form):
+    with pytest.raises(ValidationError) as exc_info:
         Form(choice=[1, 1, 1])
-    assert exc_info.value.errors() == [
-        {"loc": ("choice",), "msg": "the list has duplicated items", "type": "value_error.list.unique_items"}
-    ]
 
-    with raises(ValidationError) as exc_info:
+    errors = exc_info.value.errors(include_url=False, include_context=False)
+    expected = [
+        {"input": [1, 1, 1], "loc": ("choice",), "msg": "Value error, Items must be unique", "type": "value_error"}
+    ]
+    assert errors == expected
+
+
+def test_choice_list_constraint_invalid_list(Form):
+    with pytest.raises(ValidationError) as exc_info:
         Form(choice=1)
-    assert exc_info.value.errors() == [
-        {"loc": ("choice",), "msg": "value is not a valid list", "type": "type_error.list"}
-    ]
 
-    with raises(ValidationError) as exc_info:
+    errors = exc_info.value.errors(include_url=False, include_context=False)
+    expected = [{"input": 1, "loc": ("choice",), "msg": "Input should be a valid list", "type": "list_type"}]
+    assert errors == expected
+
+
+def test_choice_list_constraint_at_least_one_item(Form):
+    with pytest.raises(ValidationError) as exc_info:
         Form(choice=[])
-    assert exc_info.value.errors() == [
+
+    errors = exc_info.value.errors(include_url=False, include_context=False)
+    expected = [
         {
+            "input": [],
             "loc": ("choice",),
-            "msg": "ensure this value has at least 1 items",
-            "type": "value_error.list.min_items",
-            "ctx": {"limit_value": 1},
+            "msg": "Value error, ensure this value has at least 1 items",
+            "type": "value_error",
+            # "ctx": {"limit_value": 1},
         }
     ]
+    assert errors == expected

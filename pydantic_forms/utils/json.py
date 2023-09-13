@@ -30,17 +30,17 @@ To ensure we can decode what we have encoded we will include extra information a
 
 This information is encoded under the keys `"__module__"` and `"__class__"` respectively.
 
-Upon decoding this information will be used to import the module and instantiate the class for the the custom data
+Upon decoding this information will be used to import the module and instantiate the class for the custom data
 type dynamically. One obviously has to encode whatever information that's necessary to be able to decode it later as
 well.
 
 .. note:: There are libraries that provide this functionally out of the box. We have chosen not to use them as their
    means of encoding dumps the _internal_ representation of custom types. This can lead to fairly unreadable JSON. Eg.
    encoding a :obj:`uuid.UUID` object results in a large integer value plus an additional attribute `is_safe` that has
-   no meaning to us. We, instead, want something that's human readable as well.
+   no meaning to us. We, instead, want something that's human-readable as well.
 
 .. warning:: Another thing to realize is that although we do encode :obj:`uuid.UUID` objects, we do not decode them.
-   Past project decisions still haunt use and we generally process UUIDs as `str`s in our backend, only converting them
+   Past project decisions still haunt us, and we generally process UUIDs as `str`s in our backend, only converting them
    to real :obj:`uuid.UUID` objects where necessary. Don't simply assume UUID decoding logic was forgotten; it was not!
 
 .. note:: Even though we do serialize domain models for audit log purposes to the state, we do not deserialize from
@@ -53,7 +53,7 @@ well.
 called as a matter of last resort, the `object_hook` function of :func:`json.loads is called for every `dict` value!
 This means that, instead of raising an exception, it should return the `dict` that was passed in if it can't decode it.
 
-The `object_hook` function will be called with the inner most `dict` first, working its way up to the top level `dict`.
+The `object_hook` function will be called with the innermost `dict` first, working its way up to the top level `dict`.
 Eg. Given::
 
     json_str = '{"a": 1, "b": 2, "c": {"x": true, "y": false}}'
@@ -81,7 +81,7 @@ from dataclasses import asdict, is_dataclass
 from datetime import datetime
 from functools import partial
 from ipaddress import IPv4Address, IPv4Network, IPv6Address, IPv6Network
-from typing import Any, Dict, List, Sequence, Set, Tuple, Union
+from typing import Any, Sequence, Union
 from uuid import UUID
 
 import structlog
@@ -98,7 +98,7 @@ except ImportError:
 
 # import rapidjson as rjson
 
-PY_JSON_TYPES = Union[Dict[str, Any], List, str, int, float, bool, None, object]  # pragma: no mutate
+PY_JSON_TYPES = Union[dict[str, Any], list, str, int, float, bool, None, object]  # pragma: no mutate
 
 logger = structlog.get_logger(__name__)
 
@@ -136,7 +136,7 @@ def to_serializable(o: Any) -> Any:
         return o.to_dict()
     if isinstance(o, BaseModel):
         return o.model_dump()
-    if isinstance(o, Set):
+    if isinstance(o, set):
         return list(o)
     raise TypeError(f"Could not serialize object of type {o.__class__.__name__} to JSON")
 
@@ -145,7 +145,7 @@ ISO_FORMAT_STR_LEN = len("2019-05-18T15:17:00+00:00")  # assume 'seconds' precis
 UUID_PATTERN = re.compile(r"^[\da-f]{8}-([\da-f]{4}-){3}[\da-f]{12}$", re.IGNORECASE)
 
 
-def from_serializable(dct: Dict[str, Any]) -> Dict[str, Any]:
+def from_serializable(dct: dict[str, Any]) -> dict[str, Any]:
     """Convert a serializable object into a more specific, custom, Python data type.
 
     Args:
@@ -196,7 +196,7 @@ else:
     json_dumps = partial(json.dumps, default=to_serializable)
 
 
-def non_none_dict(dikt: Sequence[Tuple[str, Any]]) -> Dict[Any, Any]:
+def non_none_dict(dikt: Sequence[tuple[str, Any]]) -> dict[Any, Any]:
     """
     Return no `None` values in a Dict.
 
