@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, AsyncGenerator, Callable, Dict, Generator, List, Tuple, Type, TypedDict, TypeVar, Union
+from typing import Any, AsyncGenerator, Callable, Generator, Type, TypedDict, TypeVar, Union
 
 try:
     # python3.10 introduces types.UnionType for the new union and optional type defs.
@@ -11,7 +11,7 @@ except ImportError:
 from pydantic.main import BaseModel
 
 UUIDstr = str
-State = Dict[str, Any]
+State = dict[str, Any]
 JSON = Any
 
 
@@ -20,7 +20,7 @@ class strEnum(str, Enum):
         return self.value
 
     @classmethod
-    def values(cls) -> List:
+    def values(cls) -> list:
         return [obj.value for obj in cls]
 
 
@@ -39,13 +39,13 @@ class AcceptItemType(strEnum):
 
 
 class SummaryData(TypedDict, total=False):
-    headers: List[str]
-    labels: List[str]
-    columns: List[List[Union[str, int, bool, float]]]
+    headers: list[str]
+    labels: list[str]
+    columns: list[list[Union[str, int, bool, float]]]
 
 
 InputForm = Type[BaseModel]
-AcceptData = List[Union[Tuple[str, AcceptItemType], Tuple[str, AcceptItemType, Dict]]]
+AcceptData = list[Union[tuple[str, AcceptItemType], tuple[str, AcceptItemType, dict]]]
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -56,7 +56,7 @@ InputStepFunc = Union[SimpleInputFormGenerator, InputFormGenerator]
 StateSimpleInputFormGenerator = Callable[[State], InputForm]
 StateInputFormGenerator = Callable[[State], FormGenerator]
 StateInputStepFunc = Union[StateSimpleInputFormGenerator, StateInputFormGenerator]
-SubscriptionMapping = Dict[str, List[Dict[str, str]]]
+SubscriptionMapping = dict[str, list[dict[str, str]]]
 
 FormGeneratorAsync = AsyncGenerator[Union[Type[T], State], T]  # [YieldType, SendType]
 StateInputFormGeneratorAsync = Callable[[State], FormGeneratorAsync]

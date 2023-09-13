@@ -21,48 +21,42 @@ class TestForm(FormPage):
 def test_post_process_yield():
     def input_form(state):
         user_input = yield TestForm
-        return {**user_input.model_dump(), "extra": 234}
+        return user_input.model_dump() | {"extra": 234}
 
     validated_data = post_form(input_form, {"previous": True}, [{"generic_select": "a"}])
 
     expected = {"generic_select": "a", "extra": 234}
-    assert expected == json_loads(json_dumps(validated_data))
+    assert json_loads(json_dumps(validated_data)) == expected
 
 
 def test_post_process_extra_data():
     def input_form(state):
         user_input = yield TestForm
-        return {**user_input.dict(), "extra": 234}
+        return user_input.model_dump() | {"extra": 234}
 
     with pytest.raises(FormValidationError) as e:
         post_form(input_form, {"previous": True}, [{"generic_select": "a", "extra_data": False}])
 
-    assert (
-        str(e.value)
-        == "1 validation error for TestForm\nextra_data\n  extra fields not permitted (type=value_error.extra)"
-    )
+    expected = "1 validation error for TestForm\nextra_data\n  Extra inputs are not permitted (type=extra_forbidden)"
+    assert str(e.value) == expected
 
 
 def test_post_process_validation_errors():
     def input_form(state):
         user_input = yield TestForm
-        return user_input.dict()
+        return user_input.model_dump()
 
     with pytest.raises(FormValidationError) as e:
         post_form(input_form, {}, [{"generic_select": 1, "extra_data": False}])
 
-    assert (
-        str(e.value)
-        == "2 validation errors for TestForm\ngeneric_select\n  value is not a valid enumeration member; permitted: 'a', 'b' (type=type_error.enum; enum_values=[<TestChoices.A: 'a'>, <TestChoices.B: 'b'>])\nextra_data\n  extra fields not permitted (type=value_error.extra)"
-    )
+    expected = "2 validation errors for TestForm\ngeneric_select\n  value is not a valid enumeration member; permitted: 'a', 'b' (type=type_error.enum; enum_values=[<TestChoices.A: 'a'>, <TestChoices.B: 'b'>])\nextra_data\n  extra fields not permitted (type=value_error.extra)"
+    assert str(e.value) == expected
 
     with pytest.raises(FormValidationError) as e:
         post_form(input_form, {}, [{"generic_select": 1}])
 
-    assert (
-        str(e.value)
-        == "1 validation error for TestForm\ngeneric_select\n  value is not a valid enumeration member; permitted: 'a', 'b' (type=type_error.enum; enum_values=[<TestChoices.A: 'a'>, <TestChoices.B: 'b'>])"
-    )
+    expected = "1 validation error for TestForm\ngeneric_select\n  value is not a valid enumeration member; permitted: 'a', 'b' (type=type_error.enum; enum_values=[<TestChoices.A: 'a'>, <TestChoices.B: 'b'>])"
+    assert str(e.value) == expected
 
 
 def test_post_form_wizard():

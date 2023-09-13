@@ -12,7 +12,7 @@
 # limitations under the License.
 from copy import deepcopy
 from inspect import isgeneratorfunction
-from typing import Any, Dict, List, Union
+from typing import Any, Union
 
 import structlog
 from pydantic import ValidationError
@@ -25,7 +25,7 @@ logger = structlog.get_logger(__name__)
 
 
 def generate_form(
-    form_generator: Union[StateInputFormGenerator, None], state: State, user_inputs: List[State]
+    form_generator: Union[StateInputFormGenerator, None], state: State, user_inputs: list[State]
 ) -> Union[State, None]:
     """Generate form using form generator as defined by a form definition."""
     try:
@@ -39,7 +39,7 @@ def generate_form(
     return None
 
 
-def post_form(form_generator: Union[StateInputFormGenerator, None], state: State, user_inputs: List[State]) -> State:
+def post_form(form_generator: Union[StateInputFormGenerator, None], state: State, user_inputs: list[State]) -> State:
     """Post user_input based ond serve a new form if the form wizard logic dictates it."""
     # there is no form_generator so we return no validated data
     if not form_generator:
@@ -65,7 +65,7 @@ def post_form(form_generator: Union[StateInputFormGenerator, None], state: State
             try:
                 form_validated_data = generated_form(**user_input)
             except ValidationError as e:
-                raise FormValidationError(e.model.__name__, e.errors()) from e  # type: ignore
+                raise FormValidationError(generated_form.__name__, e.errors()) from e  # type: ignore
 
             # Update state with validated_data
             current_state.update(form_validated_data.model_dump())
@@ -79,7 +79,7 @@ def post_form(form_generator: Union[StateInputFormGenerator, None], state: State
         if user_inputs:
             raise FormOverflowError(f"Did not process all user_inputs ({len(user_inputs)} remaining)")
 
-        # Form is completely filled so we can return the last of the data and
+        # Form is completely filled, so we can return the last of the data and
         return e.value
 
 
@@ -95,9 +95,9 @@ def _get_form(key: str) -> StateInputFormGenerator:
 
 def start_form(
     form_key: str,
-    user_inputs: Union[List[State], None] = None,
+    user_inputs: Union[list[State], None] = None,
     user: str = "Just a user",  # Todo: check if we need users inside form logic?
-    **extra_state: Dict[str, Any],
+    **extra_state: dict[str, Any],
 ) -> State:
     """Handle the logic for the endpoint that the frontend uses to render a form with or without prefilled input.
 

@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from types import new_class
-from typing import Any, ClassVar, List, Optional, Type, TypeVar
+from typing import Any, ClassVar, Optional, Type, TypeVar
 from uuid import UUID
 
 from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler
@@ -32,7 +32,7 @@ class ContactPersonList(ConstrainedList):
 
     @classmethod
     def __get_pydantic_core_schema__(cls, source_type: Any, handler: GetCoreSchemaHandler) -> CoreSchema:
-        return core_schema.no_info_after_validator_function(remove_empty_items, handler(List))
+        return core_schema.no_info_after_validator_function(remove_empty_items, handler(list))
 
     @classmethod
     def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:
@@ -69,7 +69,7 @@ class ContactPersonList(ConstrainedList):
 
 def contact_person_list(
     organisation: Optional[UUID] = None, organisation_key: Optional[str] = "organisation"
-) -> Type[List[T]]:
+) -> Type[list[T]]:
     namespace = {"organisation": organisation, "organisation_key": organisation_key}
     # We use new_class to be able to deal with Generic types
     return new_class("ContactPersonListValue", (ContactPersonList,), {}, lambda ns: ns.update(namespace))

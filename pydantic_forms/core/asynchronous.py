@@ -12,7 +12,7 @@
 # limitations under the License.
 from copy import deepcopy
 from inspect import isasyncgenfunction
-from typing import Any, List, Union
+from typing import Any, Union
 
 import structlog
 from pydantic import ValidationError
@@ -25,7 +25,7 @@ logger = structlog.get_logger(__name__)
 
 
 async def generate_form(
-    form_generator: Union[StateInputFormGeneratorAsync, None], state: State, user_inputs: List[State]
+    form_generator: Union[StateInputFormGeneratorAsync, None], state: State, user_inputs: list[State]
 ) -> Union[State, None]:
     """Generate form using form generator as defined by a form definition."""
     try:
@@ -40,7 +40,7 @@ async def generate_form(
 
 
 async def post_form(
-    form_generator: Union[StateInputFormGeneratorAsync, None], state: State, user_inputs: List[State]
+    form_generator: Union[StateInputFormGeneratorAsync, None], state: State, user_inputs: list[State]
 ) -> State:
     """Post user_input based ond serve a new form if the form wizard logic dictates it."""
     # there is no form_generator so we return no validated data
@@ -67,7 +67,7 @@ async def post_form(
         try:
             form_validated_data = generated_form(**user_input)
         except ValidationError as e:
-            raise FormValidationError(e.model.__name__, e.errors()) from e  # type: ignore
+            raise FormValidationError(generated_form.__name__, e.errors()) from e  # type: ignore
 
         # Update state with validated_data
         current_state.update(form_validated_data.model_dump())
@@ -100,7 +100,7 @@ def _get_form(key: str) -> StateInputFormGeneratorAsync:
 
 async def start_form(
     form_key: str,
-    user_inputs: Union[List[State], None] = None,
+    user_inputs: Union[list[State], None] = None,
     user: str = "Just a user",  # Todo: check if we need users inside form logic?
     **extra_state: Any,
 ) -> State:

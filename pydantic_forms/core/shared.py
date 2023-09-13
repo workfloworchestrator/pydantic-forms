@@ -11,13 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from inspect import isasyncgenfunction, isgeneratorfunction
-from typing import Any, Callable, Dict, Generator, List, Optional
+from typing import Any, Callable, Generator, Optional
 
 import structlog
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.v1.fields import Undefined
-
-from pydantic_forms.utils.json import json_dumps, json_loads
 
 logger = structlog.get_logger(__name__)
 
@@ -76,10 +74,10 @@ def ReadOnlyField(
     const: Optional[bool] = None,
     **extra: Any,
 ) -> Any:
-    return Field(default, uniforms={"disabled": True, "value": default}, **extra)  # type: ignore
+    return Field(default, json_schema_extra={"uniforms": {"disabled": True, "value": default}}, **extra)  # type: ignore
 
 
-FORMS: Dict[str, Callable] = {}
+FORMS: dict[str, Callable] = {}
 
 
 def register_form(key: str, form: Callable) -> None:
@@ -93,5 +91,5 @@ def register_form(key: str, form: Callable) -> None:
     FORMS[key] = form
 
 
-def list_forms() -> List[str]:
+def list_forms() -> list[str]:
     return list(FORMS.keys())

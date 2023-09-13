@@ -83,7 +83,7 @@ def test_contact_persons_schema():
     assert Form.model_json_schema() == expected
 
 
-def test_contact_persons_nok():
+def test_contact_persons_nok_invalid_email():
     org_id = uuid4()
 
     class ReqContactPersonList(ContactPersonList):
@@ -111,6 +111,21 @@ def test_contact_persons_nok():
     ]
     assert errors == expected
 
+
+def test_contact_persons_nok_empty():
+    org_id = uuid4()
+
+    class ReqContactPersonList(ContactPersonList):
+        min_items = 1
+
+    class OrgContactPersonList(ContactPersonList):
+        organisation = org_id
+        organisation_key = "key"
+
+    class Form(FormPage):
+        contact_persons: ReqContactPersonList
+        contact_persons_org: OrgContactPersonList = []
+
     with pytest.raises(ValidationError) as error_info:
         Form(contact_persons=[])
 
@@ -122,4 +137,4 @@ def test_contact_persons_nok():
             "ctx": {"limit_value": 1},
         }
     ]
-    assert expected == error_info.value.errors()
+    assert error_info.value.errors() == expected

@@ -1,5 +1,5 @@
 import traceback
-from typing import Any, Dict, List, Tuple, TypedDict, Union, cast
+from typing import Any, TypedDict, Union, cast
 
 from pydantic_forms.types import JSON
 
@@ -29,30 +29,30 @@ class FormOverflowError(FormException):
 
 
 class PydanticErrorDict(TypedDict):
-    loc: List[Union[str, int]]
+    loc: list[Union[str, int]]
     type: str
     msg: str
-    ctx: Dict[str, Any]
+    ctx: dict[str, Any]
 
 
 class FormValidationError(FormException):
     validator_name: str
-    errors: List[PydanticErrorDict]
+    errors: list[PydanticErrorDict]
 
-    def __init__(self, validator_name: str, errors: List[Dict[str, Any]]):
+    def __init__(self, validator_name: str, errors: list[dict[str, Any]]):
         super().__init__(validator_name, errors)
         self.validator_name = validator_name
-        self.errors = cast(List[PydanticErrorDict], errors)
+        self.errors = cast(list[PydanticErrorDict], errors)
 
     def __str__(self) -> str:
         no_errors = len(self.errors)
         return (
             f'{no_errors} validation error{"" if no_errors == 1 else "s"} for {self.validator_name}\n'
-            f"{display_errors(cast(List[ErrorDict], self.errors))}"
+            f"{display_errors(cast(list[ErrorDict], self.errors))}"
         )
 
 
-Loc = Tuple[Union[int, str], ...]
+Loc = tuple[Union[int, str], ...]
 
 
 class _ErrorDictRequired(TypedDict):
@@ -62,10 +62,10 @@ class _ErrorDictRequired(TypedDict):
 
 
 class ErrorDict(_ErrorDictRequired, total=False):
-    ctx: Dict[str, Any]
+    ctx: dict[str, Any]
 
 
-def display_errors(errors: List["ErrorDict"]) -> str:
+def display_errors(errors: list["ErrorDict"]) -> str:
     return "\n".join(f'{_display_error_loc(e)}\n  {e["msg"]} ({_display_error_type_and_ctx(e)})' for e in errors)
 
 

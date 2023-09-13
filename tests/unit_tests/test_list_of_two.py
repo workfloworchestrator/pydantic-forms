@@ -5,15 +5,19 @@ from pydantic_forms.core import FormPage
 from pydantic_forms.validators import ListOfTwo
 
 
-class Form(FormPage):
-    two: ListOfTwo[int]
+@pytest.fixture(name="Form")
+def form_with_list_of_two():
+    class _Form(FormPage):
+        two: ListOfTwo[int]
+
+    return _Form
 
 
-def test_list_of_two_ok():
+def test_list_of_two_ok(Form):
     assert Form(two=[1, 2])
 
 
-def test_list_of_two_min_items():
+def test_list_of_two_min_items(Form):
     with pytest.raises(ValidationError) as error_info:
         assert Form(two=[1])
 
@@ -30,7 +34,7 @@ def test_list_of_two_min_items():
     assert errors == expected
 
 
-def test_list_of_two_max_items():
+def test_list_of_two_max_items(Form):
     with pytest.raises(ValidationError) as error_info:
         assert Form(two=[1, 2, 3])
 

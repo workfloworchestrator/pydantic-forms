@@ -5,15 +5,19 @@ from pydantic_forms.core import FormPage
 from pydantic_forms.validators import ListOfOne
 
 
-class Form(FormPage):
-    one: ListOfOne[int]
+@pytest.fixture(name="Form")
+def form_with_list_of_one():
+    class _Form(FormPage):
+        one: ListOfOne[int]
+
+    return _Form
 
 
-def test_list_of_one_ok():
+def test_list_of_one_ok(Form):
     assert Form(one=[1])
 
 
-def test_list_of_one_min_items():
+def test_list_of_one_min_items(Form):
     with pytest.raises(ValidationError) as error_info:
         assert Form(one=[])
 
@@ -31,7 +35,7 @@ def test_list_of_one_min_items():
     assert errors == expected
 
 
-def test_list_of_one_max_items():
+def test_list_of_one_max_items(Form):
     with pytest.raises(ValidationError) as error_info:
         assert Form(one=[1, 2])
 
