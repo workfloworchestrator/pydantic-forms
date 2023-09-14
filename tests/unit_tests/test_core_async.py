@@ -50,13 +50,15 @@ async def test_post_process_validation_errors():
     with raises(FormValidationError) as e:
         await post_form(input_form, {}, [{"generic_select": 1, "extra_data": False}])
 
-    expected = "2 validation errors for TestForm\ngeneric_select\n  value is not a valid enumeration member; permitted: 'a', 'b' (type=type_error.enum; enum_values=[<TestChoices.A: 'a'>, <TestChoices.B: 'b'>])\nextra_data\n  extra fields not permitted (type=value_error.extra)"
+    expected = "2 validation errors for TestForm\ngeneric_select\n  Input should be a valid string (type=string_type)\nextra_data\n  Extra inputs are not permitted (type=extra_forbidden)"
     assert str(e.value) == expected
 
     with raises(FormValidationError) as e:
-        await post_form(input_form, {}, [{"generic_select": 1}])
+        await post_form(input_form, {}, [{"generic_select": "c"}])
 
-    expected = "1 validation error for TestForm\ngeneric_select\n  value is not a valid enumeration member; permitted: 'a', 'b' (type=type_error.enum; enum_values=[<TestChoices.A: 'a'>, <TestChoices.B: 'b'>])"
+    expected = (
+        "1 validation error for TestForm\ngeneric_select\n  Input should be 'a' or 'b' (type=enum; expected='a' or 'b')"
+    )
     assert str(e.value) == expected
 
 
