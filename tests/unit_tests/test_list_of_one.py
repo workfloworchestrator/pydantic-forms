@@ -27,8 +27,8 @@ def test_list_of_one_min_items(Form):
             # "ctx": {"limit_value": 1},
             "input": [],
             "loc": ("one",),
-            "msg": "Value error, ensure this value has at least 1 items",
-            "type": "value_error",
+            "msg": "List should have at least 1 item after validation, not 0",
+            "type": "too_short",
             # "ctx": {"error": ListMinLengthError(limit_value=1)},
         }
     ]
@@ -44,8 +44,8 @@ def test_list_of_one_max_items(Form):
         {
             "input": [1, 2],
             "loc": ("one",),
-            "msg": "Value error, ensure this value has at most 1 items",
-            "type": "value_error",
+            "msg": "List should have at most 1 item after validation, not 2",
+            "type": "too_long",
             # "ctx": {"error": ListMinLengthError(limit_value=1)},
         },
     ]

@@ -26,8 +26,8 @@ def test_list_of_two_min_items(Form):
         {
             "input": [1],
             "loc": ("two",),
-            "msg": "Value error, ensure this value has at least 2 items",
-            "type": "value_error",
+            "msg": "List should have at least 2 items after validation, not 1",
+            "type": "too_short",
             # "ctx": {"limit_value": 2},
         }
     ]
@@ -43,8 +43,8 @@ def test_list_of_two_max_items(Form):
         {
             "input": [1, 2, 3],
             "loc": ("two",),
-            "msg": "Value error, ensure this value has at most 2 items",
-            "type": "value_error",
+            "msg": "List should have at most 2 items after validation, not 3",
+            "type": "too_long",
             # "ctx": {"limit_value": 2},
         },
     ]
@@ -64,6 +64,7 @@ def test_list_of_two_schema():
                 "minItems": 2,
                 "maxItems": 2,
                 "type": "array",
+                "uniqueItems": True,
             }
         },
         "required": ["list"],

@@ -16,4 +16,4 @@ from pydantic_forms.validators.components.unique_constrained_list import unique_
 
 T = TypeVar("T")  # pragma: no mutate
 
-ListOfTwo = unique_conlist(type(T), min_items=2, max_items=2)
+ListOfTwo = unique_conlist(T, min_items=2, max_items=2)
