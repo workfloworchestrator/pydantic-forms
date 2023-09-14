@@ -10,14 +10,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from types import new_class
-from typing import Any, List, Optional, Type, TypeVar, get_args
+from typing import Annotated, Any, Hashable, List, Optional, Type, TypeVar, get_args
 
-from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler
+from pydantic import AfterValidator, Field, GetCoreSchemaHandler, GetJsonSchemaHandler, conlist
 from pydantic.v1 import ConstrainedList
-from pydantic_core import CoreSchema, core_schema
+from pydantic_core import CoreSchema, PydanticCustomError, core_schema
 
-T = TypeVar("T")  # pragma: no mutate
+T = TypeVar("T", bound=Hashable)
 
 
 class UniqueConstrainedList(ConstrainedList, list[T]):
@@ -78,21 +77,20 @@ class UniqueConstrainedList(ConstrainedList, list[T]):
         return Inst
 
 
+def _validate_unique_list(v: list[T]) -> list[T]:
+    if len(v) != len(set(v)):
+        raise PydanticCustomError("unique_list", "List must be unique")
+    return v
+
+
 def unique_conlist(
     item_type: Type[T],
     *,
     min_items: Optional[int] = None,
     max_items: Optional[int] = None,
-    unique_items: Optional[bool] = None,
 ) -> Type[List[T]]:
-    namespace = {
-        "min_items": min_items,
-        "max_items": max_items,
-        "unique_items": unique_items,
-        "__origin__": list,  # Needed for pydantic to detect that this is a list
-        "__args__": (item_type,),  # Needed for pydantic to detect the item type
-    }
-    # We use new_class to be able to deal with Generic types
-    return new_class(
-        "ConstrainedListValue", (UniqueConstrainedList[item_type],), {}, lambda ns: ns.update(namespace)  # type:ignore
-    )
+    return Annotated[
+        conlist(item_type, min_length=min_items, max_length=max_items),
+        AfterValidator(_validate_unique_list),
+        Field(json_schema_extra={"uniqueItems": True}),
+    ]

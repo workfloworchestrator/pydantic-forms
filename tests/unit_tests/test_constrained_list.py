@@ -1,15 +1,13 @@
-from typing import TypeVar
-
-from pydantic import ValidationError
+from pydantic import ValidationError, conlist, conset
 from pytest import raises
 
 from pydantic_forms.core import FormPage
-from pydantic_forms.validators import UniqueConstrainedList, unique_conlist
+from pydantic_forms.validators import unique_conlist
 
 
 def test_constrained_list_good():
     class UniqueConListModel(FormPage):
-        v: unique_conlist(int, unique_items=True) = []
+        v: unique_conlist(int) = []
 
     m = UniqueConListModel(v=[1, 2, 3])
     assert m.v == [1, 2, 3]
@@ -17,14 +15,14 @@ def test_constrained_list_good():
 
 def test_constrained_list_default():
     class UniqueConListModel(FormPage):
-        v: unique_conlist(int, unique_items=True) = []
+        v: unique_conlist(int) = []
 
     m = UniqueConListModel()
     assert m.v == []
 
 
 class UniqueConListModel(FormPage):
-    v: unique_conlist(int, min_items=1, unique_items=True)
+    v: unique_conlist(int, min_items=1)
 
 
 def test_constrained_list_ok():
@@ -39,7 +37,7 @@ def test_constrained_list_with_duplicates():
         UniqueConListModel(v=v)
 
     errors = exc_info.value.errors(include_url=False, include_context=False)
-    expected = [{"input": v, "loc": ("v",), "msg": "Value error, Items must be unique", "type": "value_error"}]
+    expected = [{"input": v, "loc": ("v",), "msg": "List must be unique", "type": "unique_list"}]
 
     assert errors == expected
 
@@ -65,8 +63,8 @@ def test_constrained_list_too_short():
             # "ctx": {"error": ListMinLengthError(limit_value=1)},
             "input": [],
             "loc": ("v",),
-            "msg": "Value error, ensure this value has at least 1 items",
-            "type": "value_error",
+            "msg": "List should have at least 1 item after validation, not 0",
+            "type": "too_short",
         }
     ]
 
@@ -74,16 +72,8 @@ def test_constrained_list_too_short():
 
 
 def test_constrained_list_inherit_constraints():
-    T = TypeVar("T")
-
-    class Parent(UniqueConstrainedList[T]):
-        min_items = 1
-
-    class Child(Parent[T]):
-        unique_items = True
-
     class UniqueConListModel(FormPage):
-        v: Child[int]
+        v: unique_conlist(int, min_items=1)
 
     v = list(range(7))
     m = UniqueConListModel(v=v)
@@ -93,9 +83,7 @@ def test_constrained_list_inherit_constraints():
         UniqueConListModel(v=[1, 1, 1])
 
     errors = exc_info.value.errors(include_url=False, include_context=False)
-    assert errors == [
-        {"input": [1, 1, 1], "loc": ("v",), "msg": "Value error, Items must be unique", "type": "value_error"}
-    ]
+    assert errors == [{"input": [1, 1, 1], "loc": ("v",), "msg": "List must be unique", "type": "unique_list"}]
 
     with raises(ValidationError) as exc_info:
         UniqueConListModel(v=1)
@@ -111,23 +99,18 @@ def test_constrained_list_inherit_constraints():
         {
             "input": [],
             "loc": ("v",),
-            "msg": "Value error, ensure this value has at least 1 items",
-            "type": "value_error",
+            "msg": "List should have at least 1 item after validation, not 0",
+            "type": "too_short",
             # "ctx": {"limit_value": 1},
         }
     ]
 
 
 def test_constrained_list_schema():
-    class UniqueConListClass(UniqueConstrainedList[int]):
-        min_items = 1
-        max_items = 3
-        unique_items = True
-
     class UniqueConListModel(FormPage):
-        unique_conlist1: unique_conlist(int)
-        unique_conlist2: unique_conlist(int, min_items=1, max_items=3, unique_items=True)
-        unique_conlist3: UniqueConListClass
+        unique_conlist1: conlist(int)
+        unique_conlist2: unique_conlist(int, min_items=1, max_items=3)
+        unique_conlist3: conset(int)
 
     expected = {
         "additionalProperties": False,
@@ -143,8 +126,6 @@ def test_constrained_list_schema():
             },
             "unique_conlist3": {
                 "items": {"type": "integer"},
-                "maxItems": 3,
-                "minItems": 1,
                 "title": "Unique Conlist3",
                 "type": "array",
                 "uniqueItems": True,
