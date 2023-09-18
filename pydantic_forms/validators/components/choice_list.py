@@ -10,23 +10,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from types import new_class
-from typing import Any, List, Optional, Type, TypeVar
+from typing import List, Optional, Type, TypeVar, Annotated
+
+from pydantic import conlist, Field, AfterValidator
+from pydantic_core import PydanticCustomError
 
 from pydantic_forms.validators.components.choice import Choice
-from pydantic_forms.validators.components.unique_constrained_list import UniqueConstrainedList
 
 T = TypeVar("T")  # pragma: no mutate
 
 
-class ChoiceList(UniqueConstrainedList[T]):
-    @classmethod
-    def __modify_schema__(cls, field_schema: dict[str, Any]) -> None:
-        super().__modify_schema__(field_schema)
-
-        data: dict = {}
-        cls.item_type.__modify_schema__(data)  # type: ignore
-        field_schema.update(**{k: v for k, v in data.items() if k == "options"})
+# class ChoiceList(UniqueConstrainedList[T]):
+#     @classmethod
+#     def __modify_schema__(cls, field_schema: dict[str, Any]) -> None:
+#         super().__modify_schema__(field_schema)
+#
+#         data: dict = {}
+#         cls.item_type.__modify_schema__(data)  # type: ignore
+#         field_schema.update(**{k: v for k, v in data.items() if k == "options"})
 
 
 def choice_list(
@@ -36,15 +37,13 @@ def choice_list(
     max_items: Optional[int] = None,
     unique_items: Optional[bool] = None,
 ) -> Type[List[T]]:
-    namespace = {
-        "min_items": min_items,
-        "max_items": max_items,
-        "unique_items": unique_items,
-        "__origin__": list,  # Needed for pydantic to detect that this is a list
-        "item_type": item_type,  # Needed for pydantic to detect the item type
-        "__args__": (item_type,),  # Needed for pydantic to detect the item type
-    }
-    # We use new_class to be able to deal with Generic types
-    return new_class(
-        "ChoiceListValue", (ChoiceList[item_type],), {}, lambda ns: ns.update(namespace)  # type:ignore
-    )
+    def _validate_unique_list(v: list[T]) -> list[T]:
+        if unique_items and len(v) != len(set(v)):
+            raise PydanticCustomError("unique_list", "List must be unique")
+        return v
+
+    return Annotated[
+        conlist(item_type, min_length=min_items, max_length=max_items),
+        AfterValidator(_validate_unique_list),
+        Field(json_schema_extra={"uniqueItems": True}),
+    ]

@@ -117,11 +117,17 @@ def form_with_leg_choice_list():
 
 def test_choice_list_constraint_should_be_unique(Form):
     with pytest.raises(ValidationError) as exc_info:
-        Form(choice=[1, 1, 1])
+        # Form(choice=[1, 1, 1])
+        Form(choice=["Primary", "Primary", "Primary"])
 
     errors = exc_info.value.errors(include_url=False, include_context=False)
     expected = [
-        {"input": [1, 1, 1], "loc": ("choice",), "msg": "Value error, Items must be unique", "type": "value_error"}
+        {
+            "input": ["Primary", "Primary", "Primary"],
+            "loc": ("choice",),
+            "msg": "List must be unique",
+            "type": "unique_list",
+        }
     ]
     assert errors == expected
 
@@ -144,8 +150,8 @@ def test_choice_list_constraint_at_least_one_item(Form):
         {
             "input": [],
             "loc": ("choice",),
-            "msg": "Value error, ensure this value has at least 1 items",
-            "type": "value_error",
+            "msg": "List should have at least 1 item after validation, not 0",
+            "type": "too_short",
             # "ctx": {"limit_value": 1},
         }
     ]
