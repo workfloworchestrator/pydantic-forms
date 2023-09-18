@@ -167,7 +167,7 @@ def from_serializable(dct: Dict[str, Any]) -> Dict[str, Any]:
 
 
 if IS_ORJSON:
-    print("Using orjson")  # noqa
+    logger.debug("Using orjson")
 
     def json_loads(s: Union[str, bytes, bytearray]) -> PY_JSON_TYPES:
         o = orjson.loads(s)
@@ -191,7 +191,7 @@ if IS_ORJSON:
             #     raise e
 
 else:
-    print("Using stdlib json")  # noqa
+    logger.debug("Using stdlib json")
     json_loads = json.loads
     json_dumps = partial(json.dumps, default=to_serializable)
 
