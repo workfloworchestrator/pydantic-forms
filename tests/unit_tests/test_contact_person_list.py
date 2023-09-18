@@ -4,10 +4,12 @@ import pytest
 from pydantic import ValidationError
 
 from pydantic_forms.core import FormPage
-from pydantic_forms.validators import ContactPersonList, contact_person_list
+from pydantic_forms.validators import contact_person_list
 
 
 def test_contact_persons():
+    ContactPersonList = contact_person_list()
+
     class Form(FormPage):
         contact_persons: ContactPersonList
 
@@ -28,13 +30,10 @@ def test_contact_persons():
 def test_contact_persons_schema():
     org_id = uuid4()
 
-    class OrgContactPersonList(ContactPersonList):
-        organisation = org_id
-        organisation_key = "key"
-        min_items = 1
+    OrgContactPersonList = contact_person_list(organisation=org_id, organisation_key="key", min_items=1)
 
     class Form(FormPage):
-        contact_persons: ContactPersonList = []
+        contact_persons: contact_person_list()
         contact_persons_org: OrgContactPersonList
         contact_persons_org2: contact_person_list(org_id, "foo")  # noqa: F821
 
@@ -84,58 +83,54 @@ def test_contact_persons_schema():
     assert Form.model_json_schema() == expected
 
 
-def test_contact_persons_nok_invalid_email():
+@pytest.fixture(name="Form")
+def form_with_contact_person_list():
     org_id = uuid4()
 
-    class ReqContactPersonList(ContactPersonList):
-        min_items = 1
-
-    class OrgContactPersonList(ContactPersonList):
-        organisation = org_id
-        organisation_key = "key"
+    ReqContactPersonList = contact_person_list(min_items=1)
+    OrgContactPersonList = contact_person_list(organisation=org_id, organisation_key="key")
 
     class Form(FormPage):
         contact_persons: ReqContactPersonList
         contact_persons_org: OrgContactPersonList = []
 
+    return Form
+
+
+def test_contact_persons_nok_invalid_email(Form):
     with pytest.raises(ValidationError) as error_info:
         Form(contact_persons=[{"name": "test1", "email": "a@b"}, {"email": "a@b.nl"}])
 
-    errors = error_info.value.errors()
+    errors = error_info.value.errors(include_url=False, include_context=False)
     expected = [
         {
+            "input": "a@b",
             "loc": ("contact_persons", 0, "email"),
-            "msg": "value is not a valid email address",
-            "type": "value_error.email",
+            "msg": "value is not a valid email address: The part after the @-sign is not valid. It should have a period.",
+            "type": "value_error",
         },
-        {"loc": ("contact_persons", 1, "name"), "msg": "field required", "type": "value_error.missing"},
+        {
+            "input": {"email": "a@b.nl"},
+            "loc": ("contact_persons", 1, "name"),
+            "msg": "Field required",
+            "type": "missing",
+        },
     ]
     assert errors == expected
 
 
-def test_contact_persons_nok_empty():
-    org_id = uuid4()
-
-    class ReqContactPersonList(ContactPersonList):
-        min_items = 1
-
-    class OrgContactPersonList(ContactPersonList):
-        organisation = org_id
-        organisation_key = "key"
-
-    class Form(FormPage):
-        contact_persons: ReqContactPersonList
-        contact_persons_org: OrgContactPersonList = []
-
+def test_contact_persons_nok_empty(Form):
     with pytest.raises(ValidationError) as error_info:
         Form(contact_persons=[])
 
+    errors = error_info.value.errors(include_url=False)
     expected = [
         {
+            "input": [],
             "loc": ("contact_persons",),
-            "msg": "ensure this value has at least 1 items",
-            "type": "value_error.list.min_items",
-            "ctx": {"limit_value": 1},
+            "msg": "List should have at least 1 item after validation, not 0",
+            "type": "too_short",
+            "ctx": {"actual_length": 0, "field_type": "List", "min_length": 1},
         }
     ]
-    assert error_info.value.errors() == expected
+    assert errors == expected

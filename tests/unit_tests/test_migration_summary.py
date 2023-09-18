@@ -1,6 +1,6 @@
-import pytest
-
 from uuid import uuid4
+
+import pytest
 
 from pydantic_forms.core import FormPage
 from pydantic_forms.validators import DisplaySubscription, Label, MigrationSummary, migration_summary

@@ -10,9 +10,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Optional, Type, TypeVar, Annotated
+from typing import Annotated, List, Optional, Type, TypeVar
 
-from pydantic import conlist, Field, AfterValidator
+from pydantic import AfterValidator, Field, conlist
 from pydantic_core import PydanticCustomError
 
 from pydantic_forms.validators.components.choice import Choice

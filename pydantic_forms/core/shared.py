@@ -14,7 +14,7 @@ from inspect import isasyncgenfunction, isgeneratorfunction
 from typing import Any, Callable, Generator, Optional
 
 import structlog
-from pydantic import BaseModel, ConfigDict, Field, model_validator, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 from pydantic.v1.fields import Undefined
 
 logger = structlog.get_logger(__name__)

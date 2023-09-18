@@ -11,10 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from types import new_class
-from typing import Any, ClassVar, Optional, Type, TypeVar
+from typing import Annotated, Any, ClassVar, Optional, Type, TypeVar
 from uuid import UUID
 
-from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler
+from pydantic import Field, GetCoreSchemaHandler, GetJsonSchemaHandler, conlist
 from pydantic.v1 import ConstrainedList
 from pydantic_core import CoreSchema, core_schema
 
@@ -67,12 +67,24 @@ class ContactPersonList(ConstrainedList):
     #     yield remove_empty_items
 
 
-def contact_person_list(
+def contact_person_list_old(
     organisation: Optional[UUID] = None, organisation_key: Optional[str] = "organisation"
 ) -> Type[list[T]]:
     namespace = {"organisation": organisation, "organisation_key": organisation_key}
     # We use new_class to be able to deal with Generic types
     return new_class("ContactPersonListValue", (ContactPersonList,), {}, lambda ns: ns.update(namespace))
+
+
+def contact_person_list(
+    organisation: Optional[UUID] = None,
+    organisation_key: Optional[str] = "organisation",
+    min_items: Optional[int] = None,
+    max_items: Optional[int] = None,
+) -> Type[list[T]]:
+    return Annotated[
+        conlist(ContactPerson, min_length=min_items, max_length=max_items),
+        Field(json_schema_extra={"uniqueItems": True}),
+    ]
 
 
 def remove_empty_items(v: list) -> list:

@@ -12,7 +12,7 @@
 # limitations under the License.
 
 from types import new_class
-from typing import ClassVar, Optional, Type, Annotated
+from typing import Annotated, ClassVar, Optional, Type
 
 from pydantic import BaseModel, Field, model_serializer
 

@@ -1,6 +1,6 @@
 from pydantic_forms.validators.components.accept import Accept
 from pydantic_forms.validators.components.choice import Choice
-from pydantic_forms.validators.components.choice_list import ChoiceList, choice_list
+from pydantic_forms.validators.components.choice_list import choice_list
 from pydantic_forms.validators.components.contact_person import ContactPerson
 from pydantic_forms.validators.components.contact_person_list import ContactPersonList, contact_person_list
 from pydantic_forms.validators.components.display_subscription import DisplaySubscription
