@@ -94,9 +94,9 @@ dev = [
     "python-dotenv",
     "watchdog",
 ]
-rapidjson = [
-    "rapidjson >=1.0.0,<2.0.0",
-]
+#rapidjson = [
+#    "rapidjson >=1.0.0,<2.0.0",
+#]
 orjson = [
     "orjson >=3.6.0,<4.0.0",
 ]
