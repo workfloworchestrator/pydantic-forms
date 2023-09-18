@@ -10,12 +10,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Annotated, Any, ClassVar, Optional, Type, TypeVar, Generator
+from typing import Annotated, Generator, Optional, Type, TypeVar
 from uuid import UUID
 
-from pydantic import Field, GetCoreSchemaHandler, GetJsonSchemaHandler, conlist
-from pydantic.v1 import ConstrainedList
-from pydantic_core import CoreSchema, core_schema
+from pydantic import Field, conlist
 
 from pydantic_forms.validators.components.contact_person import ContactPerson
 

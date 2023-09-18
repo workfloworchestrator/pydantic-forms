@@ -12,7 +12,7 @@
 # limitations under the License.
 
 from types import new_class
-from typing import Annotated, ClassVar, Optional, Type
+from typing import Annotated, ClassVar, Optional
 
 from pydantic import BaseModel, Field
 
@@ -28,7 +28,9 @@ MigrationSummary = Annotated[_MigrationSummary, Field(frozen=True, default=None,
 
 def migration_summary(data: Optional[SummaryData] = None) -> type[MigrationSummary]:
     namespace = {"data": data}
-    klass: type[MigrationSummary] = new_class("MigrationSummaryValue", (MigrationSummary,), {}, lambda ns: ns.update(namespace))
+    klass: type[MigrationSummary] = new_class(
+        "MigrationSummaryValue", (MigrationSummary,), {}, lambda ns: ns.update(namespace)
+    )
     json_extra_schema = {
         "format": "summary",
         "type": "string",

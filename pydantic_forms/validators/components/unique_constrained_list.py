@@ -10,7 +10,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Annotated, Any, Hashable, List, Optional, Type, TypeVar, get_args
+from typing import Annotated, Any, Hashable, Optional, TypeVar, get_args
 
 from pydantic import AfterValidator, Field, GetCoreSchemaHandler, GetJsonSchemaHandler, conlist
 from pydantic.v1 import ConstrainedList
