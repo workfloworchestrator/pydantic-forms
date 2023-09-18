@@ -1,5 +1,6 @@
 from enum import Enum
-from typing import Any, AsyncGenerator, Callable, Generator, Type, TypedDict, TypeVar, Union
+from typing import Any, AsyncGenerator, Callable, Generator, Type, TypeVar, Union
+from typing_extensions import TypedDict
 
 try:
     # python3.10 introduces types.UnionType for the new union and optional type defs.

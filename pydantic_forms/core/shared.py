@@ -14,26 +14,28 @@ from inspect import isasyncgenfunction, isgeneratorfunction
 from typing import Any, Callable, Generator, Optional
 
 import structlog
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator, ValidationError
 from pydantic.v1.fields import Undefined
 
 logger = structlog.get_logger(__name__)
 
 
 class DisplayOnlyFieldType:
-    @classmethod
-    def __get_validators__(cls) -> Generator:
-        yield cls.nothing
-
-    @staticmethod
-    def nothing(v: Any, field: Any) -> Any:
-        return field.default
+    pass
+    # @classmethod
+    # def __get_validators__(cls) -> Generator:
+    #     yield cls.nothing
+    #
+    # @staticmethod
+    # def nothing(v: Any, field: Any) -> Any:
+    #     return field.default
 
 
 class FormPage(BaseModel):
     model_config = ConfigDict(
         # json_loads=json_loads,
         # json_dumps=json_dumps,
+        arbitrary_types_allowed=True,
         title="unknown",
         extra="forbid",
         validate_default=True,
@@ -56,9 +58,10 @@ class FormPage(BaseModel):
         # The default and requiredness of a field is not a property of a field
         # In the case of DisplayOnlyFieldTypes, we do kind of want that.
         # Using this method we set the right properties after the form is created
+
         for field in cls.model_fields.values():
             if field.frozen:
-                pass
+                field.validate_default = False
 
                 # try:
             #     # if issubclass(field.type_, DisplayOnlyFieldType):  # type: ignore
