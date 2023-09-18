@@ -42,8 +42,7 @@ class Accept(str):
     @classmethod
     def _validate(cls, value: str) -> bool:
         value = cls.enum_validator(value)
-        value = cls.must_be_complete(value)
-        return value
+        return cls.must_be_complete(value)
 
     @classmethod
     def enum_validator(cls, v: Any) -> str:

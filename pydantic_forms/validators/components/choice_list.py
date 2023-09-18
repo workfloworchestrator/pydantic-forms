@@ -46,4 +46,4 @@ def choice_list(
         conlist(item_type, min_length=min_items, max_length=max_items),
         AfterValidator(_validate_unique_list),
         Field(json_schema_extra={"uniqueItems": True}),
-    ]
+    ]  # type: ignore

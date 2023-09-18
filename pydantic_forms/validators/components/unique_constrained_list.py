@@ -84,13 +84,13 @@ def _validate_unique_list(v: list[T]) -> list[T]:
 
 
 def unique_conlist(
-    item_type: Type[T],
+    item_type: T,
     *,
     min_items: Optional[int] = None,
     max_items: Optional[int] = None,
-) -> Type[List[T]]:
+) -> list[T]:
     return Annotated[
-        conlist(item_type, min_length=min_items, max_length=max_items),
+        conlist(item_type, min_length=min_items, max_length=max_items),  # type: ignore
         AfterValidator(_validate_unique_list),
         Field(json_schema_extra={"uniqueItems": True}),
-    ]
+    ]  # type: ignore

@@ -19,16 +19,16 @@ from pydantic import BaseModel, Field
 from pydantic_forms.types import SummaryData
 
 
-class MigrationSummary(BaseModel):
+class _MigrationSummary(BaseModel):
     data: ClassVar[Optional[SummaryData]] = None
 
 
-MigrationSummary = Annotated[MigrationSummary, Field(frozen=True, default=None, validate_default=False)]
+MigrationSummary = Annotated[_MigrationSummary, Field(frozen=True, default=None, validate_default=False)]
 
 
-def migration_summary(data: Optional[SummaryData] = None) -> Type[MigrationSummary]:
+def migration_summary(data: Optional[SummaryData] = None) -> type[MigrationSummary]:
     namespace = {"data": data}
-    klass = new_class("MigrationSummaryValue", (MigrationSummary,), {}, lambda ns: ns.update(namespace))
+    klass: type[MigrationSummary] = new_class("MigrationSummaryValue", (MigrationSummary,), {}, lambda ns: ns.update(namespace))
     json_extra_schema = {
         "format": "summary",
         "type": "string",
@@ -36,4 +36,4 @@ def migration_summary(data: Optional[SummaryData] = None) -> Type[MigrationSumma
     }
     return Annotated[
         klass, Field(frozen=True, default=None, validate_default=False, json_schema_extra=json_extra_schema)
-    ]
+    ]  # type: ignore

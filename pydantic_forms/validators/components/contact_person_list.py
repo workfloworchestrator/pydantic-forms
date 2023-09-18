@@ -10,8 +10,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from types import new_class
-from typing import Annotated, Any, ClassVar, Optional, Type, TypeVar
+from typing import Annotated, Any, ClassVar, Optional, Type, TypeVar, Generator
 from uuid import UUID
 
 from pydantic import Field, GetCoreSchemaHandler, GetJsonSchemaHandler, conlist
@@ -23,56 +22,31 @@ from pydantic_forms.validators.components.contact_person import ContactPerson
 T = TypeVar("T")  # pragma: no mutate
 
 
-class ContactPersonList(ConstrainedList):
-    item_type = ContactPerson
-    __args__ = (ContactPerson,)
-
-    organisation: ClassVar[Optional[UUID]] = None
-    organisation_key: ClassVar[Optional[str]] = "organisation"
-
-    @classmethod
-    def __get_pydantic_core_schema__(cls, source_type: Any, handler: GetCoreSchemaHandler) -> CoreSchema:
-        return core_schema.no_info_after_validator_function(remove_empty_items, handler(list))
-
-    @classmethod
-    def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:
-        json_schema = handler.resolve_ref_schema(core_schema)
-
-        data = {}
-
-        if cls.organisation:
-            data["organisationId"] = str(cls.organisation)
-        if cls.organisation_key:
-            data["organisationKey"] = cls.organisation_key
-
-        json_schema.update(**data)
-
-        return json_schema
-
-    # @classmethod
-    # def __modify_schema__(cls, field_schema: dict[str, Any]) -> None:
-    #     # super().__modify_schema__(field_schema)
-    #     data = {}
-    #
-    #     if cls.organisation:
-    #         data["organisationId"] = str(cls.organisation)
-    #     if cls.organisation_key:
-    #         data["organisationKey"] = cls.organisation_key
-
-    # field_schema.update(**data)
-
-    # @classmethod
-    # def __get_validators__(cls) -> Generator:
-    #     # yield from super().__get_validators__()
-    #     yield remove_empty_items
-
-
-def contact_person_list_old(
-    organisation: Optional[UUID] = None, organisation_key: Optional[str] = "organisation"
-) -> Type[list[T]]:
-    namespace = {"organisation": organisation, "organisation_key": organisation_key}
-    # We use new_class to be able to deal with Generic types
-    return new_class("ContactPersonListValue", (ContactPersonList,), {}, lambda ns: ns.update(namespace))
+# class ContactPersonList(ConstrainedList):
+#     item_type = ContactPerson
+#     __args__ = (ContactPerson,)
+#
+#     organisation: ClassVar[Optional[UUID]] = None
+#     organisation_key: ClassVar[Optional[str]] = "organisation"
+#
+#     @classmethod
+#     def __get_pydantic_core_schema__(cls, source_type: Any, handler: GetCoreSchemaHandler) -> CoreSchema:
+#         return core_schema.no_info_after_validator_function(remove_empty_items, handler(list))
+#
+#     @classmethod
+#     def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:
+#         json_schema = handler.resolve_ref_schema(core_schema)
+#
+#         data = {}
+#
+#         if cls.organisation:
+#             data["organisationId"] = str(cls.organisation)
+#         if cls.organisation_key:
+#             data["organisationKey"] = cls.organisation_key
+#
+#         json_schema.update(**data)
+#
+#         return json_schema
 
 
 def contact_person_list(
@@ -81,10 +55,16 @@ def contact_person_list(
     min_items: Optional[int] = None,
     max_items: Optional[int] = None,
 ) -> Type[list[T]]:
+    def json_schema_extra() -> Generator:
+        if organisation:
+            yield "organisation", organisation
+        if organisation_key:
+            yield "organisation_key", organisation_key
+
     return Annotated[
         conlist(ContactPerson, min_length=min_items, max_length=max_items),
-        Field(json_schema_extra={"uniqueItems": True}),
-    ]
+        Field(json_schema_extra=dict(json_schema_extra())),
+    ]  # type: ignore
 
 
 def remove_empty_items(v: list) -> list:
