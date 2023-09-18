@@ -11,10 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from inspect import isasyncgenfunction, isgeneratorfunction
-from typing import Any, Callable, Generator, Optional
+from typing import Any, Callable, Optional
 
 import structlog
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.v1.fields import Undefined
 
 logger = structlog.get_logger(__name__)

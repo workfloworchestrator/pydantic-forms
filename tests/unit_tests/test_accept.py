@@ -2,7 +2,7 @@ from pydantic_core import ValidationError
 from pytest import raises
 
 from pydantic_forms.core import FormPage
-from pydantic_forms.utils.json import json_dumps, json_loads
+from pydantic_forms.utils.json import json_loads
 from pydantic_forms.validators import Accept
 
 

@@ -14,7 +14,7 @@ from typing import Any, ClassVar, Optional
 
 from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler
 from pydantic.v1.errors import EnumMemberError
-from pydantic_core import CoreSchema, PydanticCustomError, ValidationError, core_schema
+from pydantic_core import CoreSchema, PydanticCustomError, core_schema
 
 from pydantic_forms.types import AcceptData, strEnum
 
@@ -31,7 +31,7 @@ class Accept(str):
         json_schema = handler.resolve_ref_schema(core_schema["schema"])
         return (
             json_schema
-            | {"format": "accept", "type": "string", "enum": [v for v in cls.Values]}
+            | {"format": "accept", "type": "string", "enum": list(cls.Values)}
             | ({"data": cls.data} if cls.data else {})
         )
 
@@ -55,7 +55,7 @@ class Accept(str):
             # TODO: this converts the deprecated v1 error to a generic error. Not clear yet how to handle this in
             # the future
             orig = EnumMemberError(enum_values=enum_values)
-            raise PydanticCustomError(f"type_error.{orig.code}", str(orig), dict(enum_values=enum_values))
+            raise PydanticCustomError(f"type_error.{orig.code}", str(orig), {"enum_values": enum_values})
         return enum_v.value
 
     @classmethod
