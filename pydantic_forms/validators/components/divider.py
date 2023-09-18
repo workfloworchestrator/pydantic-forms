@@ -10,8 +10,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Annotated
+from typing import Annotated, Optional
 
 from pydantic import Field
 
-Divider = Annotated[str | None, Field(None, frozen=True, json_schema_extra={"format": "divider", "type": "string"})]
+Divider = Annotated[Optional[str], Field(None, frozen=True, json_schema_extra={"format": "divider", "type": "string"})]
