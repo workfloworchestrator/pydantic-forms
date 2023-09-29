@@ -36,8 +36,8 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP",
 ]
 requires = [
-    "pydantic",
-    "pydantic[email]",
+    "pydantic >= 2.4.0",
+    "pydantic[email] >= 2.4.0",
 ]
 description-file = "README.md"
 requires-python = ">=3.9,<=3.12"
