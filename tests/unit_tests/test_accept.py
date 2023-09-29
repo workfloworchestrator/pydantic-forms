@@ -26,6 +26,7 @@ def test_accept_schema():
             "accept": {
                 "enum": ["ACCEPTED", "INCOMPLETE"],
                 "format": "accept",
+                "metadata": {"pydantic.internal.needs_apply_discriminated_union": False},
                 "type": "string",
                 "title": "Accept",
             }
@@ -34,7 +35,7 @@ def test_accept_schema():
         "title": "unknown",
         "type": "object",
     }
-    assert Form.model_json_schema() == expected
+    assert Form.model_json_schema(mode="serialization") == expected
 
 
 def test_accept_schema_with_data():
@@ -51,6 +52,7 @@ def test_accept_schema_with_data():
                 "data": [("field", "label")],
                 "enum": ["ACCEPTED", "INCOMPLETE"],
                 "format": "accept",
+                "metadata": {"pydantic.internal.needs_apply_discriminated_union": False},
                 "type": "string",
                 "title": "Accept",
             }
