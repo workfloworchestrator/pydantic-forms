@@ -10,9 +10,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from functools import partial
 from types import new_class
-from typing import Annotated, ClassVar, Optional
+from typing import Annotated, ClassVar, Optional, Any
 
 from pydantic import BaseModel, Field
 
@@ -26,16 +26,19 @@ class _MigrationSummary(BaseModel):
 MigrationSummary = Annotated[_MigrationSummary, Field(frozen=True, default=None, validate_default=False)]
 
 
-def migration_summary(data: Optional[SummaryData] = None) -> type[MigrationSummary]:
+def create_json_extra_schema(data: SummaryData, schema: dict[str, Any]) -> None:
+    schema.update({"format": "summary", "type": "string", "uniforms": {"data": data}})
+    schema.pop("allOf")  # This is needed, because otherwise Uniforms (3.8.1) is unable to render this schema
+
+
+def migration_summary(data: SummaryData) -> type[MigrationSummary]:
     namespace = {"data": data}
     klass: type[MigrationSummary] = new_class(
-        "MigrationSummaryValue", (MigrationSummary,), {}, lambda ns: ns.update(namespace)
+        "MigrationSummaryValue", (_MigrationSummary,), {}, lambda ns: ns.update(namespace)
     )
-    json_extra_schema = {
-        "format": "summary",
-        "type": "string",
-        "uniforms": namespace,
-    }
+
+    json_schema_extra = partial(create_json_extra_schema, data)
+
     return Annotated[
-        klass, Field(frozen=True, default=None, validate_default=False, json_schema_extra=json_extra_schema)
+        klass, Field(frozen=True, default=None, validate_default=False, json_schema_extra=json_schema_extra)
     ]  # type: ignore

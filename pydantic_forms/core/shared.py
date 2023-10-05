@@ -36,7 +36,7 @@ class FormPage(BaseModel):
         # json_loads=json_loads,
         # json_dumps=json_dumps,
         arbitrary_types_allowed=True,
-        title="unknown",
+        # title="unknown",
         extra="forbid",
         validate_default=True,
     )
