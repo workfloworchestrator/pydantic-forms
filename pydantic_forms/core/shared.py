@@ -22,21 +22,12 @@ logger = structlog.get_logger(__name__)
 
 class DisplayOnlyFieldType:
     pass
-    # @classmethod
-    # def __get_validators__(cls) -> Generator:
-    #     yield cls.nothing
-    #
-    # @staticmethod
-    # def nothing(v: Any, field: Any) -> Any:
-    #     return field.default
 
 
 class FormPage(BaseModel):
     model_config = ConfigDict(
-        # json_loads=json_loads,
-        # json_dumps=json_dumps,
         arbitrary_types_allowed=True,
-        # title="unknown",
+        title="unknown",
         extra="forbid",
         validate_default=True,
     )
@@ -61,13 +52,6 @@ class FormPage(BaseModel):
         for field in cls.model_fields.values():
             if field.frozen:
                 field.validate_default = False
-
-                # try:
-            #     # if issubclass(field.type_, DisplayOnlyFieldType):  # type: ignore
-            #     #     field.required = False  # type: ignore
-            #     #     field.allow_none = True  # type: ignore
-            # except TypeError:
-            #     pass
 
 
 def ReadOnlyField(
