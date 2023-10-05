@@ -12,7 +12,7 @@
 # limitations under the License.
 from functools import partial
 from types import new_class
-from typing import Annotated, ClassVar, Optional, Any
+from typing import Annotated, Any, ClassVar, Optional
 
 from pydantic import BaseModel, Field
 
