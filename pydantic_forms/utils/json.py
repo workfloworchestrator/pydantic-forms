@@ -199,8 +199,7 @@ else:
 
 
 def non_none_dict(dikt: Sequence[tuple[str, Any]]) -> dict[Any, Any]:
-    """
-    Return no `None` values in a Dict.
+    """Return no `None` values in a Dict.
 
     This function may be used in the `asdict()` method as dictionary factory.
 

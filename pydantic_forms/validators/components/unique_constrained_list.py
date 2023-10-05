@@ -24,8 +24,7 @@ class UniqueConstrainedList(ConstrainedList, list[T]):
 
     @classmethod
     def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:
-        json_schema = handler.resolve_ref_schema(core_schema["schema"])
-        return json_schema
+        return handler.resolve_ref_schema(core_schema["schema"])
 
     # @classmethod
     # def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:

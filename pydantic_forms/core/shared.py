@@ -47,8 +47,7 @@ class FormPage(BaseModel):
         def get_value(k: str, v: Any) -> Any:
             if k in frozen_fields:
                 return frozen_fields[k].default
-            else:
-                return v
+            return v
 
         mutable_data = {k: get_value(k, v) for k, v in data.items()}
         super().__init__(**mutable_data)

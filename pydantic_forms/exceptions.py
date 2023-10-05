@@ -78,13 +78,11 @@ def _display_error_type_and_ctx(error: "ErrorDict") -> str:
     ctx = error.get("ctx")
     if ctx:
         return t + "".join(f"; {k}={v}" for k, v in ctx.items())
-    else:
-        return t
+    return t
 
 
 def show_ex(ex: Exception, stacklimit: Union[int, None] = None) -> str:
-    """
-    Show an exception, including its class name, message and (limited) stacktrace.
+    """Show an exception, including its class name, message and (limited) stacktrace.
 
     >>> try:
     ...     raise Exception("Something went wrong")

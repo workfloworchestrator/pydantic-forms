@@ -12,8 +12,8 @@
 # limitations under the License.
 from typing import Any, ClassVar, Optional
 
-from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler
-from pydantic_core import CoreSchema, core_schema
+from pydantic import GetJsonSchemaHandler
+from pydantic_core import CoreSchema
 
 from pydantic_forms.types import strEnum
 
@@ -45,10 +45,6 @@ class Choice(strEnum):
         return obj
 
     @classmethod
-    def __get_pydantic_core_schema__(cls, source_type: Any, handler: GetCoreSchemaHandler) -> CoreSchema:
-        return core_schema.no_info_after_validator_function(cls, handler(cls), ref=cls.__name__)
-
-    @classmethod
     def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:
         json_schema = handler(core_schema)
         json_schema = handler.resolve_ref_schema(json_schema)
@@ -57,20 +53,9 @@ class Choice(strEnum):
 
         kwargs = {}
 
-        options = dict(map(lambda i: (i.value, i.label), cls.__members__.values()))
+        options = {i.value: i.label for i in cls.__members__.values()}
 
-        if not all(map(lambda o: o[0] == o[1], options.items())):
+        if not all((o[0] == o[1] for o in options.items())):
             kwargs["options"] = options
 
         return json_schema | {"type": "string"} | kwargs
-
-    # @classmethod
-    # def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-    #     kwargs = {}
-    #
-    #     options = dict(map(lambda i: (i.value, i.label), cls.__members__.values()))
-    #
-    #     if not all(map(lambda o: o[0] == o[1], options.items())):
-    #         kwargs["options"] = options
-    #
-    #     field_schema.update(type="string", **kwargs)
