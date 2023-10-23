@@ -26,7 +26,6 @@ def test_contact_persons():
     assert validated_data == expected
 
 
-@pytest.mark.skip(reason="Dont bother about schema right now")
 def test_contact_persons_schema():
     org_id = uuid4()
 
@@ -39,7 +38,7 @@ def test_contact_persons_schema():
 
     expected = {
         "additionalProperties": False,
-        "definitions": {
+        "$defs": {
             "ContactPerson": {
                 "properties": {
                     "email": {"format": "email", "title": "Email", "type": "string"},
@@ -53,14 +52,13 @@ def test_contact_persons_schema():
         },
         "properties": {
             "contact_persons": {
-                "default": [],
-                "items": {"$ref": "#/definitions/ContactPerson"},
+                "items": {"$ref": "#/$defs/ContactPerson"},
                 "organisationKey": "organisation",
                 "title": "Contact Persons",
                 "type": "array",
             },
             "contact_persons_org": {
-                "items": {"$ref": "#/definitions/ContactPerson"},
+                "items": {"$ref": "#/$defs/ContactPerson"},
                 "organisationId": str(org_id),
                 "organisationKey": "key",
                 "title": "Contact Persons Org",
@@ -68,14 +66,14 @@ def test_contact_persons_schema():
                 "minItems": 1,
             },
             "contact_persons_org2": {
-                "items": {"$ref": "#/definitions/ContactPerson"},
+                "items": {"$ref": "#/$defs/ContactPerson"},
                 "organisationId": str(org_id),
                 "organisationKey": "foo",
                 "title": "Contact Persons Org2",
                 "type": "array",
             },
         },
-        "required": ["contact_persons_org", "contact_persons_org2"],
+        "required": ["contact_persons", "contact_persons_org", "contact_persons_org2"],
         "title": "unknown",
         "type": "object",
     }

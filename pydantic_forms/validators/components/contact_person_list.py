@@ -55,9 +55,9 @@ def contact_person_list(
 ) -> Type[list[T]]:
     def json_schema_extra() -> Generator:
         if organisation:
-            yield "organisation", organisation
+            yield "organisationId", organisation
         if organisation_key:
-            yield "organisation_key", organisation_key
+            yield "organisationKey", organisation_key
 
     return Annotated[
         conlist(ContactPerson, min_length=min_items, max_length=max_items),
