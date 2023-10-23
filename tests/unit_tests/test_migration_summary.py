@@ -1,7 +1,5 @@
 from uuid import uuid4
 
-import pytest
-
 from pydantic_forms.core import FormPage
 from pydantic_forms.validators import DisplaySubscription, Label, migration_summary
 
@@ -29,7 +27,6 @@ def test_display_default():
     }
 
 
-@pytest.mark.skip(reason="Dont bother about schema right now")
 def test_migration_summary_schema():
     Summary = migration_summary(data={"headers": ["one"]})
 
@@ -39,7 +36,14 @@ def test_migration_summary_schema():
     expected = {
         "additionalProperties": False,
         "properties": {
-            "ms": {"format": "summary", "title": "Ms1", "type": "string", "uniforms": {"data": "foo"}},
+            "ms": {
+                "format": "summary",
+                "default": None,
+                "type": "string",
+                "uniforms": {
+                    "data": {"headers": ["one"]},
+                },
+            },
         },
         "title": "unknown",
         "type": "object",

@@ -1,9 +1,7 @@
 from uuid import uuid4
 
-import pytest
-
 from pydantic_forms.core import FormPage
-from pydantic_forms.validators import DisplaySubscription, Label
+from pydantic_forms.validators import DisplaySubscription, Label, migration_summary
 
 
 def test_display_subscription():
@@ -28,14 +26,14 @@ def test_display_subscription_update_not_allowed():
     assert Form(display_sub=uuid4()).model_dump() == expected
 
 
-@pytest.mark.skip(reason="Dont bother about schema right now")
 def test_display_only_schema():
     some_sub_id = uuid4()
+    Summary = migration_summary({"headers": ["one"]})
 
     class Form(FormPage):
         display_sub: DisplaySubscription = some_sub_id
         label: Label
-        migration_summary: migration_summary({"headers": ["one"]})  # noqa: F821
+        summary: Summary
 
     expected = {
         "additionalProperties": False,
@@ -46,10 +44,16 @@ def test_display_only_schema():
                 "title": "Display Sub",
                 "type": "string",
             },
-            "label": {"format": "label", "title": "Label", "type": "string"},
-            "migration_summary": {
+            "label": {
+                "anyOf": [{"type": "string"}, {"type": "null"}],
+                "format": "label",
+                "default": None,
+                "title": "Label",
+                "type": "string",
+            },
+            "summary": {
                 "format": "summary",
-                "title": "Migration Summary",
+                "default": None,
                 "type": "string",
                 "uniforms": {"data": {"headers": ["one"]}},
             },
