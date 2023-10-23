@@ -12,7 +12,7 @@ def test_accept_ok():
 
     validated_data = Form(accept="ACCEPTED").model_dump_json()
 
-    expected = {"accept": True}
+    expected = {"accept": "ACCEPTED"}
     assert json_loads(validated_data) == expected
 
 

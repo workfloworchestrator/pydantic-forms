@@ -40,9 +40,10 @@ class Accept(str):
         return core_schema.no_info_after_validator_function(cls._validate, handler(str))
 
     @classmethod
-    def _validate(cls, value: str) -> bool:
+    def _validate(cls, value: str) -> str:
         value = cls.enum_validator(value)
-        return cls.must_be_complete(value)
+        cls.must_be_complete(value)
+        return value
 
     @classmethod
     def enum_validator(cls, v: Any) -> str:
