@@ -21,16 +21,6 @@ from pydantic_forms.validators.components.choice import Choice
 T = TypeVar("T")  # pragma: no mutate
 
 
-# class ChoiceList(UniqueConstrainedList[T]):
-#     @classmethod
-#     def __modify_schema__(cls, field_schema: dict[str, Any]) -> None:
-#         super().__modify_schema__(field_schema)
-#
-#         data: dict = {}
-#         cls.item_type.__modify_schema__(data)  # type: ignore
-#         field_schema.update(**{k: v for k, v in data.items() if k == "options"})
-
-
 def choice_list(
     item_type: type[Choice],
     *,
