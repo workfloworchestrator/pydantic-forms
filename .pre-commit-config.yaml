@@ -1,20 +1,22 @@
 repos:
-  - repo: https://github.com/timothycrosley/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
   - repo: https://github.com/psf/black
-    rev: 23.3.0
+    rev: 23.10.0
     hooks:
       - id: black
         language_version: python3.9
   - repo: https://github.com/asottile/blacken-docs
-    rev: 1.13.0
+    rev: 1.16.0
     hooks:
       - id: blacken-docs
         additional_dependencies: [black==23.1.0]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.1.1
+    hooks:
+      - id: ruff
+        args: [ --fix, --exit-non-zero-on-fix, --show-fixes ]
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -25,23 +27,8 @@ repos:
       - id: debug-statements
       - id: requirements-txt-fixer
       - id: detect-private-key
-  - repo: https://github.com/PyCQA/flake8
-    rev: 6.0.0
-    hooks:
-      - id: flake8
-        additional_dependencies:
-          - flake8-bandit
-          - flake8-bugbear
-          - flake8-comprehensions
-          - flake8-docstrings
-          - flake8-logging-format
-          - flake8-pep3101
-          - flake8-print
-          - flake8-rst
-          - flake8-rst-docstrings
-          - flake8-tidy-imports
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.2.0
+    rev: v1.6.1
     hooks:
       - id: mypy
         language_version: python3.9
@@ -63,6 +50,6 @@ repos:
       - id: python-check-mock-methods
       - id: rst-backticks
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.9.0.2
+    rev: v0.9.0.6
     hooks:
       - id: shellcheck
