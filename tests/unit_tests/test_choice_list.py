@@ -56,7 +56,6 @@ def test_choice_list_default_str():
         Form(choice=["Wrong"])
 
 
-@pytest.mark.skip(reason="Dont bother about schema right now")
 def test_choice_list_schema():
     class LegChoice(Choice):
         Primary = "Primary"
@@ -68,20 +67,18 @@ def test_choice_list_schema():
         Tertiary = "Tertiary"
 
     class Form(FormPage):
-        choice: choice_list(LegChoice)
-        choice_label: choice_list(LegChoiceLabel)
+        choices: choice_list(LegChoice)
+        choices_with_labels: choice_list(LegChoiceLabel)
 
     expected = {
         "additionalProperties": False,
-        "definitions": {
+        "$defs": {
             "LegChoice": {
-                "description": "An enumeration.",
                 "enum": ["Primary", "Secondary"],
                 "title": "LegChoice",
                 "type": "string",
             },
             "LegChoiceLabel": {
-                "description": "An enumeration.",
                 "enum": ["Primary", "Secondary", "Tertiary"],
                 "options": {"Primary": "Primary LP", "Secondary": "Secondary LP", "Tertiary": "Tertiary"},
                 "title": "LegChoiceLabel",
@@ -89,14 +86,18 @@ def test_choice_list_schema():
             },
         },
         "properties": {
-            "choice": {"items": {"$ref": "#/definitions/LegChoice"}, "type": "array"},
-            "choice_label": {
-                "items": {"$ref": "#/definitions/LegChoiceLabel"},
-                "options": {"Primary": "Primary LP", "Secondary": "Secondary LP", "Tertiary": "Tertiary"},
+            "choices": {
+                "items": {"$ref": "#/$defs/LegChoice"},
                 "type": "array",
+                "title": "Choices",
+            },
+            "choices_with_labels": {
+                "items": {"$ref": "#/$defs/LegChoiceLabel"},
+                "type": "array",
+                "title": "Choices With Labels",
             },
         },
-        "required": ["choice", "choice_label"],
+        "required": ["choices", "choices_with_labels"],
         "title": "unknown",
         "type": "object",
     }

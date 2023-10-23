@@ -55,7 +55,7 @@ class Choice(strEnum):
 
         options = {i.value: i.label for i in cls.__members__.values()}
 
-        if not all((o[0] == o[1] for o in options.items())):
+        if not all((value == label for value, label in options.items())):
             kwargs["options"] = options
 
         return json_schema | {"type": "string"} | kwargs
