@@ -24,12 +24,10 @@ def test_list_of_one_min_items(Form):
     errors = error_info.value.errors(include_url=False, include_context=False)
     expected = [
         {
-            # "ctx": {"limit_value": 1},
             "input": [],
             "loc": ("one",),
             "msg": "List should have at least 1 item after validation, not 0",
             "type": "too_short",
-            # "ctx": {"error": ListMinLengthError(limit_value=1)},
         }
     ]
     assert errors == expected
@@ -46,7 +44,6 @@ def test_list_of_one_max_items(Form):
             "loc": ("one",),
             "msg": "List should have at most 1 item after validation, not 2",
             "type": "too_long",
-            # "ctx": {"error": ListMinLengthError(limit_value=1)},
         },
     ]
     assert errors == expected

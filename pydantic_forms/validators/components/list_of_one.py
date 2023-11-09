@@ -11,6 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pydantic_forms.validators.components.unique_constrained_list import T, unique_conlist
+from typing import Annotated
 
-ListOfOne = unique_conlist(T, min_items=1, max_items=1)
+from pydantic import Field
+
+from pydantic_forms.validators.components.unique_constrained_list import T
+
+ListOfOne = Annotated[list[T], Field(min_length=1, max_length=1)]

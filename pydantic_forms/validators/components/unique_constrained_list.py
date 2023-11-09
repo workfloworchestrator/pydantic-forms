@@ -10,86 +10,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Annotated, Any, Hashable, Optional, TypeVar, get_args
+from typing import Annotated, Optional, TypeVar
 
-from pydantic import AfterValidator, Field, GetCoreSchemaHandler, GetJsonSchemaHandler, conlist
-from pydantic.v1 import ConstrainedList
-from pydantic_core import CoreSchema, PydanticCustomError, core_schema
+from annotated_types import Len
+from pydantic import AfterValidator, Field
+from pydantic_core import PydanticCustomError
 
-T = TypeVar("T", bound=Hashable)
-
-
-class UniqueConstrainedList(ConstrainedList, list[T]):
-    unique_items: Optional[bool] = None
-
-    @classmethod
-    def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:
-        return handler.resolve_ref_schema(core_schema["schema"])
-
-    # @classmethod
-    # def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-    #     super().__modify_schema__(field_schema)
-    #     update_not_none(field_schema, uniqueItems=cls.unique_items)
-
-    @classmethod
-    def __get_pydantic_core_schema__(cls, source_type: Any, handler: GetCoreSchemaHandler) -> CoreSchema:
-        return core_schema.no_info_after_validator_function(cls._validate, handler(list))
-
-    @classmethod
-    def _validate(cls, value: Any) -> "UniqueConstrainedList":
-        # Ugly since we would like to just call the base class validation, but ConstrainedList is deprecated
-        cls.list_length_validator(value)
-
-        if cls.unique_items is not None:
-            value = cls.check_unique(value)
-
-        return UniqueConstrainedList(value)
-
-    @classmethod
-    def check_unique(cls, v: list[T]) -> list[T]:
-        if len(set(v)) != len(v):
-            raise ValueError("Items must be unique")
-
-        return v
-
-    def __init_subclass__(cls, **kwargs: Any) -> None:
-        super().__init_subclass__(**kwargs)
-
-        # Copy generic argument (T) if not set explicitly
-        # This makes a lot of assuptions about the internals of `typing`
-        if "__orig_bases__" in cls.__dict__ and cls.__dict__["__orig_bases__"]:
-            generic_base_cls = cls.__dict__["__orig_bases__"][0]
-            if (not hasattr(cls, "item_type") or isinstance(cls.item_type, TypeVar)) and get_args(generic_base_cls):
-                cls.item_type = get_args(generic_base_cls)[0]
-
-        # Make sure __args__ is set
-        assert hasattr(cls, "item_type"), "Missing a concrete value for generic type argument"  # noqa: S101
-
-        cls.__args__ = (cls.item_type,)
-
-    def __class_getitem__(cls, key: Any) -> Any:
-        # Some magic to make sure that subclasses of this class still work as expected
-        class Inst(cls):  # type: ignore
-            item_type = key
-            __args__ = (key,)
-
-        return Inst
+T = TypeVar("T")
 
 
-def _validate_unique_list(v: list[T]) -> list[T]:
-    if len(v) != len(set(v)):
+def validate_unique_list(values: list[T]) -> list[T]:
+    if len(values) != len(set(values)):
         raise PydanticCustomError("unique_list", "List must be unique")
-    return v
+    return values
 
 
 def unique_conlist(
-    item_type: T,
+    item_type: type[T],
     *,
     min_items: Optional[int] = None,
     max_items: Optional[int] = None,
-) -> list[T]:
-    return Annotated[
-        conlist(item_type, min_length=min_items, max_length=max_items),  # type: ignore
-        AfterValidator(_validate_unique_list),
+) -> type[list[T]]:
+    return Annotated[  # type: ignore[return-value]
+        list[item_type],  # type: ignore[valid-type]  # sssh
+        AfterValidator(validate_unique_list),
+        Len(min_items or 0, max_items),
         Field(json_schema_extra={"uniqueItems": True}),
-    ]  # type: ignore
+    ]

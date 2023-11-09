@@ -11,6 +11,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pydantic_forms.validators.components.unique_constrained_list import T, unique_conlist
+from typing import Annotated
 
-ListOfTwo = unique_conlist(T, min_items=2, max_items=2)
+from pydantic import AfterValidator, Field
+
+from pydantic_forms.validators.components.unique_constrained_list import T, validate_unique_list
+
+ListOfTwo = Annotated[
+    list[T],
+    AfterValidator(validate_unique_list),
+    Field(min_length=2, max_length=2, json_schema_extra={"uniqueItems": True}),
+]

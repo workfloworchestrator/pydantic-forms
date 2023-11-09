@@ -28,7 +28,6 @@ def test_list_of_two_min_items(Form):
             "loc": ("two",),
             "msg": "List should have at least 2 items after validation, not 1",
             "type": "too_short",
-            # "ctx": {"limit_value": 2},
         }
     ]
     assert errors == expected
@@ -45,7 +44,22 @@ def test_list_of_two_max_items(Form):
             "loc": ("two",),
             "msg": "List should have at most 2 items after validation, not 3",
             "type": "too_long",
-            # "ctx": {"limit_value": 2},
+        },
+    ]
+    assert errors == expected
+
+
+def test_list_of_two_duplicates(Form):
+    with pytest.raises(ValidationError) as error_info:
+        assert Form(two=[2, 2])
+
+    errors = error_info.value.errors(include_url=False, include_context=False)
+    expected = [
+        {
+            "type": "unique_list",
+            "loc": ("two",),
+            "msg": "List must be unique",
+            "input": [2, 2],
         },
     ]
     assert errors == expected

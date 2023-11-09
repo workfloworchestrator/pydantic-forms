@@ -10,11 +10,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, TypeVar
+from typing import Annotated, Optional, TypeVar
 
-from pydantic import AfterValidator, Field, conlist
-from pydantic_core import PydanticCustomError
-from typing_extensions import Annotated
+from annotated_types import Len
 
 from pydantic_forms.validators.components.choice import Choice
 
@@ -27,15 +25,13 @@ def choice_list(
     min_items: Optional[int] = None,
     max_items: Optional[int] = None,
     unique_items: Optional[bool] = None,
-) -> type[list[T]]:
-    def _validate_unique_list(v: list[T]) -> list[T]:
-        if unique_items and len(v) != len(set(v)):
-            raise PydanticCustomError("unique_list", "List must be unique")
-        return v
+) -> type[list[Choice]]:
+    if unique_items:
+        from pydantic_forms.validators import unique_conlist
 
-    schema_extra = {"uniqueItems": unique_items} if unique_items is not None else {}
+        return unique_conlist(item_type, min_items=min_items, max_items=max_items)
+
     return Annotated[  # type: ignore[return-value]
-        conlist(item_type, min_length=min_items, max_length=max_items),
-        AfterValidator(_validate_unique_list),
-        Field(json_schema_extra=schema_extra),
+        list[item_type],  # type:ignore[valid-type]
+        Len(min_items or 0, max_items),
     ]

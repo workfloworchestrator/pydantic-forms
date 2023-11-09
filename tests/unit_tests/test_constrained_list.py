@@ -52,6 +52,22 @@ def test_constrained_list_invalid_value():
     assert errors == expected
 
 
+def test_constrained_list_invalid_type():
+    with raises(ValidationError) as exc_info:
+        UniqueConListModel(v=["foo"])
+
+    errors = exc_info.value.errors(include_url=False, include_context=False)
+    expected = [
+        {
+            "type": "int_parsing",
+            "loc": ("v", 0),
+            "msg": "Input should be a valid integer, unable to parse string as an integer",
+            "input": "foo",
+        },
+    ]
+    assert errors == expected
+
+
 def test_constrained_list_too_short():
     with raises(ValidationError) as exc_info:
         UniqueConListModel(v=[])
