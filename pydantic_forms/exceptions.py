@@ -6,7 +6,7 @@ from pydantic_forms.types import JSON
 # from pydantic_forms.types import InputForm
 
 
-class FormException(Exception):
+class FormException(Exception):  # noqa: N818
     pass
 
 
