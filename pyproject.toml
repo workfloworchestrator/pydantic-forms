@@ -36,6 +36,7 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP",
 ]
 requires = [
+    "more-itertools",
     "pydantic >= 2.4.0",
     "pydantic[email] >= 2.4.0",
 ]
