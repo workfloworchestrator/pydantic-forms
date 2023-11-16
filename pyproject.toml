@@ -52,7 +52,7 @@ test = [
     "black",
     "structlog",
     "jsonref",
-    "mypy",
+    "mypy==1.6.1",
     "pytest",
     "pytest-cov",
     "pytest-asyncio",
