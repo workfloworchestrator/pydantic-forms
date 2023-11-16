@@ -11,11 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from inspect import isasyncgenfunction, isgeneratorfunction
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 import structlog
-from pydantic import BaseModel, ConfigDict, Field
-from pydantic.v1.fields import Undefined
+from pydantic import BaseModel, ConfigDict
 
 logger = structlog.get_logger(__name__)
 
@@ -52,15 +51,6 @@ class FormPage(BaseModel):
         for field in cls.model_fields.values():
             if field.frozen:
                 field.validate_default = False
-
-
-def ReadOnlyField(
-    default: Any = Undefined,
-    *,
-    const: Optional[bool] = None,
-    **extra: Any,
-) -> Any:
-    return Field(default, json_schema_extra={"uniforms": {"disabled": True, "value": default}}, **extra)  # type: ignore
 
 
 FORMS: dict[str, Callable] = {}
