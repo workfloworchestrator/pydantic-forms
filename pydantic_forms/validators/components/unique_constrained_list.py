@@ -13,6 +13,7 @@
 from typing import Annotated, Optional, TypeVar
 
 from annotated_types import Len
+from more_itertools import all_unique
 from pydantic import AfterValidator, Field
 from pydantic_core import PydanticCustomError
 
@@ -20,7 +21,7 @@ T = TypeVar("T")
 
 
 def validate_unique_list(values: list[T]) -> list[T]:
-    if len(values) != len(set(values)):
+    if not all_unique(values):
         raise PydanticCustomError("unique_list", "List must be unique")
     return values
 
