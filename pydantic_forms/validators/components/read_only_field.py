@@ -41,6 +41,7 @@ def _get_json_type(default: Any) -> str:
 
 
 def _read_only_list(default: Any, default_type: Any | None, json_schema: dict) -> Any:
+    # TODO change to a standalone generic type, i.e. read_only_list[str](["foo", "bar"])
     if default_type is None:
         raise TypeError("Need the default_type parameter when using ReadOnlyField for a list")
 
@@ -65,6 +66,7 @@ def _read_only_list(default: Any, default_type: Any | None, json_schema: dict) -
 
 
 def ReadOnlyField(default: Any, default_type: Any | None = None) -> Any:
+    # TODO Change to read_only_field
     json_schema = {"uniforms": {"disabled": True, "value": default}, "type": _get_json_type(default)}
 
     if isinstance(default, list):
