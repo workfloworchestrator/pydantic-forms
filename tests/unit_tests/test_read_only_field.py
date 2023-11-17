@@ -2,7 +2,7 @@ import json
 from uuid import UUID
 
 import pytest
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
 from pydantic_forms.core import FormPage
 from pydantic_forms.types import strEnum
@@ -110,6 +110,53 @@ def test_read_only_field_list_without_type_raises_error():
 
         class Form(FormPage):
             read_only: ReadOnlyField(["a", "b"])
+
+
+class Model(BaseModel):
+    value: int
+
+
+def test_read_only_field_list_model():
+    read_only_value = [Model(value=1)]
+    schema_value = [model.model_dump() for model in read_only_value]
+    expected_item_type = {"$ref": "#/$defs/Model"}
+
+    class Form(FormPage):
+        read_only: ReadOnlyField(read_only_value, default_type=list[Model])
+
+    expected = {
+        "$defs": {
+            "Model": {
+                "properties": {"value": {"title": "Value", "type": "integer"}},
+                "required": ["value"],
+                "title": "Model",
+                "type": "object",
+            }
+        },
+        "title": "unknown",
+        "type": "object",
+        "properties": {
+            "read_only": {
+                "const": schema_value,
+                "default": schema_value,
+                "items": expected_item_type,
+                "title": "Read Only",
+                "uniforms": {"disabled": True, "value": schema_value},
+                "type": "array",
+            }
+        },
+        "additionalProperties": False,
+    }
+
+    assert Form.model_json_schema() == expected
+
+    validated = Form(read_only=read_only_value)
+    assert validated.read_only == read_only_value
+    assert validated.model_dump() == {"read_only": schema_value}
+    assert validated.model_dump_json() == json.dumps({"read_only": schema_value}, separators=(",", ":"))
+
+    with pytest.raises(ValidationError, match="Cannot change values for a readonly list"):
+        Form(read_only=[Model(value=2)])
 
 
 @pytest.mark.parametrize("value", [test_uuid1, TestEnum.One])
