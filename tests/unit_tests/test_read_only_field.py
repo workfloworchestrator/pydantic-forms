@@ -1,3 +1,4 @@
+import json
 from uuid import UUID
 
 import pytest
@@ -18,27 +19,28 @@ test_uuid2 = UUID("999925c8-a868-49bc-b006-1a60e4929999")
 
 
 @pytest.mark.parametrize(
-    "python_value,json_value,json_type,other_python_value,",
+    "read_only_value,schema_value,schema_type,other_python_value",
     [
         (1, 1, "integer", 123),
         (test_uuid1, str(test_uuid1), "string", test_uuid2),
         (TestEnum.Two, str(TestEnum.Two), "string", TestEnum.One),
+        (None, None, "string", "foo"),
     ],
 )
-def test_read_only_field(python_value, json_value, json_type, other_python_value):
+def test_read_only_field_schema(read_only_value, schema_value, schema_type, other_python_value):
     class Form(FormPage):
-        read_only: ReadOnlyField(python_value)
+        read_only: ReadOnlyField(read_only_value, default_type=None)
 
     expected = {
         "title": "unknown",
         "type": "object",
         "properties": {
             "read_only": {
-                "const": json_value,
-                "default": json_value,
+                "const": schema_value,
+                "default": schema_value,
                 "title": "Read Only",
-                "uniforms": {"disabled": True, "value": json_value},
-                "type": json_type,
+                "uniforms": {"disabled": True, "value": schema_value},
+                "type": schema_type,
             }
         },
         "additionalProperties": False,
@@ -46,13 +48,68 @@ def test_read_only_field(python_value, json_value, json_type, other_python_value
 
     assert Form.model_json_schema() == expected
 
-    validated = Form(read_only=python_value)
-    assert validated.read_only == python_value
-    assert validated.model_dump() == {"read_only": python_value}
-    assert validated.model_dump_json() == '{"read_only":"%s"}' % (json_value,)
+    validated = Form(read_only=read_only_value)
+    assert validated.read_only == read_only_value
+    assert validated.model_dump() == {"read_only": read_only_value}
+    assert validated.model_dump_json() == '{"read_only":"%s"}' % (schema_value,)
 
     with pytest.raises(ValidationError, match=r"read_only\n\s+Input should be"):
         Form(read_only=other_python_value)
+
+
+@pytest.mark.parametrize(
+    "read_only_value,read_only_type,schema_value,expected_item_type",
+    [
+        (["a", "b"], list[str], ["a", "b"], {"type": "string"}),
+        ([1, 2], list[int], [1, 2], {"type": "integer"}),
+        ([test_uuid1], list[UUID], [str(test_uuid1)], {"format": "uuid", "type": "string"}),
+    ],
+)
+def test_read_only_field_list_schema(read_only_value, read_only_type, schema_value, expected_item_type):
+    class Form(FormPage):
+        read_only: ReadOnlyField(read_only_value, default_type=read_only_type)
+
+    expected = {
+        "title": "unknown",
+        "type": "object",
+        "properties": {
+            "read_only": {
+                "const": schema_value,
+                "default": schema_value,
+                "items": expected_item_type,
+                "title": "Read Only",
+                "uniforms": {"disabled": True, "value": schema_value},
+                "type": "array",
+            }
+        },
+        "additionalProperties": False,
+    }
+
+    assert Form.model_json_schema() == expected
+
+    validated = Form(read_only=read_only_value)
+    assert validated.read_only == read_only_value
+    assert validated.model_dump() == {"read_only": read_only_value}
+    assert validated.model_dump_json() == json.dumps({"read_only": schema_value}, separators=(",", ":"))
+
+
+@pytest.mark.parametrize(
+    "wrong_value",
+    (None, [], ["a"], ["a", "bb"], ["b", "a"], ["a", "a", "b"]),
+)
+def test_read_only_field_list_validation_string(wrong_value):
+    class Form(FormPage):
+        read_only: ReadOnlyField(["a", "b"], default_type=list[str])
+
+    with pytest.raises(ValidationError):
+        Form(read_only=wrong_value)
+
+
+def test_read_only_field_list_without_type_raises_error():
+    with pytest.raises(TypeError, match="Need the default_type parameter"):
+
+        class Form(FormPage):
+            read_only: ReadOnlyField(["a", "b"])
 
 
 @pytest.mark.parametrize("value", [test_uuid1, TestEnum.One])

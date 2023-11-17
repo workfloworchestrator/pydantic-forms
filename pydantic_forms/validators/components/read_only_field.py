@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import sys
 from itertools import chain
-from typing import Annotated, Any, Literal, Union
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from pydantic import BeforeValidator, Field, PlainSerializer, TypeAdapter
+from pydantic import AfterValidator, BeforeValidator, Field, PlainSerializer, TypeAdapter
 
 from pydantic_forms.types import strEnum
 
@@ -13,6 +15,8 @@ JSON_SCHEMA_TYPES = {
     int: "integer",
     float: "number",
     bool: "boolean",
+    type(None): "string",
+    list: "array",
 }
 
 
@@ -36,10 +40,37 @@ def _get_json_type(default: Any) -> str:
         raise TypeError(f"Cannot make a ReadOnlyField for type {type_}. Supported types: {types}")
 
 
-def ReadOnlyField(default: Union[UUID, strEnum, int, bool, str, bytes]) -> Any:
-    dynamic_validator = None
-    if isinstance(default, STRINGY_TYPES):
-        dynamic_validator = TypeAdapter(default.__class__)
+def _read_only_list(default: Any, default_type: Any | None, json_schema: dict) -> Any:
+    if default_type is None:
+        raise TypeError("Need the default_type parameter when using ReadOnlyField for a list")
+
+    def validate_list(value: list) -> list:
+        if value == default:
+            return value
+
+        raise ValueError("Cannot change values for a readonly list")
+
+    def serialize_list(list_: Any) -> list:
+        def to_value(item: Any) -> Any:
+            return str(item) if isinstance(item, UUID) else item
+
+        return [to_value(item) for item in list_]
+
+    return Annotated[
+        default_type,
+        Field(default, json_schema_extra=json_schema | {"const": default}),
+        AfterValidator(validate_list),
+        PlainSerializer(serialize_list, when_used="json"),
+    ]
+
+
+def ReadOnlyField(default: Any, default_type: Any | None = None) -> Any:
+    json_schema = {"uniforms": {"disabled": True, "value": default}, "type": _get_json_type(default)}
+
+    if isinstance(default, list):
+        return _read_only_list(default, default_type, json_schema)
+
+    dynamic_validator = TypeAdapter(default.__class__) if isinstance(default, STRINGY_TYPES) else None
 
     def validate(v: Any) -> Any:
         if dynamic_validator:
@@ -50,8 +81,6 @@ def ReadOnlyField(default: Union[UUID, strEnum, int, bool, str, bytes]) -> Any:
         if not isinstance(default, str):
             return str(default)
         return default
-
-    json_schema = {"uniforms": {"disabled": True, "value": default}, "type": _get_json_type(default)}
 
     return Annotated[
         Literal[default],
