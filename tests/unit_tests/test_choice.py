@@ -1,3 +1,6 @@
+from uuid import UUID
+
+import pytest
 from pydantic_core import ValidationError
 from pytest import raises
 
@@ -98,3 +101,25 @@ def test_choice_schema():
     }
 
     assert Form.model_json_schema() == expected
+
+
+def test_choice_uuids():
+    uuids = [
+        UUID("3a3691e2-399a-4733-8924-2cb524eb4723"),
+        UUID("efadf3f8-da32-475e-8dad-6efffa901bae"),
+        UUID("8724775d-2bfa-43e0-b861-942aa8699e1e"),
+    ]
+    choices = {str(u): f"choice {num} is uuid {u}" for num, u in enumerate(uuids, start=1)}
+
+    UUIDChoice = Choice("UUIDChoice", zip(choices, choices.items()))
+
+    class Form(FormPage):
+        choice: UUIDChoice
+
+    first_uuid = uuids[0]
+    validated = Form(choice=str(first_uuid))
+    assert validated.model_dump() == {"choice": str(first_uuid)}
+
+    # Cannot use the actual UUID because it's a strEnum
+    with pytest.raises(ValidationError, match=r"choice\n\s+Input should be a valid string"):
+        Form(choice=first_uuid)
