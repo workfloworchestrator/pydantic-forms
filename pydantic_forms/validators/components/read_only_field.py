@@ -86,7 +86,7 @@ def ReadOnlyField(default: Any, default_type: Any | None = None) -> Any:
 
     return Annotated[
         Literal[default],
-        Field(default, json_schema_extra=json_schema),
+        Field(default, json_schema_extra=json_schema),  # type: ignore[arg-type]
         BeforeValidator(validate),
         PlainSerializer(serialize_json, when_used="json"),
     ]
