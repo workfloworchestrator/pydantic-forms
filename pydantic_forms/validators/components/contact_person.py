@@ -14,18 +14,6 @@ from typing import Annotated
 
 from pydantic import BaseModel, EmailStr, Field
 
-# class ContactPersonName(str):
-#     @classmethod
-#     def __get_pydantic_core_schema__(cls, source_type: Any, handler: GetCoreSchemaHandler) -> CoreSchema:
-#         return core_schema.no_info_after_validator_function(cls, handler(str))
-#
-#     @classmethod
-#     def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:
-#         json_schema = handler.resolve_ref_schema(core_schema)
-#         json_schema["format"] = "contactPersonName"
-#         return json_schema
-
-
 ContactPersonName = Annotated[str, Field(json_schema_extra={"format": "contactPersonName"})]
 
 

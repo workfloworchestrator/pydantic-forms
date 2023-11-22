@@ -3,8 +3,6 @@ from typing import Any, TypedDict, Union, cast
 
 from pydantic_forms.types import JSON
 
-# from pydantic_forms.types import InputForm
-
 
 class FormException(Exception):  # noqa: N818
     pass
@@ -16,7 +14,6 @@ class FormNotCompleteError(FormException):
     This exception is part of the normal forms workflow.
     """
 
-    # form: InputForm  # TODO this is a basemodel but it's initialized to JSON
     form: JSON
 
     def __init__(self, form: JSON):

@@ -96,7 +96,6 @@ except ImportError:
 
     IS_ORJSON = False
 
-# import rapidjson as rjson
 
 PY_JSON_TYPES = Union[dict[str, Any], list, str, int, float, bool, None, object]  # pragma: no mutate
 
@@ -186,11 +185,6 @@ if IS_ORJSON:
             ).decode("utf8")
         except TypeError as e:
             raise e
-            # When Recursion limit is not configurable in orjson, falling back to the next best lib.
-            # if str(e) == "default serializer exceeds recursion limit":
-            #     return rjson.dumps(obj, default=to_serializable)
-            # else:
-            #     raise e
 
 else:
     print("Using stdlib json")  # noqa
