@@ -13,9 +13,10 @@
 from typing import Annotated, Generator, Optional, TypeVar
 from uuid import UUID
 
-from pydantic import Field, conlist
+from pydantic import BeforeValidator, Field, conlist
 
 from pydantic_forms.validators.components.contact_person import ContactPerson
+from pydantic_forms.validators.helpers import remove_empty_items
 
 T = TypeVar("T")  # pragma: no mutate
 
@@ -34,5 +35,6 @@ def contact_person_list(
 
     return Annotated[
         conlist(ContactPerson, min_length=min_items, max_length=max_items),
+        BeforeValidator(remove_empty_items),
         Field(json_schema_extra=dict(json_schema_extra())),
     ]  # type: ignore

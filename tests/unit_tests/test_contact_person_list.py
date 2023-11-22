@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 import pytest
-from pydantic import ValidationError
+from pydantic import TypeAdapter, ValidationError
 
 from pydantic_forms.core import FormPage
 from pydantic_forms.validators import contact_person_list
@@ -132,3 +132,8 @@ def test_contact_persons_nok_empty(Form):
         }
     ]
     assert errors == expected
+
+
+@pytest.mark.parametrize("value", [[], [{}]])
+def test_contact_person_list_empty_values(value):
+    assert TypeAdapter(contact_person_list()).validate_python(value) == []
