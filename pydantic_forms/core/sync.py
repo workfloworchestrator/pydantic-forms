@@ -65,7 +65,7 @@ def post_form(form_generator: Union[StateInputFormGenerator, None], state: State
             try:
                 form_validated_data = generated_form(**user_input)
             except ValidationError as e:
-                raise FormValidationError(generated_form.__name__, e.errors()) from e  # type: ignore
+                raise FormValidationError(generated_form.__name__, e) from e  # type: ignore
 
             # Update state with validated_data
             current_state.update(form_validated_data.model_dump())

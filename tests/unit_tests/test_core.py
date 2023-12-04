@@ -1,5 +1,5 @@
 import pytest
-from pydantic import ConfigDict
+from pydantic import ConfigDict, model_validator
 
 from pydantic_forms.core import FormPage, generate_form, post_form
 from pydantic_forms.exceptions import FormNotCompleteError, FormOverflowError, FormValidationError
@@ -199,3 +199,27 @@ def test_generate_form():
     # Submit complete
     form = generate_form(input_form, {"previous": True}, [{"generic_select1": "b"}, {"generic_select3": "a"}])
     assert form is None
+
+
+def test_loc():
+    def form_generator(state):
+        class Form1(FormPage):
+            a: int
+
+            @model_validator(mode="before")
+            @classmethod
+            def validator(cls, values: dict) -> dict:
+                if values["a"] > 5:
+                    raise ValueError("too high")
+                return values
+
+        yield Form1
+
+        return {}
+
+    with pytest.raises(FormValidationError) as e:
+        post_form(form_generator, {}, [{"a": 6}])
+
+    assert len(e.value.errors) == 1
+    assert e.value.errors[0]["loc"] == ("__root__",)
+    assert e.value.errors[0]["msg"] == "too high"

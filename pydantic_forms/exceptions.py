@@ -1,5 +1,9 @@
 import traceback
-from typing import Any, TypedDict, Union, cast
+from typing import Any, Iterable, TypedDict, Union, cast
+
+from more_itertools import side_effect
+from pydantic import ValidationError
+from pydantic_core import ErrorDetails
 
 from pydantic_forms.types import JSON
 
@@ -25,21 +29,34 @@ class FormOverflowError(FormException):
     """Raised when more inputs are provided than the form can process."""
 
 
-class PydanticErrorDict(TypedDict):
-    loc: list[Union[str, int]]
-    type: str
-    msg: str
-    ctx: dict[str, Any]
+def convert_errors(validation_error: ValidationError) -> Iterable[ErrorDetails]:
+    """Convert Pydantic's error messages to our needs.
+
+    https://docs.pydantic.dev/2.4/errors/errors/#customize-error-messages
+    """
+
+    def convert_error(error: ErrorDetails) -> None:
+        exc = error.get("ctx", {}).get("error")
+        if isinstance(exc, ValueError):
+            # Removes the "Value error, " prefix from the msg
+            error["msg"] = str(exc)
+        if error["loc"] == ():
+            # Reinstate the "__root__" location for validation errors raised by Pydantic v1's root_validator.
+            # With Pydantic v2's model_validator the location is an empty string, which breaks frontend clients.
+            error["loc"] = ("__root__",)
+        return
+
+    return side_effect(convert_error, validation_error.errors())
 
 
 class FormValidationError(FormException):
     validator_name: str
-    errors: list[PydanticErrorDict]
+    errors: list[ErrorDetails]
 
-    def __init__(self, validator_name: str, errors: list[dict[str, Any]]):
-        super().__init__(validator_name, errors)
+    def __init__(self, validator_name: str, error: ValidationError):
+        super().__init__()
         self.validator_name = validator_name
-        self.errors = cast(list[PydanticErrorDict], errors)
+        self.errors = list(convert_errors(error))
 
     def __str__(self) -> str:
         no_errors = len(self.errors)

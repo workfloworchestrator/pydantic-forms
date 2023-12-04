@@ -27,7 +27,7 @@ def example_form_error_invalid_int():
     with pytest.raises(ValidationError) as error_info:
         assert Form(number="foo")
 
-    return error_info.value.errors()
+    return error_info.value
 
 
 async def test_form_validation(example_form_error_invalid_int):
