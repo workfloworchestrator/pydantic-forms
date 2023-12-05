@@ -20,11 +20,12 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
     "Topic :: Software Development",
     "Typing :: Typed",
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Environment :: Web Environment",
     "Framework :: AsyncIO",
     "Framework :: FastAPI",
     "Framework :: Flask",
+    "Framework :: Pydantic :: 2",
     "Intended Audience :: Developers",
     "Intended Audience :: Telecommunications Industry",
     "License :: OSI Approved :: Apache Software License",
@@ -32,6 +33,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
     "Topic :: Internet :: WWW/HTTP",
 ]
@@ -40,7 +42,7 @@ requires = [
     "pydantic[email] >= 2.5.1",
 ]
 description-file = "README.md"
-requires-python = ">=3.9,<=3.12"
+requires-python = ">=3.9,<=3.13"
 
 [tool.flit.metadata.urls]
 Documentation = "https://github.com/workfloworchestrator/pydantic-forms/blob/main/README.md"

@@ -14,16 +14,6 @@ using [Pydantic](https://pydantic-docs.helpmanual.io/) models.
 Documentation regarding the usage of Forms can be found
 [here](https://github.com/workfloworchestrator/orchestrator-core/blob/main/docs/architecture/application/forms.md)
 
-### Todo
-
-This package is not ready for use in other projects. To make it production ready:
-
-- [ ] Add Flask example; a reference implementation is available in
-  the [pricelist-backend](https://github.com/acidjunk/pricelist-backend/blob/master/server/main.py)
-- [ ] Setup docs boilerplate
-- [ ] Copy orchestrator core form docs
-- [x] Publish package
-
 ### Installation (Development standalone)
 Install the project and its dependencies to develop on the code.
 
