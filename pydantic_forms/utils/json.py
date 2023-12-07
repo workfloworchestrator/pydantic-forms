@@ -137,7 +137,7 @@ def to_serializable(o: Any) -> Any:
         return o.model_dump()
     if isinstance(o, set):
         return list(o)
-    if isinstance(o, (ValueError, AttributeError)):
+    if isinstance(o, (ValueError, AssertionError)):
         return str(o)
     raise TypeError(f"Could not serialize object of type {o.__class__.__name__} to JSON")
 
