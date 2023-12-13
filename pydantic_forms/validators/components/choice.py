@@ -49,7 +49,11 @@ class Choice(strEnum):
         json_schema = handler(core_schema)
         json_schema = handler.resolve_ref_schema(json_schema)
 
-        # json_schema = handler.resolve_ref_schema(core_schema["schema"])
+        # Next lines are a bit of a hack to make sure we always get an enum for uniforms.
+        # A better solution is to rewrite this whole class to a functional approach with a serializer
+        if single_choice := json_schema.get("const"):
+            json_schema["enum"] = single_choice
+            json_schema.pop("const")
 
         kwargs = {}
 
