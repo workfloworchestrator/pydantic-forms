@@ -52,7 +52,7 @@ class Choice(strEnum):
         # Next lines are a bit of a hack to make sure we always get an enum for uniforms.
         # A better solution is to rewrite this whole class to a functional approach with a serializer
         if single_choice := json_schema.get("const"):
-            json_schema["enum"] = single_choice
+            json_schema["enum"] = [single_choice]
             json_schema.pop("const")
 
         kwargs = {}
