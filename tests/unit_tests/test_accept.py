@@ -87,10 +87,10 @@ def test_accept_nok_invalid():
     expected = [
         {
             "input": "Bla",
-            "ctx": {"enum_values": [Accept.Values.ACCEPTED, Accept.Values.INCOMPLETE]},
+            "ctx": {"expected": "'ACCEPTED' or 'INCOMPLETE'"},
             "loc": ("accept",),
-            "msg": "value is not a valid enumeration member; permitted: 'ACCEPTED', 'INCOMPLETE'",
-            "type": "type_error.enum",
+            "msg": "Input should be 'ACCEPTED' or 'INCOMPLETE'",
+            "type": "enum",
         }
     ]
     assert error_info.value.errors() == expected

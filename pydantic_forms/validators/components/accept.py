@@ -12,9 +12,8 @@
 # limitations under the License.
 from typing import Any, ClassVar, Optional
 
-from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler
-from pydantic.v1.errors import EnumMemberError
-from pydantic_core import CoreSchema, PydanticCustomError, core_schema
+from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler, TypeAdapter
+from pydantic_core import CoreSchema, core_schema
 
 from pydantic_forms.types import AcceptData, strEnum
 
@@ -25,6 +24,8 @@ class Accept(str):
     class Values(strEnum):
         ACCEPTED = "ACCEPTED"
         INCOMPLETE = "INCOMPLETE"
+
+    _enum_adapter = TypeAdapter(Values)
 
     @classmethod
     def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:
@@ -47,16 +48,7 @@ class Accept(str):
 
     @classmethod
     def enum_validator(cls, v: Any) -> str:
-        try:
-            enum_v = cls.Values(v)
-        except ValueError:
-            # cls.Values should be an enum, so will be iterable
-            enum_values = list(cls.Values)
-            # TODO: this converts the deprecated v1 error to a generic error. Not clear yet how to handle this in
-            # the future
-            orig = EnumMemberError(enum_values=enum_values)
-            raise PydanticCustomError(f"type_error.{orig.code}", str(orig), {"enum_values": enum_values})
-        return enum_v.value
+        return cls._enum_adapter.validate_python(v)
 
     @classmethod
     def must_be_complete(cls, v: str) -> bool:
