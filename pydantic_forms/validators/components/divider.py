@@ -10,15 +10,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from pydantic_forms.core.shared import DisplayOnlyFieldType, FormPage, list_forms, register_form
-from pydantic_forms.core.sync import generate_form, post_form, start_form
+from typing import Annotated, Optional
 
-__all__ = [
-    "list_forms",
-    "register_form",
-    "FormPage",
-    "DisplayOnlyFieldType",
-    "post_form",
-    "start_form",
-    "generate_form",
-]
+from pydantic import Field
+
+Divider = Annotated[Optional[str], Field(None, frozen=True, json_schema_extra={"format": "divider", "type": "string"})]

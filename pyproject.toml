@@ -20,11 +20,12 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
     "Topic :: Software Development",
     "Typing :: Typed",
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Environment :: Web Environment",
     "Framework :: AsyncIO",
     "Framework :: FastAPI",
     "Framework :: Flask",
+    "Framework :: Pydantic :: 2",
     "Intended Audience :: Developers",
     "Intended Audience :: Telecommunications Industry",
     "License :: OSI Approved :: Apache Software License",
@@ -32,15 +33,16 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
     "Topic :: Internet :: WWW/HTTP",
 ]
 requires = [
-    "pydantic[email] >=1.9.0,<2.0.0",
-
+    "more-itertools",
+    "pydantic[email] >= 2.5.1",
 ]
 description-file = "README.md"
-requires-python = ">=3.9,<=3.12"
+requires-python = ">=3.9,<=3.13"
 
 [tool.flit.metadata.urls]
 Documentation = "https://github.com/workfloworchestrator/pydantic-forms/blob/main/README.md"
@@ -49,26 +51,14 @@ Documentation = "https://github.com/workfloworchestrator/pydantic-forms/blob/mai
 test = [
     "apache-license-check",
     "black",
-    "flake8",
-    "flake8-bandit",
-    "flake8-bugbear",
-    "flake8-comprehensions",
-    "flake8-docstrings",
-    "flake8-junit-report",
-    "flake8-logging-format",
-    "flake8-pep3101",
-    "flake8-print",
-    "flake8-rst",
-    "flake8-rst-docstrings",
-    "flake8-tidy-imports",
-    "isort",
     "structlog",
     "jsonref",
-    "mypy",
+    "mypy==1.6.1",
     "pytest",
     "pytest-cov",
     "pytest-asyncio",
     "pytest-xdist",
+    "ruff",
     "types-Deprecated",
     "types-certifi",
     "types-itsdangerous",
@@ -94,27 +84,19 @@ dev = [
     "python-dotenv",
     "watchdog",
 ]
-rapidjson = [
-    "rapidjson >=1.0.0,<2.0.0",
-]
+#rapidjson = [
+#    "rapidjson >=1.0.0,<2.0.0",
+#]
 orjson = [
     "orjson >=3.6.0,<4.0.0",
 ]
 fastapi = [
-    "fastapi >=0.80.0,<1.0.0"
+    "fastapi >=0.80.0"
 ]
-
-
-[tool.isort]
-profile = "black"
-line_length = 120
-skip = ["src", "venv"]
-known_third_party = ["pynso", "pydantic"]
-known_first_party = ["migrations", "test"]
 
 [tool.black]
 line-length = 120
-target-version = ["py310"]
+target-version = ["py39"]
 exclude = '''
 (
   /(
@@ -132,3 +114,52 @@ exclude = '''
 
 [tool.nitpick]
 style="github://workfloworchestrator/nitpick-style@main/nitpick-style-orchestrator-core.toml"
+
+[tool.ruff]
+exclude = [
+    ".git",
+    ".cache",
+    ".eggs",
+    "__pycache__",
+    "dist",
+    "src",
+    "venv",
+    ".venv",
+    "docs",
+]
+ignore = [
+    "C417",
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D105",
+    "D106",
+    "D107",
+    "D202",
+    "E501",
+    "N806",
+    "B905",
+    "N805",
+    "B904",
+    "N803",
+    "N801",
+    "N815",
+    "N802",
+]
+line-length = 120
+select = ["B", "C", "D", "E", "F", "I", "N", "RET", "S", "T", "W"]
+target-version = "py39"
+
+[tool.ruff.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.per-file-ignores]
+"tests/*" = ["S101", "B033", "N816", "N802"]
+
+[tool.ruff.pydocstyle]
+convention = "google"
+
+[tool.ruff.isort]
+known-third-party = ["pydantic"]

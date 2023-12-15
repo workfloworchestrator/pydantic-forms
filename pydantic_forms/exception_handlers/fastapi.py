@@ -37,7 +37,8 @@ async def form_error_handler(request: Request, exc: FormException) -> JSONRespon
             },
             status_code=HTTPStatus.BAD_REQUEST,
         )
-    elif isinstance(exc, FormNotCompleteError):
+
+    if isinstance(exc, FormNotCompleteError):
         return JSONResponse(
             {
                 "type": type(exc).__name__,
@@ -50,13 +51,13 @@ async def form_error_handler(request: Request, exc: FormException) -> JSONRespon
             },
             status_code=HTTPStatus.NOT_EXTENDED,
         )
-    else:
-        return JSONResponse(
-            {
-                "detail": str(exc),
-                "title": "Internal Server Error",
-                "status": HTTPStatus.INTERNAL_SERVER_ERROR,
-                "type": type(exc).__name__,
-            },
-            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
-        )
+
+    return JSONResponse(
+        {
+            "detail": str(exc),
+            "title": "Internal Server Error",
+            "status": HTTPStatus.INTERNAL_SERVER_ERROR,
+            "type": type(exc).__name__,
+        },
+        status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+    )

@@ -10,11 +10,8 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.9', '3.10', '3.11']
-        pydantic-version: ['1.9.0', '1.10.0', 'lockfile']
-        fastapi-version: ['0.80.0', '0.90.0', 'lockfile']
-        exclude:
-          - python-version: '3.11'
-            pydantic-version: '1.9.0'
+        pydantic-version: ['2.5.1', 'lockfile']
+        fastapi-version: ['0.103.2', 'lockfile']
       fail-fast: false
     container: python:${{ matrix.python-version }}-slim
     steps:

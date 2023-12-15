@@ -1,4 +1,5 @@
-import pytest
+from pydantic import ConfigDict
+from pytest import raises
 
 from pydantic_forms.core import FormPage
 from pydantic_forms.core.asynchronous import generate_form, post_form
@@ -21,26 +22,24 @@ class TestForm(FormPage):
 async def test_post_process_yield():
     async def input_form(state):
         user_input = yield TestForm
-        yield {**user_input.dict(), "extra": 234}
+        yield user_input.model_dump() | {"extra": 234}
 
     validated_data = await post_form(input_form, {"previous": True}, [{"generic_select": "a"}])
 
     expected = {"generic_select": "a", "extra": 234}
-    assert expected == json_loads(json_dumps(validated_data))
+    assert json_loads(json_dumps(validated_data)) == expected
 
 
 async def test_post_process_extra_data():
     async def input_form(state):
         user_input = yield TestForm
-        yield {**user_input.dict(), "extra": 234}
+        yield user_input.model_dump() | {"extra": 234}
 
-    with pytest.raises(FormValidationError) as e:
+    with raises(FormValidationError) as e:
         await post_form(input_form, {"previous": True}, [{"generic_select": "a", "extra_data": False}])
 
-    assert (
-        str(e.value)
-        == "1 validation error for TestForm\nextra_data\n  extra fields not permitted (type=value_error.extra)"
-    )
+    expected = "1 validation error for TestForm\nextra_data\n  Extra inputs are not permitted (type=extra_forbidden)"
+    assert str(e.value) == expected
 
 
 async def test_post_process_validation_errors():
@@ -48,21 +47,19 @@ async def test_post_process_validation_errors():
         user_input = yield TestForm
         yield user_input.dict()
 
-    with pytest.raises(FormValidationError) as e:
+    with raises(FormValidationError) as e:
         await post_form(input_form, {}, [{"generic_select": 1, "extra_data": False}])
 
-    assert (
-        str(e.value)
-        == "2 validation errors for TestForm\ngeneric_select\n  value is not a valid enumeration member; permitted: 'a', 'b' (type=type_error.enum; enum_values=[<TestChoices.A: 'a'>, <TestChoices.B: 'b'>])\nextra_data\n  extra fields not permitted (type=value_error.extra)"
-    )
+    expected = "2 validation errors for TestForm\ngeneric_select\n  Input should be a valid string (type=string_type)\nextra_data\n  Extra inputs are not permitted (type=extra_forbidden)"
+    assert str(e.value) == expected
 
-    with pytest.raises(FormValidationError) as e:
-        await post_form(input_form, {}, [{"generic_select": 1}])
+    with raises(FormValidationError) as e:
+        await post_form(input_form, {}, [{"generic_select": "c"}])
 
-    assert (
-        str(e.value)
-        == "1 validation error for TestForm\ngeneric_select\n  value is not a valid enumeration member; permitted: 'a', 'b' (type=type_error.enum; enum_values=[<TestChoices.A: 'a'>, <TestChoices.B: 'b'>])"
+    expected = (
+        "1 validation error for TestForm\ngeneric_select\n  Input should be 'a' or 'b' (type=enum; expected='a' or 'b')"
     )
+    assert str(e.value) == expected
 
 
 async def test_post_form_wizard():
@@ -72,10 +69,9 @@ async def test_post_form_wizard():
 
     async def input_form(state):
         class TestForm1(FormPage):
-            generic_select1: TestChoices
+            model_config = ConfigDict(title="Some title")
 
-            class Config:
-                title = "Some title"
+            generic_select1: TestChoices
 
         class TestForm2(FormPage):
             generic_select2: TestChoices
@@ -90,45 +86,43 @@ async def test_post_form_wizard():
         else:
             user_input_2 = yield TestForm3
 
-        yield {**user_input_1.dict(), **user_input_2.dict()}
+        yield {**user_input_1.model_dump(), **user_input_2.model_dump()}
 
     # Submit 1
-    with pytest.raises(FormNotCompleteError) as error_info:
+    with raises(FormNotCompleteError) as error_info:
         await post_form(input_form, {"previous": True}, [])
 
     assert error_info.value.form == {
         "title": "Some title",
         "type": "object",
         "additionalProperties": False,
-        "definitions": {
+        "$defs": {
             "TestChoices": {
-                "description": "An enumeration.",
                 "enum": ["a", "b"],
                 "title": "TestChoices",
                 "type": "string",
             }
         },
-        "properties": {"generic_select1": {"$ref": "#/definitions/TestChoices"}},
+        "properties": {"generic_select1": {"$ref": "#/$defs/TestChoices"}},
         "required": ["generic_select1"],
     }
 
     # Submit 2
-    with pytest.raises(FormNotCompleteError) as error_info:
+    with raises(FormNotCompleteError) as error_info:
         await post_form(input_form, {"previous": True}, [{"generic_select1": "b"}])
 
     assert error_info.value.form == {
         "title": "unknown",
         "type": "object",
         "additionalProperties": False,
-        "definitions": {
+        "$defs": {
             "TestChoices": {
-                "description": "An enumeration.",
                 "enum": ["a", "b"],
                 "title": "TestChoices",
                 "type": "string",
             }
         },
-        "properties": {"generic_select3": {"$ref": "#/definitions/TestChoices"}},
+        "properties": {"generic_select3": {"$ref": "#/$defs/TestChoices"}},
         "required": ["generic_select3"],
     }
 
@@ -141,7 +135,7 @@ async def test_post_form_wizard():
     assert expected == json_loads(json_dumps(validated_data))
 
     # Submit overcomplete
-    with pytest.raises(FormOverflowError, match="1 remaining"):
+    with raises(FormOverflowError, match="1 remaining"):
         await post_form(
             input_form, {"previous": True}, [{"generic_select1": "b"}, {"generic_select3": "a"}, {"to_much": True}]
         )
@@ -150,10 +144,9 @@ async def test_post_form_wizard():
 async def test_generate_form():
     async def input_form(state):
         class TestForm1(FormPage):
-            generic_select1: TestChoices
+            model_config = ConfigDict(title="Some title")
 
-            class Config:
-                title = "Some title"
+            generic_select1: TestChoices
 
         class TestForm2(FormPage):
             generic_select2: TestChoices
@@ -168,7 +161,7 @@ async def test_generate_form():
         else:
             user_input_2 = yield TestForm3
 
-        yield {**user_input_1.dict(), **user_input_2.dict()}
+        yield {**user_input_1.model_dump(), **user_input_2.model_dump()}
 
     # Submit 1
     form = await generate_form(input_form, {"previous": True}, [])
@@ -177,15 +170,14 @@ async def test_generate_form():
         "title": "Some title",
         "type": "object",
         "additionalProperties": False,
-        "definitions": {
+        "$defs": {
             "TestChoices": {
-                "description": "An enumeration.",
                 "enum": ["a", "b"],
                 "title": "TestChoices",
                 "type": "string",
             }
         },
-        "properties": {"generic_select1": {"$ref": "#/definitions/TestChoices"}},
+        "properties": {"generic_select1": {"$ref": "#/$defs/TestChoices"}},
         "required": ["generic_select1"],
     }
 
@@ -196,15 +188,14 @@ async def test_generate_form():
         "title": "unknown",
         "type": "object",
         "additionalProperties": False,
-        "definitions": {
+        "$defs": {
             "TestChoices": {
-                "description": "An enumeration.",
                 "enum": ["a", "b"],
                 "title": "TestChoices",
                 "type": "string",
             }
         },
-        "properties": {"generic_select3": {"$ref": "#/definitions/TestChoices"}},
+        "properties": {"generic_select3": {"$ref": "#/$defs/TestChoices"}},
         "required": ["generic_select3"],
     }
 

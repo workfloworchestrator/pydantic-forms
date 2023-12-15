@@ -10,15 +10,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from pydantic_forms.core.shared import DisplayOnlyFieldType, FormPage, list_forms, register_form
-from pydantic_forms.core.sync import generate_form, post_form, start_form
 
-__all__ = [
-    "list_forms",
-    "register_form",
-    "FormPage",
-    "DisplayOnlyFieldType",
-    "post_form",
-    "start_form",
-    "generate_form",
+from typing import Annotated
+
+from pydantic import AfterValidator, Field
+
+from pydantic_forms.validators.components.unique_constrained_list import T, validate_unique_list
+
+ListOfTwo = Annotated[
+    list[T],
+    AfterValidator(validate_unique_list),
+    Field(min_length=2, max_length=2, json_schema_extra={"uniqueItems": True}),
 ]
