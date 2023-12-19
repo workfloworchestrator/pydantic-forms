@@ -88,11 +88,13 @@ def test_choice_list_schema():
         "properties": {
             "choices": {
                 "items": {"$ref": "#/$defs/LegChoice"},
+                "minItems": 0,
                 "type": "array",
                 "title": "Choices",
             },
             "choices_with_labels": {
                 "items": {"$ref": "#/$defs/LegChoiceLabel"},
+                "minItems": 0,
                 "type": "array",
                 "title": "Choices With Labels",
             },
