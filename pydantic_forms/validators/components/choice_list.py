@@ -31,8 +31,15 @@ def choice_list(
 
         return unique_conlist(item_type, min_items=min_items, max_items=max_items)
 
+    # Note: min_items always need to be there to remain backward compatible with frontend components
+    if max_items:
+        return Annotated[  # type: ignore[return-value]
+            list[item_type],  # type:ignore[valid-type]
+            MinLen(min_items or 0),
+            MaxLen(max_items),
+        ]
+
     return Annotated[  # type: ignore[return-value]
         list[item_type],  # type:ignore[valid-type]
         MinLen(min_items or 0),
-        MaxLen(max_items)
     ]
