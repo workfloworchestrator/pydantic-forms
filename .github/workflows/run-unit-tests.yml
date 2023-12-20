@@ -9,8 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11']
-        pydantic-version: ['2.5.1', 'lockfile']
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+        pydantic-version: ['2.5.2', 'lockfile']
         fastapi-version: ['0.103.2', 'lockfile']
       fail-fast: false
     container: python:${{ matrix.python-version }}-slim
