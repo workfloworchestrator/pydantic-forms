@@ -43,6 +43,7 @@ def test_display_only_schema():
                 "format": "subscription",
                 "title": "Display Sub",
                 "type": "string",
+                "description": "Use `from orchestrator.forms.validators import DisplaySubscription` instead of this",
             },
             "label": {
                 "anyOf": [{"type": "string"}, {"type": "null"}],

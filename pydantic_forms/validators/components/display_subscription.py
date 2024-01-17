@@ -16,5 +16,11 @@ from uuid import UUID
 from pydantic import Field
 
 DisplaySubscription = Annotated[
-    UUID, Field(frozen=True, json_schema_extra={"format": "subscription", "type": "string"})
+    UUID,
+    Field(
+        frozen=True,
+        json_schema_extra={"format": "subscription", "type": "string"},
+        deprecated=True,
+        description="Use `from orchestrator.forms.validators import DisplaySubscription` instead of this",
+    ),
 ]

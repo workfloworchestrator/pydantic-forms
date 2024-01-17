@@ -36,5 +36,9 @@ def contact_person_list(
     return Annotated[
         conlist(ContactPerson, min_length=min_items, max_length=max_items),
         BeforeValidator(remove_empty_items),
-        Field(json_schema_extra=dict(json_schema_extra())),
+        Field(
+            json_schema_extra=dict(json_schema_extra()),
+            deprecated=True,
+            description="organisationId and organisationKey attributes will be removed, for version with organisations use `from orchestrator.forms.validators import organisation_contact_list` instead of this",
+        ),
     ]  # type: ignore
