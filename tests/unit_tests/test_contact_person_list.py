@@ -56,6 +56,7 @@ def test_contact_persons_schema():
                 "organisationKey": "organisation",
                 "title": "Contact Persons",
                 "type": "array",
+                "description": "organisationId and organisationKey attributes will be removed, for version with organisations use `from orchestrator.forms.validators import organisation_contact_list` instead of this",
             },
             "contact_persons_org": {
                 "items": {"$ref": "#/$defs/ContactPerson"},
@@ -64,6 +65,7 @@ def test_contact_persons_schema():
                 "title": "Contact Persons Org",
                 "type": "array",
                 "minItems": 1,
+                "description": "organisationId and organisationKey attributes will be removed, for version with organisations use `from orchestrator.forms.validators import organisation_contact_list` instead of this",
             },
             "contact_persons_org2": {
                 "items": {"$ref": "#/$defs/ContactPerson"},
@@ -71,6 +73,7 @@ def test_contact_persons_schema():
                 "organisationKey": "foo",
                 "title": "Contact Persons Org2",
                 "type": "array",
+                "description": "organisationId and organisationKey attributes will be removed, for version with organisations use `from orchestrator.forms.validators import organisation_contact_list` instead of this",
             },
         },
         "required": ["contact_persons", "contact_persons_org", "contact_persons_org2"],

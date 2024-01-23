@@ -8,7 +8,14 @@ def test_organisation_id_schema():
 
     expected = {
         "additionalProperties": False,
-        "properties": {"org_id": {"format": "organisationId", "title": "Org Id", "type": "string"}},
+        "properties": {
+            "org_id": {
+                "description": "Use `from orchestrator.forms.validators import CustomerId` instead of this",
+                "format": "organisationId",
+                "title": "Org Id",
+                "type": "string",
+            }
+        },
         "required": ["org_id"],
         "title": "unknown",
         "type": "object",
