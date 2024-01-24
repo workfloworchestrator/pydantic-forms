@@ -39,6 +39,6 @@ def contact_person_list(
         Field(
             json_schema_extra=dict(json_schema_extra()),
             deprecated=True,
-            description="organisationId and organisationKey attributes will be removed, for version with organisations use `from orchestrator.forms.validators import organisation_contact_list` instead of this",
+            description="organisationId and organisationKey attributes will be removed, for version with organisation (renamed to customer) use `from orchestrator.forms.validators import customer_contact_list` instead of this",
         ),
     ]  # type: ignore
