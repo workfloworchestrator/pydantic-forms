@@ -121,8 +121,9 @@ def start_form(
 
     try:
         state = post_form(form, initial_state, user_inputs)
-    except FormValidationError:
-        logger.exception("Validation errors", user_inputs=user_inputs)
+    except FormValidationError as exc:
+        logger.debug("Validation errors", user_inputs=user_inputs, form=exc.validator_name, errors=exc.errors)
+        logger.debug(str(exc))
         raise
 
     return state
