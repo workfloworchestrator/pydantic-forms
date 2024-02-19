@@ -14,11 +14,8 @@ from typing import Annotated
 
 from pydantic import Field
 
+# Deprecated, use `from orchestrator.forms.validators import CustomerId` instead of this
 OrganisationId = Annotated[
     str,
-    Field(
-        json_schema_extra={"format": "organisationId"},
-        deprecated=True,
-        description="Use `from orchestrator.forms.validators import CustomerId` instead of this",
-    ),
+    Field(json_schema_extra={"format": "organisationId"}),
 ]
