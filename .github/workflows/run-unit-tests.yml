@@ -38,7 +38,7 @@ jobs:
       - name: Run Unit tests
         run: pytest --cov-branch --cov=pydantic_forms --ignore=tests
         env:
-          COVERAGE_FILE: reports/.coverage.${{ matrix.python-version }}-${{ matrix.fastapi-version }}
+          COVERAGE_FILE: reports/.coverage.${{ matrix.python-version }}
       - name: Upload pytest test results
         uses: actions/upload-artifact@v2
         with:
@@ -59,7 +59,7 @@ jobs:
           path: reports
       - run: pip install coverage[toml]
       - run: ls -la reports
-      - run: coverage combine reports
+      - run: mv reports/.coverage.3.12 .
       - run: coverage report
       - run: coverage xml
       - name: "Upload coverage to Codecov"
