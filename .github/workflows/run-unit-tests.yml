@@ -36,7 +36,7 @@ jobs:
         env:
           FLIT_ROOT_INSTALL: 1
       - name: Run Unit tests
-        run: pytest --cov-branch --cov=pydantic_forms --ignore=tests
+        run: pytest tests/unit_tests --cov-branch --cov=pydantic_forms --ignore=tests
         env:
           COVERAGE_FILE: reports/.coverage.${{ matrix.python-version }}
       - name: Upload pytest test results
