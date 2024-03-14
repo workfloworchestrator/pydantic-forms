@@ -1,4 +1,0 @@
-[run]
-omit = *examples*
-[report]
-ignore_errors = True
