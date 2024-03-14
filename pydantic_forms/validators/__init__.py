@@ -1,4 +1,4 @@
-from pydantic_forms.validators.components.accept import Accept
+from pydantic_forms.validators.components.accept import Accept, AcceptValues
 from pydantic_forms.validators.components.choice import Choice
 from pydantic_forms.validators.components.choice_list import choice_list
 from pydantic_forms.validators.components.contact_person import ContactPerson, ContactPersonName
@@ -17,6 +17,7 @@ from pydantic_forms.validators.components.unique_constrained_list import unique_
 
 __all__ = (
     "Accept",
+    "AcceptValues",
     "Choice",
     "choice_list",
     "contact_person_list",

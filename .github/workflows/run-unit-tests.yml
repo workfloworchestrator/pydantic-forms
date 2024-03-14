@@ -37,8 +37,9 @@ jobs:
           FLIT_ROOT_INSTALL: 1
       - name: Run Unit tests
         run: pytest --cov-branch --cov=pydantic_forms --ignore=tests --cov-report=xml
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4.0.1
+      - name: "Upload coverage to Codecov"
+        uses: codecov/codecov-action@v3
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          slug: workfloworchestrator/pydantic-forms
+          token: ${{ secrets.CODECOV_TOKEN }}  # gives error 'Could not find a repository associated with upload token'
+          fail_ci_if_error: true
+          files: ./coverage.xml

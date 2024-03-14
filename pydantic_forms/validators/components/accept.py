@@ -18,21 +18,22 @@ from pydantic_core import CoreSchema, core_schema
 from pydantic_forms.types import AcceptData, strEnum
 
 
+class AcceptValues(strEnum):
+    ACCEPTED = "ACCEPTED"
+    INCOMPLETE = "INCOMPLETE"
+
+
 class Accept(str):
     data: ClassVar[Optional[AcceptData]] = None
 
-    class Values(strEnum):
-        ACCEPTED = "ACCEPTED"
-        INCOMPLETE = "INCOMPLETE"
-
-    _enum_adapter = TypeAdapter(Values)
+    _enum_adapter = TypeAdapter(AcceptValues)
 
     @classmethod
     def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:
         json_schema = handler.resolve_ref_schema(core_schema["schema"])
         return (
             json_schema
-            | {"format": "accept", "type": "string", "enum": list(cls.Values)}
+            | {"format": "accept", "type": "string", "enum": list(AcceptValues)}
             | ({"data": cls.data} if cls.data else {})
         )
 

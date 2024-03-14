@@ -3,7 +3,7 @@ from pytest import raises
 
 from pydantic_forms.core import FormPage
 from pydantic_forms.utils.json import json_loads
-from pydantic_forms.validators import Accept
+from pydantic_forms.validators import Accept, AcceptValues
 
 
 def test_accept_ok():
@@ -24,9 +24,8 @@ def test_accept_schema():
         "additionalProperties": False,
         "properties": {
             "accept": {
-                "enum": ["ACCEPTED", "INCOMPLETE"],
+                "enum": [AcceptValues.ACCEPTED, AcceptValues.INCOMPLETE],
                 "format": "accept",
-                "metadata": {"pydantic.internal.needs_apply_discriminated_union": False},
                 "type": "string",
                 "title": "Accept",
             }
@@ -50,9 +49,8 @@ def test_accept_schema_with_data():
         "properties": {
             "accept": {
                 "data": [("field", "label")],
-                "enum": ["ACCEPTED", "INCOMPLETE"],
+                "enum": [AcceptValues.ACCEPTED, AcceptValues.INCOMPLETE],
                 "format": "accept",
-                "metadata": {"pydantic.internal.needs_apply_discriminated_union": False},
                 "type": "string",
                 "title": "Accept",
             }
