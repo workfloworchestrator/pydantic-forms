@@ -36,31 +36,9 @@ jobs:
         env:
           FLIT_ROOT_INSTALL: 1
       - name: Run Unit tests
-        run: pytest tests/unit_tests --cov-branch --cov=pydantic_forms --ignore=tests
+        run: pytest tests/unit_tests --cov-branch --cov=pydantic_forms --ignore=tests --cov-report=xml
         env:
           COVERAGE_FILE: reports/.coverage.${{ matrix.python-version }}
-      - name: Upload pytest test results
-        uses: actions/upload-artifact@v2
-        with:
-          name: reports
-          path: reports
-  coverage-combine:
-    needs: [container_job]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.8'
-      - name: Get coverage files
-        uses: actions/download-artifact@v3
-        with:
-          name: reports
-          path: reports
-      - run: pip install coverage[toml]
-      - run: mv reports/.coverage.3.12 .coverage
-      - run: coverage report
-      - run: coverage xml
       - name: "Upload coverage to Codecov"
         uses: codecov/codecov-action@v3
         with:
