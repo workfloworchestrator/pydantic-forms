@@ -36,7 +36,7 @@ jobs:
         env:
           FLIT_ROOT_INSTALL: 1
       - name: Run Unit tests
-        run: pytest --cov-branch --cov=pydantic_forms --ignore=tests --cov-report=xml
+        run: pytest --cov-branch --ignore=tests --cov-report=xml
       - name: "Upload coverage to Codecov"
         uses: codecov/codecov-action@v3
         with:
