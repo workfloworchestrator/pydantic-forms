@@ -1,4 +1,4 @@
-from pydantic_core import ValidationError
+from pydantic_core import ValidationError, __version__ as pydantic_version
 from pytest import raises
 
 from pydantic_forms.core import FormPage
@@ -34,6 +34,11 @@ def test_accept_schema():
         "title": "unknown",
         "type": "object",
     }
+
+    if pydantic_version == '2.5.2':
+        expected["properties"]["accept"]["metadata"] = {
+            'pydantic.internal.needs_apply_discriminated_union': False,
+        }
     assert Form.model_json_schema(mode="serialization") == expected
 
 
@@ -59,6 +64,11 @@ def test_accept_schema_with_data():
         "title": "unknown",
         "type": "object",
     }
+
+    if pydantic_version == '2.5.2':
+        expected["properties"]["accept"]["metadata"] = {
+            'pydantic.internal.needs_apply_discriminated_union': False,
+        }
     assert Form.model_json_schema() == expected
 
 
