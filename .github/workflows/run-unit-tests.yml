@@ -38,7 +38,7 @@ jobs:
       - name: Run Unit tests
         run: pytest --cov-branch --cov=pydantic_forms --ignore=tests
         env:
-          COVERAGE_FILE: reports/.coverage.${{ matrix.python-version }}-${{ matrix.python-version }}
+          COVERAGE_FILE: reports/.coverage.${{ matrix.python-version }}-${{ matrix.fastapi-version }}
       - name: Upload pytest test results
         uses: actions/upload-artifact@v2
         with:
