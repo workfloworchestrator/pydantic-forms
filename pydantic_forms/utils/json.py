@@ -106,12 +106,15 @@ def to_serializable(o: Any) -> Any:
     """Convert an object into an object that the JSON encode can serialize.
 
     Args:
+    ----
         o: Object to convert.
 
     Returns:
+    -------
         Serializable object.
 
     Raises:
+    ------
         TypeError: in case no conversion was possible.
 
     """
@@ -150,9 +153,11 @@ def from_serializable(dct: dict[str, Any]) -> dict[str, Any]:
     """Convert a serializable object into a more specific, custom, Python data type.
 
     Args:
+    ----
         dct: Serializable object.
 
     Returns:
+    -------
         Either the serializable object itself or a more specific data type if a conversion was possible.
 
     """
@@ -198,12 +203,15 @@ def non_none_dict(dikt: Sequence[tuple[str, Any]]) -> dict[Any, Any]:
     This function may be used in the `asdict()` method as dictionary factory.
 
     Args:
+    ----
         dikt: Tuple of values where
 
     Returns:
+    -------
         dict of the keys and values if value is not None
 
     Examples:
+    --------
         >>> non_none_dict({"a": 0, "b": None, "c": ""}.items())
         {'a': 0, 'c': ''}
 
@@ -215,9 +223,11 @@ def isoformat(dt: datetime) -> str:
     """ISO format datetime object with max precision limited to seconds.
 
     Args:
+    ----
         dt: datatime object to be formatted
 
     Returns:
+    -------
         ISO 8601 formatted string
 
     """

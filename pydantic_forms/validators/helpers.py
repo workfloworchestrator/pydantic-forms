@@ -6,8 +6,10 @@ def remove_empty_items(v: list) -> list:
     `[{}, None, {name:"", email:""}]`
 
     Example:
+    -------
         >>> remove_empty_items([{}, None, [], {"a":""}])
         []
+
     """
     if v:
         return list(filter(lambda i: bool(i) and (not isinstance(i, dict) or any(i.values())), v))

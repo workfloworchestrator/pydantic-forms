@@ -126,8 +126,9 @@ exclude = [
     "venv",
     ".venv",
     "docs",
+    "tests"
 ]
-ignore = [
+lint.ignore = [
     "C417",
     "D100",
     "D101",
@@ -149,17 +150,17 @@ ignore = [
     "N802",
 ]
 line-length = 120
-select = ["B", "C", "D", "E", "F", "I", "N", "RET", "S", "T", "W"]
+lint.select = ["B", "C", "D", "E", "F", "I", "N", "RET", "S", "T", "W"]
 target-version = "py39"
 
-[tool.ruff.flake8-tidy-imports]
+[tool.lint.flake8-tidy-imports]
 ban-relative-imports = "all"
 
-[tool.ruff.per-file-ignores]
+[tool.lint.per-file-ignores]
 "tests/*" = ["S101", "B033", "N816", "N802"]
 
-[tool.ruff.pydocstyle]
+[tool.lint.pydocstyle]
 convention = "google"
 
-[tool.ruff.isort]
+[tool.lint.isort]
 known-third-party = ["pydantic"]

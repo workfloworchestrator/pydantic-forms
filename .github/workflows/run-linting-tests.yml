@@ -34,7 +34,7 @@ jobs:
           python -V | grep 10 || black --check .
       - name: Lint with ruff
         run: |
-          ruff .
+          ruff check .
       - name: Check with mypy
         run: |
           mypy pydantic_forms

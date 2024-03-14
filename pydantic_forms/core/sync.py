@@ -102,12 +102,14 @@ def start_form(
     """Handle the logic for the endpoint that the frontend uses to render a form with or without prefilled input.
 
     Args:
+    ----
         form_key: name of form in the FORM dict
         user_inputs: List of form inputs from frontend
         user: User who starts this form
         extra_state: Optional initial state variables
 
     Returns:
+    -------
         The data that the user entered into the form
 
     """
