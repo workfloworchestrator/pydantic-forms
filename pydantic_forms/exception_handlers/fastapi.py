@@ -48,6 +48,7 @@ async def form_error_handler(request: Request, exc: FormException) -> JSONRespon
                 "form": json_loads(json_dumps(exc.form)),
                 "title": "Form not complete",
                 "status": HTTPStatus.NOT_EXTENDED,
+                "meta": getattr(exc, "meta")
             },
             status_code=HTTPStatus.NOT_EXTENDED,
         )

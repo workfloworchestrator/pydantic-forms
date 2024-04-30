@@ -19,10 +19,12 @@ class FormNotCompleteError(FormException):
     """
 
     form: JSON
+    meta: JSON | None
 
-    def __init__(self, form: JSON):
+    def __init__(self, form: JSON, meta: JSON | None):
         super().__init__(form)
         self.form = form
+        self.meta = meta
 
 
 class FormOverflowError(FormException):
