@@ -21,7 +21,7 @@ class FormNotCompleteError(FormException):
     form: JSON
     meta: JSON | None
 
-    def __init__(self, form: JSON, meta: JSON | None):
+    def __init__(self, form: JSON, *, meta: JSON | None = None):
         super().__init__(form)
         self.form = form
         self.meta = meta

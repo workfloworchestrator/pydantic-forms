@@ -85,7 +85,7 @@ async def post_form(
         return generated_form
 
     # Form is not completely filled raise next form
-    raise FormNotCompleteError(generated_form.model_json_schema())
+    raise FormNotCompleteError(generated_form.model_json_schema(), meta=getattr(generated_form, "meta__", None))
 
 
 def _get_form(key: str) -> StateInputFormGeneratorAsync:
