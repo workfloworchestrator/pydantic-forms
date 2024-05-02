@@ -1,3 +1,5 @@
+from unittest.mock import ANY
+
 from pydantic_core import ValidationError
 from pytest import raises
 
@@ -28,6 +30,7 @@ def test_accept_schema():
                 "format": "accept",
                 "type": "string",
                 "title": "Accept",
+                "metadata": ANY,
             }
         },
         "required": ["accept"],
@@ -54,6 +57,7 @@ def test_accept_schema_with_data():
                 "format": "accept",
                 "type": "string",
                 "title": "Accept",
+                "metadata": ANY,
             }
         },
         "required": ["accept"],

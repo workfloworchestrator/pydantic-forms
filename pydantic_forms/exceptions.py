@@ -1,5 +1,5 @@
 import traceback
-from typing import Any, Iterable, TypedDict, Union, cast
+from typing import Any, Iterable, Optional, TypedDict, Union, cast
 
 from more_itertools import side_effect
 from pydantic import ValidationError
@@ -19,10 +19,12 @@ class FormNotCompleteError(FormException):
     """
 
     form: JSON
+    meta: Optional[JSON]
 
-    def __init__(self, form: JSON):
+    def __init__(self, form: JSON, *, meta: Optional[JSON] = None):
         super().__init__(form)
         self.form = form
+        self.meta = meta
 
 
 class FormOverflowError(FormException):
