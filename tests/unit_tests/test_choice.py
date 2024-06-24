@@ -121,5 +121,8 @@ def test_choice_uuids():
     assert validated.model_dump() == {"choice": str(first_uuid)}
 
     # Cannot use the actual UUID because it's a strEnum
-    with pytest.raises(ValidationError, match=r"choice\n\s+Input should be a valid string"):
+    with pytest.raises(
+        ValidationError,
+        match=r"choice\n\s+Input should be '3a3691e2-399a-4733-8924-2cb524eb4723', 'efadf3f8-da32-475e-8dad-6efffa901bae' or '8724775d-2bfa-43e0-b861-942aa8699e1e'",
+    ):
         Form(choice=first_uuid)
