@@ -50,7 +50,7 @@ async def test_post_process_validation_errors():
     with raises(FormValidationError) as e:
         await post_form(input_form, {}, [{"generic_select": 1, "extra_data": False}])
 
-    expected = "2 validation errors for TestForm\ngeneric_select\n  Input should be a valid string (type=string_type)\nextra_data\n  Extra inputs are not permitted (type=extra_forbidden)"
+    expected = "2 validation errors for TestForm\ngeneric_select\n  Input should be 'a' or 'b' (type=enum; expected='a' or 'b')\nextra_data\n  Extra inputs are not permitted (type=extra_forbidden)"
     assert str(e.value) == expected
 
     with raises(FormValidationError) as e:

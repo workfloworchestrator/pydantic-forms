@@ -30,7 +30,6 @@ def test_accept_schema():
                 "format": "accept",
                 "type": "string",
                 "title": "Accept",
-                "metadata": ANY,
             }
         },
         "required": ["accept"],
@@ -57,7 +56,6 @@ def test_accept_schema_with_data():
                 "format": "accept",
                 "type": "string",
                 "title": "Accept",
-                "metadata": ANY,
             }
         },
         "required": ["accept"],
@@ -95,6 +93,7 @@ def test_accept_nok_invalid():
             "loc": ("accept",),
             "msg": "Input should be 'ACCEPTED' or 'INCOMPLETE'",
             "type": "enum",
+            "url": "https://errors.pydantic.dev/2.7/v/enum",
         }
     ]
     assert error_info.value.errors() == expected
