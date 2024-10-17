@@ -29,7 +29,6 @@ async def form_error_handler(request: Request, exc: FormException) -> JSONRespon
             {
                 "type": type(exc).__name__,
                 "detail": str(exc),
-                "traceback": show_ex(exc),
                 "title": "Form not valid",
                 # We need to make sure the is nothing the default json.dumps cannot handle
                 "validation_errors": json_loads(json_dumps(exc.errors)),
@@ -43,7 +42,6 @@ async def form_error_handler(request: Request, exc: FormException) -> JSONRespon
             {
                 "type": type(exc).__name__,
                 "detail": str(exc),
-                "traceback": show_ex(exc),
                 # We need to make sure the is nothing the default json.dumps cannot handle
                 "form": json_loads(json_dumps(exc.form)),
                 "title": "Form not complete",
