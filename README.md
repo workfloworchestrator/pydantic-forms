@@ -5,7 +5,7 @@
 [![Downloads](https://static.pepy.tech/badge/pydantic-forms/month)](https://pepy.tech/project/pydantic-forms)
 [![codecov](https://codecov.io/gh/workfloworchestrator/pydantic-forms/branch/main/graph/badge.svg?token=AJMOSWPHQX)](https://codecov.io/gh/workfloworchestrator/pydantic-forms)
 
-A Python package that lets you add smart forms to [FastAPI](https://fastapi.tiangolo.com/)
+A Python package that lets you add smart forms and validations to [FastAPI](https://fastapi.tiangolo.com/)
 and [Flask](https://palletsprojects.com/p/flask/). Forms will respond with a JSON scheme that
 contains all info needed in a React frontend with uniforms to render the forms and handle all validation tasks.
 
