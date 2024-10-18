@@ -19,7 +19,7 @@ from http import HTTPStatus
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 
-from pydantic_forms.exceptions import FormException, FormNotCompleteError, FormValidationError, show_ex
+from pydantic_forms.exceptions import FormException, FormNotCompleteError, FormValidationError
 from pydantic_forms.utils.json import json_dumps, json_loads
 
 
