@@ -12,13 +12,21 @@
 # limitations under the License.
 from copy import deepcopy
 from inspect import isasyncgenfunction
-from typing import Any, Union
+from typing import Any, Union, cast
 
 import structlog
 from pydantic import ValidationError
+from pydantic_forms.core.translations import tr
+
 
 from pydantic_forms.core.shared import FORMS
-from pydantic_forms.exceptions import FormException, FormNotCompleteError, FormOverflowError, FormValidationError
+from pydantic_forms.exceptions import (
+    ErrorDict,
+    FormException,
+    FormNotCompleteError,
+    FormOverflowError,
+    FormValidationError,
+)
 from pydantic_forms.types import InputForm, State, StateInputFormGeneratorAsync
 
 logger = structlog.get_logger(__name__)
@@ -67,7 +75,21 @@ async def post_form(
         try:
             form_validated_data = generated_form(**user_input)
         except ValidationError as e:
-            raise FormValidationError(generated_form.__name__, e) from e  # type: ignore
+            print("TYPE ERROR")
+            print(type(e.errors()[0]))
+            print(e.errors()[0])
+            print("TYPE TRANS")
+            translated_errors = tr.translate(e.errors(), locale="nl_NL")
+            print(type(translated_errors[0]))
+            print(translated_errors[0])
+            e.errors = translated_errors
+            # for error in translated_errors:
+            # print(ErrorDetails(**error))
+
+            # detail = ErrorDetails()
+            # detail.errors = translated_errors
+            # print(ErrorDetails = translated_errors)
+            raise FormValidationError(generated_form.__name__, translated_errors) from e  # type: ignore
 
         # Update state with validated_data
         current_state.update(form_validated_data.model_dump())
