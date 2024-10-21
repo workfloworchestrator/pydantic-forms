@@ -28,9 +28,6 @@ MigrationSummary = Annotated[_MigrationSummary, Field(frozen=True, default=None,
 
 def create_json_extra_schema(data: SummaryData, schema: dict[str, Any]) -> None:
     schema.update({"format": "summary", "type": "string", "uniforms": {"data": data}})
-    # TODO: check if Frontend renders MigrationSummary ok
-    # Error: no "allOf" anymore in pydantic JSON scheme
-    # schema.pop("allOf")  # This is needed, because otherwise Uniforms (3.8.1) is unable to render this schema
 
 
 def migration_summary(data: SummaryData) -> type[MigrationSummary]:
