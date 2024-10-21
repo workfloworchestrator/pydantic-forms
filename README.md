@@ -78,7 +78,7 @@ source venv/bin/activate
 pip install flit
 ```
 
-### Step 2 - symlink the core to your own project
+### Step 2 - symlink pydantic-forms to your own project
 
 ```shell
 flit install --deps develop --symlink --python /path/to/a/project/venv/bin/python

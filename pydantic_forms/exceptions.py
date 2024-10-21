@@ -5,6 +5,8 @@ from more_itertools import side_effect
 from pydantic import ValidationError
 from pydantic_core import ErrorDetails
 
+from pydantic_forms.core.translations import tr
+
 from pydantic_forms.types import JSON
 
 
@@ -31,7 +33,8 @@ class FormOverflowError(FormException):
     """Raised when more inputs are provided than the form can process."""
 
 
-def convert_errors(validation_error: ValidationError) -> Iterable[ErrorDetails]:
+# def convert_errors(validation_error: ValidationError) -> Iterable[ErrorDetails]:
+def convert_errors(validation_error: list[dict]) -> Iterable[ErrorDetails]:
     """Convert Pydantic's error messages to our needs.
 
     https://docs.pydantic.dev/2.4/errors/errors/#customize-error-messages
@@ -48,7 +51,7 @@ def convert_errors(validation_error: ValidationError) -> Iterable[ErrorDetails]:
             error["loc"] = ("__root__",)
         return
 
-    return side_effect(convert_error, validation_error.errors())
+    return side_effect(convert_error, validation_error)
 
 
 class FormValidationError(FormException):
@@ -58,6 +61,8 @@ class FormValidationError(FormException):
     def __init__(self, validator_name: str, error: ValidationError):
         super().__init__()
         self.validator_name = validator_name
+        print("TYPE BEFORE CON")
+        print(type(error[0]))
         self.errors = list(convert_errors(error))
 
     def __str__(self) -> str:
