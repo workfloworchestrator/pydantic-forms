@@ -10,44 +10,55 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import os
 
 # TODO Decide how to expose this so pydantic-forms can be framework agnostic
-
 from http import HTTPStatus
 
+import structlog
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 
-from pydantic_forms.exceptions import FormException, FormNotCompleteError, FormValidationError
+from pydantic_forms.exceptions import FormException, FormNotCompleteError, FormValidationError, show_ex
 from pydantic_forms.utils.json import json_dumps, json_loads
+
+logger = structlog.get_logger(__name__)
 
 
 async def form_error_handler(request: Request, exc: FormException) -> JSONResponse:
+    PYDANTIC_FORMS_LOGLEVEL = "DEBUG" if os.getenv("PYDANTIC_FORMS_LOGLEVEL", "INFO").upper() == "DEBUG" else "INFO"
     if isinstance(exc, FormValidationError):
+        result = {
+            "type": type(exc).__name__,
+            "detail": str(exc),
+            "title": "Form not valid",
+            # We need to make sure there is nothing the default json.dumps cannot handle
+            "validation_errors": json_loads(json_dumps(exc.errors)),
+            "status": HTTPStatus.BAD_REQUEST,
+        }
+        if PYDANTIC_FORMS_LOGLEVEL == "DEBUG":
+            result["traceback"] = show_ex(exc)
+            logger.debug("Form validation Response", result=result)
         return JSONResponse(
-            {
-                "type": type(exc).__name__,
-                "detail": str(exc),
-                "title": "Form not valid",
-                # We need to make sure the is nothing the default json.dumps cannot handle
-                "validation_errors": json_loads(json_dumps(exc.errors)),
-                "status": HTTPStatus.BAD_REQUEST,
-            },
+            result,
             status_code=HTTPStatus.BAD_REQUEST,
         )
 
     if isinstance(exc, FormNotCompleteError):
+        result = {
+            "type": type(exc).__name__,
+            "detail": str(exc),
+            # We need to make sure the is nothing the default json.dumps cannot handle
+            "form": json_loads(json_dumps(exc.form)),
+            "title": "Form not complete",
+            "status": HTTPStatus.NOT_EXTENDED,
+            "meta": getattr(exc, "meta", None),
+        }
+        if PYDANTIC_FORMS_LOGLEVEL == "DEBUG":
+            result["traceback"] = show_ex(exc)
+            logger.debug("Form validation Response", result=result)
         return JSONResponse(
-            {
-                "type": type(exc).__name__,
-                "detail": str(exc),
-                # We need to make sure the is nothing the default json.dumps cannot handle
-                "form": json_loads(json_dumps(exc.form)),
-                "title": "Form not complete",
-                "status": HTTPStatus.NOT_EXTENDED,
-                "meta": getattr(exc, "meta", None),
-            },
+            result,
             status_code=HTTPStatus.NOT_EXTENDED,
         )
 
