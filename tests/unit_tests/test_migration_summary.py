@@ -34,11 +34,13 @@ def test_migration_summary_schema():
         ms: Summary
 
     expected = {
+        "$defs": {"MigrationSummaryValue": {"properties": {}, "title": "MigrationSummaryValue", "type": "object"}},
         "additionalProperties": False,
         "properties": {
             "ms": {
-                "format": "summary",
+                "$ref": "#/$defs/MigrationSummaryValue",
                 "default": None,
+                "format": "summary",
                 "type": "string",
                 "uniforms": {
                     "data": {"headers": ["one"]},

@@ -61,8 +61,6 @@ test = [
     "ruff",
     "types-Deprecated",
     "types-certifi",
-    "types-itsdangerous",
-    "types-pkg_resources",
     "types-python-dateutil",
     "types-pytz",
     "types-toml",

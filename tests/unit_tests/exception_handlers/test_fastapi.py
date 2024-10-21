@@ -17,6 +17,18 @@ async def test_form_not_complete():
     body = response.body.decode()
     assert "FormNotCompleteError" in body
     assert "foobar" in body
+    assert "traceback" not in body
+
+
+async def test_form_not_complete_with_stack_trace(monkeypatch):
+    monkeypatch.setenv("PYDANTIC_FORMS_LOGLEVEL", "DEBUG")
+    exception = FormNotCompleteError({"message": "foobar"})
+    response = await form_error_handler(mock.Mock(spec=Request), exception)
+    assert response.status_code == HTTPStatus.NOT_EXTENDED
+    body = response.body.decode()
+    assert "FormNotCompleteError" in body
+    assert "foobar" in body
+    assert "traceback" in body
 
 
 @pytest.fixture
@@ -37,6 +49,18 @@ async def test_form_validation(example_form_error_invalid_int):
     body = response.body.decode()
     assert "FormValidationError" in body
     assert "should be a valid integer" in body
+    assert "traceback" not in body
+
+
+async def test_form_validation_with_stack_trace(example_form_error_invalid_int, monkeypatch):
+    monkeypatch.setenv("PYDANTIC_FORMS_LOGLEVEL", "DEBUG")
+    exception = FormValidationError("myvalidator", example_form_error_invalid_int)
+    response = await form_error_handler(mock.Mock(spec=Request), exception)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    body = response.body.decode()
+    assert "FormValidationError" in body
+    assert "should be a valid integer" in body
+    assert "traceback" in body
 
 
 async def test_overflow_error():

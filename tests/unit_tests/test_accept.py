@@ -6,6 +6,7 @@ from pytest import raises
 from pydantic_forms.core import FormPage
 from pydantic_forms.utils.json import json_loads
 from pydantic_forms.validators import Accept, AcceptValues
+from tests.unit_tests.helpers import assert_equal_ignore_key
 
 
 def test_accept_ok():
@@ -93,7 +94,6 @@ def test_accept_nok_invalid():
             "loc": ("accept",),
             "msg": "Input should be 'ACCEPTED' or 'INCOMPLETE'",
             "type": "enum",
-            "url": "https://errors.pydantic.dev/2.7/v/enum",
         }
     ]
-    assert error_info.value.errors() == expected
+    assert_equal_ignore_key(expected, error_info.value.errors(), ["url"])

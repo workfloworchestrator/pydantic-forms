@@ -96,3 +96,14 @@ bumpversion patch --new-version 0.0.1
 
 Note: specifying it like this, instead of relying on bumpversion itself to increase the version, allows you to
 set a "RC1" version if needed.
+
+# Debugging Form behaviour
+
+If you want/need the traceback of pydantic in a Form response you can add an env variable:
+
+`
+PYDANTIC_FORMS_LOGLEVEL=DEBUG
+`
+
+This will add the traceback to the `JSONResponse`. If the loglevel is set to DEBUG the library will also add the
+traceback to the logger.

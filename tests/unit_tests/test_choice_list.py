@@ -153,7 +153,7 @@ def test_choice_list_constraint_at_least_one_item(Form):
         {
             "input": [],
             "loc": ("choice",),
-            "msg": "List should have at least 1 item after validation, not 0",
+            "msg": "Value should have at least 1 item after validation, not 0",
             "type": "too_short",
             # "ctx": {"limit_value": 1},
         }

@@ -79,7 +79,7 @@ def test_constrained_list_too_short():
             # "ctx": {"error": ListMinLengthError(limit_value=1)},
             "input": [],
             "loc": ("v",),
-            "msg": "List should have at least 1 item after validation, not 0",
+            "msg": "Value should have at least 1 item after validation, not 0",
             "type": "too_short",
         }
     ]
@@ -115,7 +115,7 @@ def test_constrained_list_inherit_constraints():
         {
             "input": [],
             "loc": ("v",),
-            "msg": "List should have at least 1 item after validation, not 0",
+            "msg": "Value should have at least 1 item after validation, not 0",
             "type": "too_short",
             # "ctx": {"limit_value": 1},
         }

@@ -26,7 +26,7 @@ def test_list_of_two_min_items(Form):
         {
             "input": [1],
             "loc": ("two",),
-            "msg": "List should have at least 2 items after validation, not 1",
+            "msg": "Value should have at least 2 items after validation, not 1",
             "type": "too_short",
         }
     ]
@@ -42,7 +42,7 @@ def test_list_of_two_max_items(Form):
         {
             "input": [1, 2, 3],
             "loc": ("two",),
-            "msg": "List should have at most 2 items after validation, not 3",
+            "msg": "Value should have at most 2 items after validation, not 3",
             "type": "too_long",
         },
     ]
