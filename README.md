@@ -102,7 +102,7 @@ set a "RC1" version if needed.
 If you want/need the traceback of pydantic in a Form response you can add an env variable:
 
 `
-PYDANTIC_FORMS_LOGLEVEL=DEBUG
+LOG_LEVEL_PYDANTIC_FORMS=DEBUG
 `
 
 This will add the traceback to the `JSONResponse`. If the loglevel is set to DEBUG the library will also add the

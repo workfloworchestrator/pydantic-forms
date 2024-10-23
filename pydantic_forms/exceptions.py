@@ -1,13 +1,16 @@
+import os
 import traceback
 from typing import Any, Iterable, Optional, TypedDict, Union, cast
 
+import structlog
 from more_itertools import side_effect
 from pydantic import ValidationError
 from pydantic_core import ErrorDetails
-
-from pydantic_forms.core.translations import tr
+from pydantic_i18n import PydanticI18n
 
 from pydantic_forms.types import JSON
+
+logger = structlog.get_logger(__name__)
 
 
 class FormException(Exception):  # noqa: N818
@@ -34,11 +37,12 @@ class FormOverflowError(FormException):
 
 
 # def convert_errors(validation_error: ValidationError) -> Iterable[ErrorDetails]:
-def convert_errors(validation_error: list[dict]) -> Iterable[ErrorDetails]:
+def convert_errors(validation_error: ValidationError, tr: PydanticI18n, locale="en_US") -> Iterable[ErrorDetails]:
     """Convert Pydantic's error messages to our needs.
 
     https://docs.pydantic.dev/2.4/errors/errors/#customize-error-messages
     """
+    LOG_LEVEL_PYDANTIC_FORMS = "DEBUG" if os.getenv("LOG_LEVEL_PYDANTIC_FORMS", "INFO").upper() == "DEBUG" else "INFO"
 
     def convert_error(error: ErrorDetails) -> None:
         exc = error.get("ctx", {}).get("error")
@@ -51,19 +55,30 @@ def convert_errors(validation_error: list[dict]) -> Iterable[ErrorDetails]:
             error["loc"] = ("__root__",)
         return
 
-    return side_effect(convert_error, validation_error)
+    if LOG_LEVEL_PYDANTIC_FORMS == "DEBUG":
+        logger.debug(
+            "Form translation info",
+            original=validation_error.errors(),
+            translated=tr.translate(validation_error.errors(), locale),
+        )
+
+    return side_effect(convert_error, tr.translate(validation_error.errors(), locale))
 
 
 class FormValidationError(FormException):
     validator_name: str
     errors: list[ErrorDetails]
 
-    def __init__(self, validator_name: str, error: ValidationError):
+    def __init__(
+        self,
+        validator_name: str,
+        error: ValidationError,
+        tr: PydanticI18n,
+        locale="en_US",
+    ):
         super().__init__()
         self.validator_name = validator_name
-        print("TYPE BEFORE CON")
-        # print(type(error[0]))
-        self.errors = list(convert_errors(error))
+        self.errors = list(convert_errors(error, tr, locale))
 
     def __str__(self) -> str:
         no_errors = len(self.errors)
