@@ -75,13 +75,14 @@ async def post_form(
         try:
             form_validated_data = generated_form(**user_input)
         except ValidationError as e:
-            print("TYPE ERROR")
-            print(type(e.errors()[0]))
-            print(e.errors()[0])
-            print("TYPE TRANS")
-            translated_errors = tr.translate(e.errors(), locale="nl_NL")
-            print(type(translated_errors[0]))
-            print(translated_errors[0])
+            # print("TYPE ERROR")
+            # print(type(e.errors()[0]))
+            # print(e.errors()[0])
+            # print("TYPE TRANS")
+            # translated_errors = tr.translate(e.errors(), locale="nl_NL")
+            translated_errors = tr.translate(e.errors(), locale="en_US")
+            # print(type(translated_errors[0]))
+            # print(translated_errors[0])
             e.errors = translated_errors
             # for error in translated_errors:
             # print(ErrorDetails(**error))
@@ -135,6 +136,8 @@ async def start_form(
         form_key: name of form in the FORM dict
         user_inputs: List of form inputs from frontend
         user: User who starts this form
+        lang: Language of the form
+        extra_translations: Extra translations to apply to the form
         extra_state: Optional initial state variables
 
     Returns:
