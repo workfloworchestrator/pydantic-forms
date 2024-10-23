@@ -33,12 +33,12 @@ logger = structlog.get_logger(__name__)
 
 
 async def generate_form(
-    form_generator: Union[StateInputFormGeneratorAsync, None], state: State, user_inputs: list[State]
+    form_generator: Union[StateInputFormGeneratorAsync, None], state: State, user_inputs: list[State], lang: str ="en_US", extra_translations: dict | None = None
 ) -> Union[State, None]:
     """Generate form using form generator as defined by a form definition."""
     try:
         # Generate form is basically post_form
-        await post_form(form_generator, state, user_inputs)
+        await post_form(form_generator, state, user_inputs, lang, extra_translations)
     except FormNotCompleteError as e:
         # Form is not finished and raises the next form, this is expected
         return e.form
@@ -48,7 +48,7 @@ async def generate_form(
 
 
 async def post_form(
-    form_generator: Union[StateInputFormGeneratorAsync, None], state: State, user_inputs: list[State]
+    form_generator: Union[StateInputFormGeneratorAsync, None], state: State, user_inputs: list[State], lang: str ="en_US", extra_translations: dict | None = None
 ) -> State:
     """Post user_input based ond serve a new form if the form wizard logic dictates it."""
     # there is no form_generator so we return no validated data
@@ -124,6 +124,8 @@ async def start_form(
     form_key: str,
     user_inputs: Union[list[State], None] = None,
     user: str = "Just a user",  # Todo: check if we need users inside form logic?
+    lang: str ="en_US", 
+    extra_translations: dict | None = None,
     **extra_state: Any,
 ) -> State:
     """Handle the logic for the endpoint that the frontend uses to render a form with or without prefilled input.
@@ -149,7 +151,7 @@ async def start_form(
     initial_state = dict(form_key=form_key, **extra_state)
 
     try:
-        state = await post_form(form, initial_state, user_inputs)
+        state = await post_form(form, initial_state, user_inputs, lang, extra_translations)
     except FormValidationError as exc:
         logger.debug("Validation errors", user_inputs=user_inputs, form=exc.validator_name, errors=exc.errors)
         logger.debug(str(exc))
