@@ -12,16 +12,15 @@
 # limitations under the License.
 from copy import deepcopy
 from inspect import isasyncgenfunction
-from typing import Any, Union, cast
+from typing import Any, Union
 
 import structlog
 from pydantic import ValidationError
-from pydantic_forms.core.translations import tr
-
+from pydantic_i18n import PydanticI18n
 
 from pydantic_forms.core.shared import FORMS
+from pydantic_forms.core.translations import translations
 from pydantic_forms.exceptions import (
-    ErrorDict,
     FormException,
     FormNotCompleteError,
     FormOverflowError,
@@ -33,12 +32,16 @@ logger = structlog.get_logger(__name__)
 
 
 async def generate_form(
-    form_generator: Union[StateInputFormGeneratorAsync, None], state: State, user_inputs: list[State], lang: str ="en_US", extra_translations: dict | None = None
+    form_generator: Union[StateInputFormGeneratorAsync, None],
+    state: State,
+    user_inputs: list[State],
+    locale: str = "en_US",
+    extra_translations: dict | None = None,
 ) -> Union[State, None]:
     """Generate form using form generator as defined by a form definition."""
     try:
         # Generate form is basically post_form
-        await post_form(form_generator, state, user_inputs, lang, extra_translations)
+        await post_form(form_generator, state, user_inputs, locale, extra_translations)
     except FormNotCompleteError as e:
         # Form is not finished and raises the next form, this is expected
         return e.form
@@ -48,7 +51,11 @@ async def generate_form(
 
 
 async def post_form(
-    form_generator: Union[StateInputFormGeneratorAsync, None], state: State, user_inputs: list[State], lang: str ="en_US", extra_translations: dict | None = None
+    form_generator: Union[StateInputFormGeneratorAsync, None],
+    state: State,
+    user_inputs: list[State],
+    locale: str = "en_US",
+    extra_translations: dict | None = None,
 ) -> State:
     """Post user_input based ond serve a new form if the form wizard logic dictates it."""
     # there is no form_generator so we return no validated data
@@ -75,22 +82,9 @@ async def post_form(
         try:
             form_validated_data = generated_form(**user_input)
         except ValidationError as e:
-            # print("TYPE ERROR")
-            # print(type(e.errors()[0]))
-            # print(e.errors()[0])
-            # print("TYPE TRANS")
-            # translated_errors = tr.translate(e.errors(), locale="nl_NL")
-            translated_errors = tr.translate(e.errors(), locale="en_US")
-            # print(type(translated_errors[0]))
-            # print(translated_errors[0])
-            e.errors = translated_errors
-            # for error in translated_errors:
-            # print(ErrorDetails(**error))
-
-            # detail = ErrorDetails()
-            # detail.errors = translated_errors
-            # print(ErrorDetails = translated_errors)
-            raise FormValidationError(generated_form.__name__, translated_errors) from e  # type: ignore
+            # Todo: add extra_translation to tr
+            tr = PydanticI18n(translations)
+            raise FormValidationError(generated_form.__name__, e, tr, locale) from e  # type: ignore
 
         # Update state with validated_data
         current_state.update(form_validated_data.model_dump())
@@ -125,7 +119,7 @@ async def start_form(
     form_key: str,
     user_inputs: Union[list[State], None] = None,
     user: str = "Just a user",  # Todo: check if we need users inside form logic?
-    lang: str ="en_US", 
+    locale: str = "en_US",
     extra_translations: dict | None = None,
     **extra_state: Any,
 ) -> State:
@@ -136,7 +130,7 @@ async def start_form(
         form_key: name of form in the FORM dict
         user_inputs: List of form inputs from frontend
         user: User who starts this form
-        lang: Language of the form
+        locale: Language of the form
         extra_translations: Extra translations to apply to the form
         extra_state: Optional initial state variables
 
@@ -154,7 +148,7 @@ async def start_form(
     initial_state = dict(form_key=form_key, **extra_state)
 
     try:
-        state = await post_form(form, initial_state, user_inputs, lang, extra_translations)
+        state = await post_form(form, initial_state, user_inputs, locale, extra_translations)
     except FormValidationError as exc:
         logger.debug("Validation errors", user_inputs=user_inputs, form=exc.validator_name, errors=exc.errors)
         logger.debug(str(exc))

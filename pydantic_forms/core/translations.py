@@ -1,5 +1,3 @@
-from pydantic_i18n import PydanticI18n
-
 translations = {
     "en_US": {
         "Field required": "field required",
@@ -115,9 +113,6 @@ translations = {
         "value is not a valid email address: An email address must have an @-sign.": "Waarde is geen geldig e-mailadres: Een e-mailadres moet een @-teken bevatten.",
         # IP
         "Input is not a valid IPv4 address": "Dit is geen geldig IPv4",
-        "Input is not a valid IPv4 network": "Dit is geen geldig netwerk adres"
+        "Input is not a valid IPv4 network": "Dit is geen geldig netwerk adres",
     },
 }
-
-
-tr = PydanticI18n(translations)
