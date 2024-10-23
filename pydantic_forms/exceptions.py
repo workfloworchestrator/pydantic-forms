@@ -62,7 +62,7 @@ class FormValidationError(FormException):
         super().__init__()
         self.validator_name = validator_name
         print("TYPE BEFORE CON")
-        print(type(error[0]))
+        # print(type(error[0]))
         self.errors = list(convert_errors(error))
 
     def __str__(self) -> str:
