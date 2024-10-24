@@ -39,7 +39,8 @@ classifiers = [
 ]
 requires = [
     "more-itertools",
-    "pydantic[email]>=2.7.4"
+    "pydantic[email]>=2.7.4",
+    "pydantic-i18n==0.4.5"
 ]
 description-file = "README.md"
 requires-python = ">=3.9,<=3.13"
