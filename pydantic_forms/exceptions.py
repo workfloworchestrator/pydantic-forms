@@ -37,7 +37,9 @@ class FormOverflowError(FormException):
 
 
 # def convert_errors(validation_error: ValidationError) -> Iterable[ErrorDetails]:
-def convert_errors(validation_error: ValidationError, tr: PydanticI18n, locale="en_US") -> Iterable[ErrorDetails]:
+def convert_errors(
+    validation_error: ValidationError, tr: PydanticI18n, locale: str = "en_US"
+) -> Iterable[ErrorDetails]:
     """Convert Pydantic's error messages to our needs.
 
     https://docs.pydantic.dev/2.4/errors/errors/#customize-error-messages
@@ -74,7 +76,7 @@ class FormValidationError(FormException):
         validator_name: str,
         error: ValidationError,
         tr: PydanticI18n,
-        locale="en_US",
+        locale: str = "en_US",
     ):
         super().__init__()
         self.validator_name = validator_name
