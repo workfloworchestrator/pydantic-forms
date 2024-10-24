@@ -36,7 +36,7 @@ async def generate_form(
     state: State,
     user_inputs: list[State],
     locale: str = "en_US",
-    extra_translations: dict | None = None,
+    extra_translations: Union[dict[str, str], None] = None,
 ) -> Union[State, None]:
     """Generate form using form generator as defined by a form definition."""
     try:
@@ -55,7 +55,7 @@ async def post_form(
     state: State,
     user_inputs: list[State],
     locale: str = "en_US",
-    extra_translations: dict | None = None,
+    extra_translations: Union[dict[str, str], None] = None,
 ) -> State:
     """Post user_input based ond serve a new form if the form wizard logic dictates it."""
     # there is no form_generator so we return no validated data
@@ -120,7 +120,7 @@ async def start_form(
     user_inputs: Union[list[State], None] = None,
     user: str = "Just a user",  # Todo: check if we need users inside form logic?
     locale: str = "en_US",
-    extra_translations: dict | None = None,
+    extra_translations: Union[dict[str, str], None] = None,
     **extra_state: Any,
 ) -> State:
     """Handle the logic for the endpoint that the frontend uses to render a form with or without prefilled input.
