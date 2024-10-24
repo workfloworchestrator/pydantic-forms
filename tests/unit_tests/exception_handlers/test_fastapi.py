@@ -55,6 +55,17 @@ async def test_form_validation(example_form_error_invalid_int):
     assert "traceback" not in body
 
 
+async def test_form_validation_nl_NL(example_form_error_invalid_int):
+    tr = PydanticI18n(translations)
+    exception = FormValidationError("myvalidator", example_form_error_invalid_int, tr, "nl_NL")
+    response = await form_error_handler(mock.Mock(spec=Request), exception)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    body = response.body.decode()
+    assert "FormValidationError" in body
+    assert "Invoer moet een geldig geheel getal zijn" in body
+    assert "traceback" not in body
+
+
 async def test_form_validation_with_stack_trace(example_form_error_invalid_int, monkeypatch):
     monkeypatch.setenv("LOG_LEVEL_PYDANTIC_FORMS", "DEBUG")
     tr = PydanticI18n(translations)

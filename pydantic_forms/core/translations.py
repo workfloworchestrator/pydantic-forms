@@ -45,7 +45,7 @@ translations = {
         "Input should be a valid boolean": "Invoer moet een geldige boolean zijn",
         "Input should be a valid boolean, unable to interpret input": "Invoer moet een geldige boolean zijn, onvermogen om invoer te interpreteren",
         "Input should be a valid integer": "Invoer moet een geldig geheel getal zijn",
-        "Input should be a valid integer, unable to parse string as an integer": "Invoer moet een geldig geheel getal zijn, onvermogen om string te ontleden als een geheel getal",
+        "Input should be a valid integer, unable to parse string as an integer": "Invoer moet een geldig geheel getal zijn, het was niet mogelijk om de tekst te converteren naar een geheel getal",
         "Unable to parse input string as an integer, exceeded maximum size": "Onvermogen om invoerstring te ontleden als een geheel getal, maximale grootte overschreden",
         "Input should be a valid integer, got a number with a fractional part": "Invoer moet een geldig geheel getal zijn, er is een getal met een breukdeel ontvangen",
         "Input should be a valid number": "Invoer moet een geldig getal zijn",
