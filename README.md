@@ -14,9 +14,10 @@ consecutive forms. The forms and the validation logic are defined by
 using [Pydantic](https://pydantic-docs.helpmanual.io/) models.
 
 Documentation regarding the usage of Forms can be found
-[here](https://github.com/workfloworchestrator/orchestrator-core/blob/main/docs/architecture/application/forms.md)
+[here](https://github.com/workfloworchestrator/orchestrator-core/blob/main/docs/architecture/application/forms-frontend.md)
 
 ### Installation (Development standalone)
+
 Install the project and its dependencies to develop on the code.
 
 #### Step 1 - install flit:
@@ -28,16 +29,17 @@ pip install flit
 ```
 
 #### Step 2 - install the development code:
+
 ```shell
 flit install --deps develop --symlink --python venv/bin/python
 ```
 
 !!! danger
-    Make sure to use the flit binary that is installed in your environment. You can check the correct
-    path by running
-    ```shell
+Make sure to use the flit binary that is installed in your environment. You can check the correct
+path by running
+`shell
     which flit
-    ```
+    `
 
 To be sure that the packages will be installed against the correct venv you can also prepend the python interpreter
 that you want to use:
@@ -46,11 +48,12 @@ that you want to use:
 flit install --deps develop --symlink --python venv/bin/python
 ```
 
-
 ### Running tests
+
 Run the unit-test suite to verify a correct setup.
 
 #### Step 2 - Run tests
+
 ```shell
 pytest tests/unit_tests
 ```
@@ -101,9 +104,7 @@ set a "RC1" version if needed.
 
 If you want/need the traceback of pydantic in a Form response you can add an env variable:
 
-`
-PYDANTIC_FORMS_LOGLEVEL=DEBUG
-`
+`PYDANTIC_FORMS_LOGLEVEL=DEBUG`
 
 This will add the traceback to the `JSONResponse`. If the loglevel is set to DEBUG the library will also add the
 traceback to the logger.
