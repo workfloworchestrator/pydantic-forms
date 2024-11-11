@@ -14,7 +14,7 @@ consecutive forms. The forms and the validation logic are defined by
 using [Pydantic](https://pydantic-docs.helpmanual.io/) models.
 
 Documentation regarding the usage of Forms can be found
-[here](https://github.com/workfloworchestrator/orchestrator-core/blob/main/docs/architecture/application/forms.md)
+[here](https://github.com/workfloworchestrator/orchestrator-core/blob/main/docs/architecture/application/forms-frontend.md)
 
 ### Installation (Development standalone)
 Install the project and its dependencies to develop on the code.
