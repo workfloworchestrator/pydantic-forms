@@ -78,7 +78,7 @@ source venv/bin/activate
 pip install flit
 ```
 
-### Step 2 - symlink the core to your own project
+### Step 2 - symlink pydantic-forms to your own project
 
 ```shell
 flit install --deps develop --symlink --python /path/to/a/project/venv/bin/python
@@ -102,7 +102,7 @@ set a "RC1" version if needed.
 If you want/need the traceback of pydantic in a Form response you can add an env variable:
 
 `
-PYDANTIC_FORMS_LOGLEVEL=DEBUG
+LOG_LEVEL_PYDANTIC_FORMS=DEBUG
 `
 
 This will add the traceback to the `JSONResponse`. If the loglevel is set to DEBUG the library will also add the

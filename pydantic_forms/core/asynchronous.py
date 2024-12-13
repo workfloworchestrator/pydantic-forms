@@ -16,21 +16,32 @@ from typing import Any, Union
 
 import structlog
 from pydantic import ValidationError
+from pydantic_i18n import PydanticI18n
 
 from pydantic_forms.core.shared import FORMS
-from pydantic_forms.exceptions import FormException, FormNotCompleteError, FormOverflowError, FormValidationError
+from pydantic_forms.core.translations import translations
+from pydantic_forms.exceptions import (
+    FormException,
+    FormNotCompleteError,
+    FormOverflowError,
+    FormValidationError,
+)
 from pydantic_forms.types import InputForm, State, StateInputFormGeneratorAsync
 
 logger = structlog.get_logger(__name__)
 
 
 async def generate_form(
-    form_generator: Union[StateInputFormGeneratorAsync, None], state: State, user_inputs: list[State]
+    form_generator: Union[StateInputFormGeneratorAsync, None],
+    state: State,
+    user_inputs: list[State],
+    locale: str = "en_US",
+    extra_translations: Union[dict[str, str], None] = None,
 ) -> Union[State, None]:
     """Generate form using form generator as defined by a form definition."""
     try:
         # Generate form is basically post_form
-        await post_form(form_generator, state, user_inputs)
+        await post_form(form_generator, state, user_inputs, locale, extra_translations)
     except FormNotCompleteError as e:
         # Form is not finished and raises the next form, this is expected
         return e.form
@@ -40,7 +51,11 @@ async def generate_form(
 
 
 async def post_form(
-    form_generator: Union[StateInputFormGeneratorAsync, None], state: State, user_inputs: list[State]
+    form_generator: Union[StateInputFormGeneratorAsync, None],
+    state: State,
+    user_inputs: list[State],
+    locale: str = "en_US",
+    extra_translations: Union[dict[str, str], None] = None,
 ) -> State:
     """Post user_input based ond serve a new form if the form wizard logic dictates it."""
     # there is no form_generator so we return no validated data
@@ -67,7 +82,9 @@ async def post_form(
         try:
             form_validated_data = generated_form(**user_input)
         except ValidationError as e:
-            raise FormValidationError(generated_form.__name__, e) from e  # type: ignore
+            # Todo: add extra_translation to tr
+            tr = PydanticI18n(translations)
+            raise FormValidationError(generated_form.__name__, e, tr, locale) from e  # type: ignore
 
         # Update state with validated_data
         current_state.update(form_validated_data.model_dump())
@@ -102,6 +119,8 @@ async def start_form(
     form_key: str,
     user_inputs: Union[list[State], None] = None,
     user: str = "Just a user",  # Todo: check if we need users inside form logic?
+    locale: str = "en_US",
+    extra_translations: Union[dict[str, str], None] = None,
     **extra_state: Any,
 ) -> State:
     """Handle the logic for the endpoint that the frontend uses to render a form with or without prefilled input.
@@ -111,6 +130,8 @@ async def start_form(
         form_key: name of form in the FORM dict
         user_inputs: List of form inputs from frontend
         user: User who starts this form
+        locale: Language of the form
+        extra_translations: Extra translations to apply to the form
         extra_state: Optional initial state variables
 
     Returns:
@@ -127,7 +148,7 @@ async def start_form(
     initial_state = dict(form_key=form_key, **extra_state)
 
     try:
-        state = await post_form(form, initial_state, user_inputs)
+        state = await post_form(form, initial_state, user_inputs, locale, extra_translations)
     except FormValidationError as exc:
         logger.debug("Validation errors", user_inputs=user_inputs, form=exc.validator_name, errors=exc.errors)
         logger.debug(str(exc))

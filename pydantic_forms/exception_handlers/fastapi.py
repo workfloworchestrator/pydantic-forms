@@ -26,7 +26,7 @@ logger = structlog.get_logger(__name__)
 
 
 async def form_error_handler(request: Request, exc: FormException) -> JSONResponse:
-    PYDANTIC_FORMS_LOGLEVEL = "DEBUG" if os.getenv("PYDANTIC_FORMS_LOGLEVEL", "INFO").upper() == "DEBUG" else "INFO"
+    LOG_LEVEL_PYDANTIC_FORMS = "DEBUG" if os.getenv("LOG_LEVEL_PYDANTIC_FORMS", "INFO").upper() == "DEBUG" else "INFO"
     if isinstance(exc, FormValidationError):
         result = {
             "type": type(exc).__name__,
@@ -36,7 +36,7 @@ async def form_error_handler(request: Request, exc: FormException) -> JSONRespon
             "validation_errors": json_loads(json_dumps(exc.errors)),
             "status": HTTPStatus.BAD_REQUEST,
         }
-        if PYDANTIC_FORMS_LOGLEVEL == "DEBUG":
+        if LOG_LEVEL_PYDANTIC_FORMS == "DEBUG":
             result["traceback"] = show_ex(exc)
             logger.debug("Form validation Response", result=result)
         return JSONResponse(
@@ -54,7 +54,7 @@ async def form_error_handler(request: Request, exc: FormException) -> JSONRespon
             "status": HTTPStatus.NOT_EXTENDED,
             "meta": getattr(exc, "meta", None),
         }
-        if PYDANTIC_FORMS_LOGLEVEL == "DEBUG":
+        if LOG_LEVEL_PYDANTIC_FORMS == "DEBUG":
             result["traceback"] = show_ex(exc)
             logger.debug("Form validation Response", result=result)
         return JSONResponse(
