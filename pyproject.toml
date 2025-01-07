@@ -34,6 +34,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
     "Topic :: Internet :: WWW/HTTP",
 ]
@@ -43,7 +44,7 @@ requires = [
     "pydantic-i18n==0.4.5"
 ]
 description-file = "README.md"
-requires-python = ">=3.9,<=3.13"
+requires-python = ">=3.9,<=3.14"
 
 [tool.flit.metadata.urls]
 Documentation = "https://github.com/workfloworchestrator/pydantic-forms/blob/main/README.md"
