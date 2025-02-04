@@ -5,8 +5,8 @@ from pydantic_forms.validators.components.contact_person import ContactPerson, C
 from pydantic_forms.validators.components.contact_person_list import contact_person_list
 from pydantic_forms.validators.components.display_subscription import DisplaySubscription
 from pydantic_forms.validators.components.divider import Divider
-from pydantic_forms.validators.components.label import Label
 from pydantic_forms.validators.components.hidden import Hidden
+from pydantic_forms.validators.components.label import Label
 from pydantic_forms.validators.components.list_of_one import ListOfOne
 from pydantic_forms.validators.components.list_of_two import ListOfTwo
 from pydantic_forms.validators.components.long_text import LongText
