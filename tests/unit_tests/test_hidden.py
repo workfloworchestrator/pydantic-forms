@@ -12,5 +12,5 @@ def test_hidden_with_value():
 
 def test_hidden_update_not_allowed():
     assert Form(label="fob").model_dump() == {
-        "label": "hidden value",
+        "hidden": "hidden value",
     }
