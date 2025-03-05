@@ -38,7 +38,6 @@ def test_read_only_field_schema(read_only_value, schema_value, schema_type, othe
             "read_only": {
                 "const": schema_value,
                 "default": schema_value,
-                "enum": [schema_value],
                 "title": "Read Only",
                 "uniforms": {"disabled": True, "value": schema_value},
                 "type": schema_type,
