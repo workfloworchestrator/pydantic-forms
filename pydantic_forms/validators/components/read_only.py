@@ -2,12 +2,15 @@ from __future__ import annotations
 
 import sys
 from itertools import chain
-from typing import Annotated, Any, Literal
+from types import NoneType
+from typing import Annotated, Any, Literal, get_args
 from uuid import UUID
 
+from more_itertools import first
 from pydantic import AfterValidator, BeforeValidator, Field, PlainSerializer, TypeAdapter
 
 from pydantic_forms.types import strEnum
+from pydantic_forms.utils.json import _get_field_info_with_schema, merge_json_schema
 
 # from pydantic.json_schema
 JSON_SCHEMA_TYPES = {
@@ -37,13 +40,23 @@ def _get_json_type(default: Any) -> str:
         return JSON_SCHEMA_TYPES[type_]
     except KeyError:
         types = ", ".join(t.__name__ for t in chain(JSON_SCHEMA_TYPES, STRINGY_TYPES))
-        raise TypeError(f"Cannot make a ReadOnlyField for type {type_}. Supported types: {types}")
+        raise TypeError(f"Cannot make a read_only_field for type {type_}. Supported types: {types}")
 
 
-def _read_only_list(default: Any, default_type: Any | None, json_schema: dict) -> Any:
-    # TODO #16 change to a standalone generic type, i.e. read_only_list[str](["foo", "bar"])
-    if default_type is None:
-        raise TypeError("Need the default_type parameter when using ReadOnlyField for a list")
+def read_only_list(default: list[Any]) -> Any:
+    """Create type with json schema of type array that is 'read only'."""
+    if len(default) == 0:
+        raise ValueError("Default list object must not be empty")
+
+    item_types = {type(item) for item in default}
+    if len(item_types) != 1:
+        raise TypeError("All items in read_only_list must be of same type")
+
+    default_item_type = list(item_types)[0]
+    if default_item_type is NoneType:
+        raise TypeError("read_only_list item type cannot be 'NoneType'")
+
+    json_schema = {"uniforms": {"disabled": True, "value": default}, "type": _get_json_type(default)}
 
     def validate_list(value: list) -> list:
         if value == default:
@@ -58,19 +71,28 @@ def _read_only_list(default: Any, default_type: Any | None, json_schema: dict) -
         return [to_value(item) for item in list_]
 
     return Annotated[
-        default_type,
-        Field(default, json_schema_extra=json_schema | {"const": default}),
+        list[default_item_type],
+        Field(default, json_schema_extra=json_schema),
         AfterValidator(validate_list),
         PlainSerializer(serialize_list, when_used="json"),
     ]
 
 
-def ReadOnlyField(default: Any, default_type: Any | None = None) -> Any:
-    # TODO #16 Change to read_only_field
+def read_only_field(default: Any, merge_type: Any | None = None) -> Any:
+    """Create type with json schema that sets frontend form field to active=false.
+
+    Args:
+        default(Any): value to display as inactive field on form
+        merge_type(Any | None): merge another pydantic_form type for this field
+
+    Returns:
+        type annotation which will submit json schema with active=false to uniforms
+
+    """
     json_schema = {"uniforms": {"disabled": True, "value": default}, "type": _get_json_type(default)}
 
     if isinstance(default, list):
-        return _read_only_list(default, default_type, json_schema)
+        raise TypeError("Use read_only_list")
 
     dynamic_validator = TypeAdapter(default.__class__) if isinstance(default, STRINGY_TYPES) else None
 
@@ -84,9 +106,13 @@ def ReadOnlyField(default: Any, default_type: Any | None = None) -> Any:
             return str(default)
         return default
 
-    return Annotated[
+    read_only_type = Annotated[
         Literal[default],
         Field(default, json_schema_extra=json_schema),  # type: ignore[arg-type]
         BeforeValidator(validate),
         PlainSerializer(serialize_json, when_used="json"),
     ]
+    try:
+        return merge_json_schema(read_only_type, merge_type)
+    except TypeError:
+        return read_only_type

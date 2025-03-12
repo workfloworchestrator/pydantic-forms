@@ -81,11 +81,13 @@ from dataclasses import asdict, is_dataclass
 from datetime import datetime
 from functools import partial
 from ipaddress import IPv4Address, IPv4Network, IPv6Address, IPv6Network
-from typing import Any, Sequence, Union
+from typing import Annotated, Any, Iterable, Sequence, Union, get_args
 from uuid import UUID
 
+from more_itertools import first
+from pydantic.fields import FieldInfo
 import structlog
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 try:
     import orjson
@@ -233,3 +235,38 @@ def isoformat(dt: datetime) -> str:
     """
     # IMPORTANT should the format be ever changed, be sure to update TIMESTAMP_REGEX as well!
     return dt.isoformat(timespec="seconds")
+
+
+# Helper utils
+def _get_field_info_with_schema(type_: Any) -> Iterable[FieldInfo]:
+    for annotation in get_args(type_):
+        if isinstance(annotation, FieldInfo) and annotation.json_schema_extra:
+            yield annotation
+
+
+def update_json_schema(type_: Any, json_schema: dict[str, Any]) -> Any:
+    """Add json_schema to type_'s annotations.
+
+    Existing json schema annotations are updated in a dict.update() fashion.
+    """
+    if not (field_info := first(_get_field_info_with_schema(type_), None)):
+        return Annotated[type_, Field(json_schema_extra=json_schema)]
+
+    match field_info.json_schema_extra:
+        case dict() as existing_schema:
+            existing_schema.update(json_schema)
+        case _ as unknown:
+            raise TypeError(f"Cannot update json_schema_extra of type {type(unknown)}")
+    return type_
+
+
+def merge_json_schema(target_type: Any, source_type: Any) -> Any:
+    """Add json_schema from source_type to target_type."""
+    if not (source_field_info := first(_get_field_info_with_schema(source_type), None)):
+        raise TypeError("Source type has no json_schema_extra")
+
+    match source_field_info.json_schema_extra:
+        case dict() as existing_source_schema:
+            return update_json_schema(target_type, existing_source_schema)
+        case _ as unknown:
+            raise TypeError(f"Cannot merge source_type json_schema_extra from type {type(unknown)}")
