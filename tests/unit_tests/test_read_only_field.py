@@ -1,12 +1,15 @@
 import json
 from uuid import UUID
 
+from more_itertools import first
+from pydantic.config import JsonDict
 import pytest
 from pydantic import BaseModel, ValidationError
 
 from pydantic_forms.core import FormPage
 from pydantic_forms.types import strEnum
 from pydantic_forms.validators import read_only_field, read_only_list, LongText, OrganisationId
+from pydantic_forms.validators.components.read_only import merge_json_schema, _get_field_info_with_schema
 
 
 class TestEnum(strEnum):
@@ -150,7 +153,6 @@ def test_read_only_list_model():
         "type": "object",
         "properties": {
             "read_only_list": {
-                # "const": schema_value,
                 "default": schema_value,
                 "items": expected_item_type,
                 "title": "Read Only List",
@@ -209,3 +211,35 @@ def test_read_only_field_merge_json_schema():
     org_id_read_only = org_id_validated.model_json_schema()["properties"]["read_only"]
     assert org_id_read_only["format"] == "organisationId"
     assert org_id_read_only["uniforms"]["disabled"]
+
+
+def test_read_only_unsupported_type():
+    with pytest.raises(TypeError, match="^Cannot make a read_only_field for type"):
+
+        class Form(FormPage):
+            read_only: read_only_field({"value": 42})
+
+
+def test_read_only_merge_json_schema_fails_without_json_schema_extra():
+    with pytest.raises(TypeError, match="Target type has no json_schema_extra"):
+
+        class Form(FormPage):
+            read_only: read_only_field(True, merge_type=JsonDict)
+
+
+def test_merge_json_schema():
+    with pytest.raises(TypeError, match="Source type has no json_schema_extra"):
+        merge_json_schema("text", LongText)
+
+    with pytest.raises(TypeError, match="Target type has no json_schema_extra"):
+        merge_json_schema(OrganisationId, test_uuid1)
+
+    # TODO: This may be a test for a contrived error -- not sure if it's possible to hit the block
+    # this is testing without messing things up pretty bad as shown here
+    with pytest.raises(TypeError, match="^Cannot merge.*"):
+        longtext = LongText
+        org_id = OrganisationId
+        for typ in (longtext, org_id):
+            field_info = first(_get_field_info_with_schema(typ))
+            field_info.json_schema_extra = "wrong"
+        merge_json_schema(org_id, longtext)
