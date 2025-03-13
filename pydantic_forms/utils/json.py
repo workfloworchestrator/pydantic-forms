@@ -84,10 +84,10 @@ from ipaddress import IPv4Address, IPv4Network, IPv6Address, IPv6Network
 from typing import Annotated, Any, Iterable, Sequence, Union, get_args
 from uuid import UUID
 
-from more_itertools import first
-from pydantic.fields import FieldInfo
 import structlog
+from more_itertools import first
 from pydantic import BaseModel, Field
+from pydantic.fields import FieldInfo
 
 try:
     import orjson
@@ -132,7 +132,7 @@ def to_serializable(o: Any) -> Any:
     if isinstance(o, datetime):
         return isoformat(o)
     if is_dataclass(o):
-        return asdict(o)
+        return asdict(o)  # type: ignore[arg-type]
     if hasattr(o, "__json__"):
         return o.__json__()
     if hasattr(o, "to_dict"):
@@ -252,11 +252,10 @@ def update_json_schema(type_: Any, json_schema: dict[str, Any]) -> Any:
     if not (field_info := first(_get_field_info_with_schema(type_), None)):
         return Annotated[type_, Field(json_schema_extra=json_schema)]
 
-    match field_info.json_schema_extra:
-        case dict() as existing_schema:
-            existing_schema.update(json_schema)
-        case _ as unknown:
-            raise TypeError(f"Cannot update json_schema_extra of type {type(unknown)}")
+    if isinstance((existing_schema := field_info.json_schema_extra), dict):
+        existing_schema.update(json_schema)
+    else:
+        raise TypeError(f"Cannot update json_schema_extra of type {type(existing_schema)}")
     return type_
 
 
@@ -265,8 +264,6 @@ def merge_json_schema(target_type: Any, source_type: Any) -> Any:
     if not (source_field_info := first(_get_field_info_with_schema(source_type), None)):
         raise TypeError("Source type has no json_schema_extra")
 
-    match source_field_info.json_schema_extra:
-        case dict() as existing_source_schema:
-            return update_json_schema(target_type, existing_source_schema)
-        case _ as unknown:
-            raise TypeError(f"Cannot merge source_type json_schema_extra from type {type(unknown)}")
+    if isinstance((existing_source_schema := source_field_info.json_schema_extra), dict):
+        return update_json_schema(target_type, existing_source_schema)
+    raise TypeError(f"Cannot merge source_type json_schema_extra from type {type(existing_source_schema)}")

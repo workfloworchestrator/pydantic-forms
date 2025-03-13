@@ -2,15 +2,13 @@ from __future__ import annotations
 
 import sys
 from itertools import chain
-from types import NoneType
-from typing import Annotated, Any, Literal, get_args
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from more_itertools import first
 from pydantic import AfterValidator, BeforeValidator, Field, PlainSerializer, TypeAdapter
 
 from pydantic_forms.types import strEnum
-from pydantic_forms.utils.json import _get_field_info_with_schema, merge_json_schema
+from pydantic_forms.utils.json import merge_json_schema
 
 # from pydantic.json_schema
 JSON_SCHEMA_TYPES = {
@@ -52,8 +50,8 @@ def read_only_list(default: list[Any]) -> Any:
     if len(item_types) != 1:
         raise TypeError("All items in read_only_list must be of same type")
 
-    default_item_type = list(item_types)[0]
-    if default_item_type is NoneType:
+    default_item_type: Any = list(item_types)[0]
+    if default_item_type is type(None):
         raise TypeError("read_only_list item type cannot be 'NoneType'")
 
     json_schema = {"uniforms": {"disabled": True, "value": default}, "type": _get_json_type(default)}
@@ -72,7 +70,7 @@ def read_only_list(default: list[Any]) -> Any:
 
     return Annotated[
         list[default_item_type],
-        Field(default, json_schema_extra=json_schema),
+        Field(default, json_schema_extra=json_schema),  # type: ignore[arg-type]
         AfterValidator(validate_list),
         PlainSerializer(serialize_list, when_used="json"),
     ]
@@ -82,10 +80,12 @@ def read_only_field(default: Any, merge_type: Any | None = None) -> Any:
     """Create type with json schema that sets frontend form field to active=false.
 
     Args:
+    ----
         default(Any): value to display as inactive field on form
         merge_type(Any | None): merge another pydantic_form type for this field
 
     Returns:
+    -------
         type annotation which will submit json schema with active=false to uniforms
 
     """
@@ -107,7 +107,7 @@ def read_only_field(default: Any, merge_type: Any | None = None) -> Any:
         return default
 
     read_only_type = Annotated[
-        Literal[default],
+        Literal[default],  # type: ignore[valid-type]
         Field(default, json_schema_extra=json_schema),  # type: ignore[arg-type]
         BeforeValidator(validate),
         PlainSerializer(serialize_json, when_used="json"),
