@@ -14,7 +14,7 @@ repos:
     rev: v0.9.10
     hooks:
       - id: ruff
-        args: [ --fix, --exit-non-zero-on-fix, --show-fixes ]
+        args: [--fix, --exit-non-zero-on-fix, --show-fixes]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
@@ -23,7 +23,7 @@ repos:
       - id: check-docstring-first
       - id: check-json
       - id: check-yaml
-        exclude: (charts/*|.gitlab-ci.yml|mkdocs.yml)
+        exclude: (charts/.*|\.gitlab-ci\.yml|mkdocs\.yml)
       - id: debug-statements
       - id: requirements-txt-fixer
       - id: detect-private-key
@@ -42,7 +42,7 @@ repos:
         args:
           - --no-warn-unused-ignores
           - --allow-untyped-decorators
-        exclude: (test/*|migrations/*)
+        exclude: (tests/.*|migrations/.*)
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
