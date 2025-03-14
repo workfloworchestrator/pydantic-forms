@@ -2,14 +2,13 @@ from __future__ import annotations
 
 import sys
 from itertools import chain
-from typing import Annotated, Any, Iterable, Literal, get_args
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from more_itertools import first
 from pydantic import AfterValidator, BeforeValidator, Field, PlainSerializer, TypeAdapter
-from pydantic.fields import FieldInfo
 
 from pydantic_forms.types import strEnum
+from pydantic_forms.utils.schema import merge_json_schema
 
 # from pydantic.json_schema
 JSON_SCHEMA_TYPES = {
@@ -77,30 +76,6 @@ def read_only_list(default: list[Any]) -> Any:
     ]
 
 
-# Helper utils
-def _get_field_info_with_schema(type_: Any) -> Iterable[FieldInfo]:
-    for annotation in get_args(type_):
-        if isinstance(annotation, FieldInfo) and annotation.json_schema_extra:
-            yield annotation
-
-
-def merge_json_schema(source_type: Any, target_type: Any) -> Any:
-    """Add json_schema from source_type to target_type."""
-    if not (source_field_info := first(_get_field_info_with_schema(source_type), None)):
-        raise TypeError("Source type has no json_schema_extra")
-    if not (target_field_info := first(_get_field_info_with_schema(target_type), None)):
-        raise TypeError("Target type has no json_schema_extra")
-    source_schema = source_field_info.json_schema_extra
-    target_schema = target_field_info.json_schema_extra
-
-    if not isinstance(source_schema, dict) or not isinstance(target_schema, dict):
-        raise TypeError(
-            f"Cannot merge json_schema_extra of source_type {type(source_schema)} with target_type {type(target_type)}"
-        )
-    source_schema.update(target_schema)
-    return source_type
-
-
 def read_only_field(default: Any, merge_type: Any | None = None) -> Any:
     """Create type with json schema that sets frontend form field to active=false.
 
@@ -117,7 +92,7 @@ def read_only_field(default: Any, merge_type: Any | None = None) -> Any:
     json_schema = {"uniforms": {"disabled": True, "value": default}, "type": _get_json_type(default)}
 
     if isinstance(default, list):
-        raise TypeError("Use read_only_list")
+        raise TypeError(f"Use {read_only_list.__name__}")
 
     dynamic_validator = TypeAdapter(default.__class__) if isinstance(default, STRINGY_TYPES) else None
 

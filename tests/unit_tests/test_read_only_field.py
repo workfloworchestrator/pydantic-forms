@@ -9,7 +9,7 @@ from pydantic import BaseModel, ValidationError
 from pydantic_forms.core import FormPage
 from pydantic_forms.types import strEnum
 from pydantic_forms.validators import read_only_field, read_only_list, LongText, OrganisationId
-from pydantic_forms.validators.components.read_only import merge_json_schema, _get_field_info_with_schema
+from pydantic_forms.utils.schema import merge_json_schema, _get_field_info_with_schema
 
 
 class TestEnum(strEnum):
@@ -193,24 +193,18 @@ def test_read_only_field_raises_error_with_list_type():
             read_only: read_only_field(["nope"])
 
 
-def test_read_only_field_merge_json_schema():
-    long_text = "Some\nLong\nText\n"
+@pytest.mark.parametrize(
+    "field_type,value,expected_format",
+    [(LongText, "Some\nLong\nText\n", "long"), (OrganisationId, test_uuid1, "organisationId")],
+)
+def test_read_only_field_merge_json_schema(field_type, value, expected_format):
+    class Form(FormPage):
+        read_only: read_only_field(value, field_type)
 
-    class LongTextForm(FormPage):
-        read_only: read_only_field(long_text, LongText)
-
-    long_text_validated = LongTextForm(read_only=long_text)
-    long_text_read_only = long_text_validated.model_json_schema()["properties"]["read_only"]
-    assert long_text_read_only["format"] == "long"
-    assert long_text_read_only["uniforms"]["disabled"]
-
-    class OrgIdForm(FormPage):
-        read_only: read_only_field(test_uuid1, OrganisationId)
-
-    org_id_validated = OrgIdForm(read_only=test_uuid1)
-    org_id_read_only = org_id_validated.model_json_schema()["properties"]["read_only"]
-    assert org_id_read_only["format"] == "organisationId"
-    assert org_id_read_only["uniforms"]["disabled"]
+    validated = Form(read_only=value)
+    read_only_schema = validated.model_json_schema()["properties"]["read_only"]
+    assert read_only_schema["format"] == expected_format
+    assert read_only_schema["uniforms"]["disabled"]
 
 
 def test_read_only_unsupported_type():
