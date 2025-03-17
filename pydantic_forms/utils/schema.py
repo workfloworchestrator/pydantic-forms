@@ -21,9 +21,5 @@ def merge_json_schema(source_type: Any, target_type: Any) -> Any:
     source_schema = source_field_info.json_schema_extra
     target_schema = target_field_info.json_schema_extra
 
-    if not isinstance(source_schema, dict) or not isinstance(target_schema, dict):
-        raise TypeError(
-            f"Cannot merge json_schema_extra of source_type {type(source_schema)} with target_type {type(target_type)}"
-        )
     source_schema.update(target_schema)
     return source_type

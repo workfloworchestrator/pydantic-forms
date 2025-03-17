@@ -227,13 +227,3 @@ def test_merge_json_schema():
 
     with pytest.raises(TypeError, match="Target type has no json_schema_extra"):
         merge_json_schema(OrganisationId, test_uuid1)
-
-    # TODO: This may be a test for a contrived error -- not sure if it's possible to hit the block
-    # this is testing without messing things up pretty bad as shown here
-    with pytest.raises(TypeError, match="^Cannot merge.*"):
-        longtext = LongText
-        org_id = OrganisationId
-        for typ in (longtext, org_id):
-            field_info = first(_get_field_info_with_schema(typ))
-            field_info.json_schema_extra = "wrong"
-        merge_json_schema(org_id, longtext)

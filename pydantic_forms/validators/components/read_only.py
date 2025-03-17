@@ -41,6 +41,11 @@ def _get_json_type(default: Any) -> str:
         raise TypeError(f"Cannot make a read_only_field for type {type_}. Supported types: {types}")
 
 
+def _get_read_only_schema(default: Any) -> dict:
+    """Get base schema dict object for uniforms."""
+    return {"uniforms": {"disabled": True, "value": default}, "type": _get_json_type(default)}
+
+
 def read_only_list(default: list[Any]) -> Any:
     """Create type with json schema of type array that is 'read only'."""
     if len(default) == 0:
@@ -54,7 +59,7 @@ def read_only_list(default: list[Any]) -> Any:
     if default_item_type is type(None):
         raise TypeError("read_only_list item type cannot be 'NoneType'")
 
-    json_schema = {"uniforms": {"disabled": True, "value": default}, "type": _get_json_type(default)}
+    json_schema = _get_read_only_schema(default)
 
     def validate_list(value: list) -> list:
         if value == default:
@@ -89,7 +94,7 @@ def read_only_field(default: Any, merge_type: Any | None = None) -> Any:
         type annotation which will submit json schema with active=false to uniforms
 
     """
-    json_schema = {"uniforms": {"disabled": True, "value": default}, "type": _get_json_type(default)}
+    json_schema = _get_read_only_schema(default)
 
     if isinstance(default, list):
         raise TypeError(f"Use {read_only_list.__name__}")
