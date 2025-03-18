@@ -1,7 +1,6 @@
 import json
 from uuid import UUID
 
-from more_itertools import first
 from pydantic.config import JsonDict
 import pytest
 from pydantic import BaseModel, ValidationError
@@ -9,7 +8,7 @@ from pydantic import BaseModel, ValidationError
 from pydantic_forms.core import FormPage
 from pydantic_forms.types import strEnum
 from pydantic_forms.validators import read_only_field, read_only_list, LongText, OrganisationId
-from pydantic_forms.utils.schema import merge_json_schema, _get_field_info_with_schema
+from pydantic_forms.utils.schema import merge_json_schema
 
 
 class TestEnum(strEnum):
@@ -108,10 +107,20 @@ def test_read_only_field_list_validation_string(wrong_value):
 
 
 def test_read_only_field_list_with_empty_default_raises_error():
-    with pytest.raises(ValueError, match="Default list object must not be empty"):
+    with pytest.raises(ValueError, match="Default argument must be a list"):
 
         class Form(FormPage):
-            read_only: read_only_list([])
+            read_only: read_only_list()
+
+
+def test_read_only_list_empty_sets_default_to_array_string():
+    class Form(FormPage):
+        read_only_list: read_only_list([])
+
+    validated = Form(read_only_list=[])
+    read_only_schema = validated.model_json_schema()["properties"]["read_only_list"]
+    assert read_only_schema["items"]["type"] == "string"
+    assert read_only_schema["default"] == []
 
 
 def test_read_only_field_list_with_mixed_types_raises_error():
@@ -227,3 +236,15 @@ def test_merge_json_schema():
 
     with pytest.raises(TypeError, match="Target type has no json_schema_extra"):
         merge_json_schema(OrganisationId, test_uuid1)
+
+
+def test_stringy_types_import_works():
+    import importlib
+
+    with pytest.MonkeyPatch.context() as mock:
+        from pydantic_forms.validators.components import read_only
+
+        mock.setattr(read_only.sys, "version_info", (3, 9))
+        importlib.reload(read_only)
+
+        assert read_only.STRINGY_TYPES == (strEnum, UUID)

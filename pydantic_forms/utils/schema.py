@@ -21,5 +21,5 @@ def merge_json_schema(source_type: Any, target_type: Any) -> Any:
     source_schema = source_field_info.json_schema_extra
     target_schema = target_field_info.json_schema_extra
 
-    source_schema.update(target_schema)
+    source_schema.update(target_schema)  # type: ignore[union-attr,arg-type]
     return source_type

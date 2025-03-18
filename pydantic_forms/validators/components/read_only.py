@@ -46,18 +46,23 @@ def _get_read_only_schema(default: Any) -> dict:
     return {"uniforms": {"disabled": True, "value": default}, "type": _get_json_type(default)}
 
 
-def read_only_list(default: list[Any]) -> Any:
+def read_only_list(default: list[Any] | None = None) -> Any:
     """Create type with json schema of type array that is 'read only'."""
+    if not isinstance(default, list):
+        raise ValueError("Default argument must be a list")
+
+    # Empty list is valid, but needs a type
     if len(default) == 0:
-        raise ValueError("Default list object must not be empty")
+        default_item_type: Any = type(str)
 
-    item_types = {type(item) for item in default}
-    if len(item_types) != 1:
-        raise TypeError("All items in read_only_list must be of same type")
+    else:
+        item_types = {type(item) for item in default}
+        if len(item_types) != 1:
+            raise TypeError("All items in read_only_list must be of same type")
 
-    default_item_type: Any = list(item_types)[0]
-    if default_item_type is type(None):
-        raise TypeError("read_only_list item type cannot be 'NoneType'")
+        default_item_type = list(item_types)[0]
+        if default_item_type is type(None):
+            raise TypeError("read_only_list item type cannot be 'NoneType'")
 
     json_schema = _get_read_only_schema(default)
 
