@@ -53,16 +53,16 @@ def read_only_list(default: list[Any] | None = None) -> Any:
 
     # Empty list is valid, but needs a type
     if len(default) == 0:
-        default_item_type: Any = type(str)
-
+        default_item_type: Any = str
     else:
         item_types = {type(item) for item in default}
         if len(item_types) != 1:
             raise TypeError("All items in read_only_list must be of same type")
 
         default_item_type = list(item_types)[0]
-        if default_item_type is type(None):
-            raise TypeError("read_only_list item type cannot be 'NoneType'")
+
+    if default_item_type is type(None):
+        raise TypeError("read_only_list item type cannot be 'NoneType'")
 
     json_schema = _get_read_only_schema(default)
 
