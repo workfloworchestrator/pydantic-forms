@@ -1,4 +1,4 @@
-# Copyright 2019-2023 SURF.
+# Copyright 2019-2025 SURF, ESnet.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -130,7 +130,7 @@ def to_serializable(o: Any) -> Any:
     if isinstance(o, datetime):
         return isoformat(o)
     if is_dataclass(o):
-        return asdict(o)
+        return asdict(o)  # type: ignore[arg-type]
     if hasattr(o, "__json__"):
         return o.__json__()
     if hasattr(o, "to_dict"):
