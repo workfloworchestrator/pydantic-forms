@@ -12,6 +12,7 @@
 # limitations under the License.
 from typing import Annotated, Any, Optional
 
+from annotated_types import Interval
 from pydantic import Field
 
 
@@ -25,6 +26,7 @@ def timestamp(
 ) -> Any:
     return Annotated[
         int,
+        Interval(ge=min, le=max),
         Field(
             json_schema_extra={
                 "format": "timestamp",

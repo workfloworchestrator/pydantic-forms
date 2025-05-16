@@ -1,3 +1,8 @@
+from contextlib import nullcontext
+
+import pytest
+from pydantic import TypeAdapter, ValidationError
+
 from pydantic_forms.core import FormPage
 from pydantic_forms.validators import Timestamp, timestamp
 
@@ -27,6 +32,8 @@ def test_timestamp_schema():
             },
             "t2": {
                 "format": "timestamp",
+                "maximum": 1672751600,
+                "minimum": 1652751600,
                 "title": "T2",
                 "type": "number",
                 "uniforms": {
@@ -45,3 +52,21 @@ def test_timestamp_schema():
     }
 
     assert Form.model_json_schema() == expected
+
+
+@pytest.mark.parametrize(
+    "min_value,max_value,input_value,expectation",
+    [
+        (1652751600, 1652751601, 1652751599, pytest.raises(ValidationError)),
+        (1652751600, 1652751601, 1652751600, nullcontext(1652751600)),
+        (1652751600, 1652751601, 1652751601, nullcontext(1652751601)),
+        (1652751600, 1652751601, 1652751602, pytest.raises(ValidationError)),
+        (1652751600, None, 1652751600, nullcontext(1652751600)),
+        (1652751600, None, 1652751599, pytest.raises(ValidationError)),
+    ],
+)
+def test_timestamp_validation(min_value, max_value, input_value, expectation):
+    adapter = TypeAdapter(timestamp(min=min_value, max=max_value))
+
+    with expectation as expected_result:
+        assert adapter.validate_python(input_value) == expected_result
