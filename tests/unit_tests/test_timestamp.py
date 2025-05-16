@@ -57,12 +57,12 @@ def test_timestamp_schema():
 @pytest.mark.parametrize(
     "min_value,max_value,input_value,expectation",
     [
-        (1652751600, 1652751601, 1652751599, pytest.raises(ValidationError)),
+        (1652751600, 1652751601, 1652751599, pytest.raises(ValidationError, match="greater")),
         (1652751600, 1652751601, 1652751600, nullcontext(1652751600)),
         (1652751600, 1652751601, 1652751601, nullcontext(1652751601)),
-        (1652751600, 1652751601, 1652751602, pytest.raises(ValidationError)),
+        (1652751600, 1652751601, 1652751602, pytest.raises(ValidationError, match="less")),
         (1652751600, None, 1652751600, nullcontext(1652751600)),
-        (1652751600, None, 1652751599, pytest.raises(ValidationError)),
+        (1652751600, None, 1652751599, pytest.raises(ValidationError, match="greater")),
     ],
 )
 def test_timestamp_validation(min_value, max_value, input_value, expectation):
