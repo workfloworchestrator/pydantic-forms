@@ -19,29 +19,30 @@ from pydantic import Field
 def timestamp(
     show_time_select: Optional[bool] = True,
     locale: Optional[str] = None,
+    validate: bool = True,  # Set to False to disable min/max validation
     min: Optional[int] = None,
     max: Optional[int] = None,
     date_format: Optional[str] = None,
     time_format: Optional[str] = None,
 ) -> Any:
-    return Annotated[
-        int,
-        Interval(ge=min, le=max),
-        Field(
-            json_schema_extra={
-                "format": "timestamp",
-                "type": "number",
-                "uniforms": {
-                    "showTimeSelect": show_time_select,
-                    "locale": locale,
-                    "min": min,
-                    "max": max,
-                    "dateFormat": date_format,
-                    "timeFormat": time_format,
-                },
-            }
-        ),
-    ]
+    schema = Field(
+        json_schema_extra={
+            "format": "timestamp",
+            "type": "number",
+            "uniforms": {
+                "showTimeSelect": show_time_select,
+                "locale": locale,
+                "min": min,
+                "max": max,
+                "dateFormat": date_format,
+                "timeFormat": time_format,
+            },
+        }
+    )
+
+    if validate:
+        return Annotated[int, Interval(ge=min, le=max), schema]
+    return Annotated[int, schema]
 
 
 Timestamp = timestamp()
