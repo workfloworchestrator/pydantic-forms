@@ -55,18 +55,19 @@ def test_timestamp_schema():
 
 
 @pytest.mark.parametrize(
-    "min_value,max_value,input_value,expectation",
+    "min_value,max_value,input_value,validate,expectation",
     [
-        (1652751600, 1652751601, 1652751599, pytest.raises(ValidationError, match="greater")),
-        (1652751600, 1652751601, 1652751600, nullcontext(1652751600)),
-        (1652751600, 1652751601, 1652751601, nullcontext(1652751601)),
-        (1652751600, 1652751601, 1652751602, pytest.raises(ValidationError, match="less")),
-        (1652751600, None, 1652751600, nullcontext(1652751600)),
-        (1652751600, None, 1652751599, pytest.raises(ValidationError, match="greater")),
+        (1652751600, 1652751601, 1652751599, True, pytest.raises(ValidationError, match="greater")),
+        (1652751600, 1652751601, 1652751600, True, nullcontext(1652751600)),
+        (1652751600, 1652751601, 1652751601, True, nullcontext(1652751601)),
+        (1652751600, 1652751601, 1652751602, True, pytest.raises(ValidationError, match="less")),
+        (1652751600, None, 1652751600, True, nullcontext(1652751600)),
+        (1652751600, None, 1652751599, True, pytest.raises(ValidationError, match="greater")),
+        (1652751600, None, 1652751599, False, nullcontext(1652751599)),  # backwards compatibility
     ],
 )
-def test_timestamp_validation(min_value, max_value, input_value, expectation):
-    adapter = TypeAdapter(timestamp(min=min_value, max=max_value))
+def test_timestamp_validation(min_value, max_value, input_value, validate, expectation):
+    adapter = TypeAdapter(timestamp(min=min_value, max=max_value, validate=validate))
 
     with expectation as expected_result:
         assert adapter.validate_python(input_value) == expected_result
