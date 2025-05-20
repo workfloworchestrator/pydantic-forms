@@ -4,6 +4,8 @@ from pydantic_core import ValidationError
 from pydantic_forms.core import FormPage
 from pydantic_forms.validators import Choice, choice_list
 
+from tests.unit_tests.helpers import PYDANTIC_VERSION
+
 
 def test_choice_list():
     class LegChoice(Choice):
@@ -149,13 +151,17 @@ def test_choice_list_constraint_at_least_one_item(Form):
         Form(choice=[])
 
     errors = exc_info.value.errors(include_url=False, include_context=False)
+
+    if PYDANTIC_VERSION == "2.8":
+        message = "List should have at least 1 item after validation, not 0"
+    else:
+        message = "Value should have at least 1 item after validation, not 0"
     expected = [
         {
             "input": [],
             "loc": ("choice",),
-            "msg": "Value should have at least 1 item after validation, not 0",
+            "msg": message,
             "type": "too_short",
-            # "ctx": {"limit_value": 1},
         }
     ]
     assert errors == expected

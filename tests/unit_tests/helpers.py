@@ -1,3 +1,8 @@
+import pydantic.version
+
+PYDANTIC_VERSION = pydantic.version.version_short()
+
+
 def assert_equal_ignore_key(expected, actual, ignore_keys):
     def deep_remove_keys(d, keys_to_ignore):
         if isinstance(d, dict):

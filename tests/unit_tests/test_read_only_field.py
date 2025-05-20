@@ -11,6 +11,7 @@ from pydantic_forms.core import FormPage
 from pydantic_forms.types import strEnum
 from pydantic_forms.validators import read_only_field, read_only_list, LongText, OrganisationId
 from pydantic_forms.utils.schema import merge_json_schema
+from tests.unit_tests.helpers import PYDANTIC_VERSION
 
 
 class TestEnum(strEnum):
@@ -35,11 +36,19 @@ def test_read_only_field_schema(read_only_value, schema_value, schema_type, othe
     class Form(FormPage):
         read_only: read_only_field(read_only_value)
 
+    if PYDANTIC_VERSION in ("2.8", "2.9"):
+        # Field that was removed in 2.10 https://github.com/pydantic/pydantic/pull/10692
+        enum_value = str(read_only_value) if isinstance(read_only_value, UUID) else read_only_value
+        enum = {"enum": [enum_value]}
+    else:
+        enum = {}
+
     expected = {
         "title": "unknown",
         "type": "object",
         "properties": {
             "read_only": {
+                **enum,
                 "const": schema_value,
                 "default": schema_value,
                 "title": "Read Only",
@@ -50,13 +59,7 @@ def test_read_only_field_schema(read_only_value, schema_value, schema_type, othe
         "additionalProperties": False,
     }
 
-    actual = Form.model_json_schema()
-
-    if pydantic_version_short() in ("2.8", "2.9"):
-        # Behavior that was changed (fixed) in 2.10 https://github.com/pydantic/pydantic/pull/10692
-        del actual["properties"]["read_only"]["enum"]
-
-    assert actual == expected
+    assert Form.model_json_schema() == expected
 
     validated = Form(read_only=read_only_value)
     assert validated.read_only == read_only_value

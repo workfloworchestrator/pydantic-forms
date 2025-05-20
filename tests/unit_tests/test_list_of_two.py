@@ -3,6 +3,7 @@ from pydantic import ValidationError
 
 from pydantic_forms.core import FormPage
 from pydantic_forms.validators import ListOfTwo
+from tests.unit_tests.helpers import PYDANTIC_VERSION
 
 
 @pytest.fixture(name="Form")
@@ -22,11 +23,15 @@ def test_list_of_two_min_items(Form):
         assert Form(two=[1])
 
     errors = error_info.value.errors(include_url=False, include_context=False)
+    if PYDANTIC_VERSION == "2.8":
+        message = "List should have at least 2 items after validation, not 1"
+    else:
+        message = "Value should have at least 2 items after validation, not 1"
     expected = [
         {
             "input": [1],
             "loc": ("two",),
-            "msg": "Value should have at least 2 items after validation, not 1",
+            "msg": message,
             "type": "too_short",
         }
     ]
@@ -38,11 +43,15 @@ def test_list_of_two_max_items(Form):
         assert Form(two=[1, 2, 3])
 
     errors = error_info.value.errors(include_url=False, include_context=False)
+    if PYDANTIC_VERSION == "2.8":
+        message = "List should have at most 2 items after validation, not 3"
+    else:
+        message = "Value should have at most 2 items after validation, not 3"
     expected = [
         {
             "input": [1, 2, 3],
             "loc": ("two",),
-            "msg": "Value should have at most 2 items after validation, not 3",
+            "msg": message,
             "type": "too_long",
         },
     ]
