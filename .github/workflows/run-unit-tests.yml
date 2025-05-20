@@ -5,7 +5,7 @@ on:
 
 jobs:
   container_job:
-    name: Unit tests
+    name: Unit tests (Python ${{ matrix.python-version }}, Pydantic ${{ matrix.pydantic-version }}, FastAPI ${{ matrix.fastapi-version }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -14,23 +14,31 @@ jobs:
         fastapi-version: ['lockfile']
         # Test specific older releases to avoid an extremely large test matrix
         include:
-          # Older pydantic releases
+          # Older pydantic releases with the oldest + latest supported python version
           - python-version: '3.13'
             pydantic-version: '2.10.6'
+            fastapi-version: 'lockfile'
           - python-version: '3.9'
             pydantic-version: '2.10.6'
+            fastapi-version: 'lockfile'
           - python-version: '3.13'
             pydantic-version: '2.9.2'
+            fastapi-version: 'lockfile'
           - python-version: '3.9'
             pydantic-version: '2.9.2'
+            fastapi-version: 'lockfile'
           - python-version: '3.13'
             pydantic-version: '2.8.2'
+            fastapi-version: 'lockfile'
           - python-version: '3.9'
             pydantic-version: '2.8.2'
-          # Older fastapi releases
+            fastapi-version: 'lockfile'
+          # Older fastapi releases with the oldest + latest supported python version
           - python-version: '3.13'
+            pydantic-version: 'lockfile'
             fastapi-version: '0.103.2'
           - python-version: '3.9'
+            pydantic-version: 'lockfile'
             fastapi-version: '0.103.2'
       fail-fast: false
     container: python:${{ matrix.python-version }}-slim
