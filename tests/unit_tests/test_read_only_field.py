@@ -5,6 +5,8 @@ from pydantic.config import JsonDict
 import pytest
 from pydantic import BaseModel, ValidationError
 
+from pydantic.version import version_short as pydantic_version_short
+
 from pydantic_forms.core import FormPage
 from pydantic_forms.types import strEnum
 from pydantic_forms.validators import read_only_field, read_only_list, LongText, OrganisationId
@@ -48,7 +50,13 @@ def test_read_only_field_schema(read_only_value, schema_value, schema_type, othe
         "additionalProperties": False,
     }
 
-    assert Form.model_json_schema() == expected
+    actual = Form.model_json_schema()
+
+    if pydantic_version_short() in ("2.8", "2.9"):
+        # Behavior that was changed (fixed) in 2.10 https://github.com/pydantic/pydantic/pull/10692
+        del actual["properties"]["read_only"]["enum"]
+
+    assert actual == expected
 
     validated = Form(read_only=read_only_value)
     assert validated.read_only == read_only_value
