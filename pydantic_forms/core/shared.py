@@ -32,7 +32,7 @@ class FormPage(BaseModel):
     )
 
     def __init__(self, **data: Any):
-        frozen_fields = {k: v for k, v in self.model_fields.items() if v.frozen}
+        frozen_fields = {k: v for k, v in self.__class__.model_fields.items() if v.frozen}
 
         def get_value(k: str, v: Any) -> Any:
             if k in frozen_fields:
@@ -47,10 +47,14 @@ class FormPage(BaseModel):
         # The default and requiredness of a field is not a property of a field
         # In the case of DisplayOnlyFieldTypes, we do kind of want that.
         # Using this method we set the right properties after the form is created
-
+        needs_rebuild = False
         for field in cls.model_fields.values():
             if field.frozen:
                 field.validate_default = False
+                needs_rebuild = True
+
+        if needs_rebuild:
+            cls.model_rebuild(force=True)
 
 
 FORMS: dict[str, Callable] = {}
