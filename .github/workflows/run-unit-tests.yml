@@ -11,7 +11,27 @@ jobs:
       matrix:
         python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
         pydantic-version: ['lockfile']
-        fastapi-version: ['0.103.2', 'lockfile']
+        fastapi-version: ['lockfile']
+        # Test specific older releases to avoid an extremely large test matrix
+        include:
+          # Older pydantic releases
+          - python-version: '3.13'
+            pydantic-version: '2.10.6'
+          - python-version: '3.9'
+            pydantic-version: '2.10.6'
+          - python-version: '3.13'
+            pydantic-version: '2.9.2'
+          - python-version: '3.9'
+            pydantic-version: '2.9.2'
+          - python-version: '3.13'
+            pydantic-version: '2.8.2'
+          - python-version: '3.9'
+            pydantic-version: '2.8.2'
+          # Older fastapi releases
+          - python-version: '3.13'
+            fastapi-version: '0.103.2'
+          - python-version: '3.9'
+            fastapi-version: '0.103.2'
       fail-fast: false
     container: python:${{ matrix.python-version }}-slim
     steps:
