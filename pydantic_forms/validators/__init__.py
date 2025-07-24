@@ -7,6 +7,7 @@ from pydantic_forms.validators.components.display_subscription import DisplaySub
 from pydantic_forms.validators.components.divider import Divider
 from pydantic_forms.validators.components.hidden import Hidden
 from pydantic_forms.validators.components.label import Label
+from pydantic_forms.validators.components.list import ItemLength, MinItems, MaxItems
 from pydantic_forms.validators.components.list_of_one import ListOfOne
 from pydantic_forms.validators.components.list_of_two import ListOfTwo
 from pydantic_forms.validators.components.long_text import LongText
@@ -27,12 +28,15 @@ __all__ = (
     "DisplaySubscription",
     "Divider",
     "Hidden",
+    "ItemLength",
     "Label",
     "ListOfOne",
     "ListOfTwo",
     "LongText",
     "migration_summary",
     "MigrationSummary",
+    "MinItems",
+    "MaxItems",
     "OrganisationId",
     "read_only_field",
     "read_only_list",
