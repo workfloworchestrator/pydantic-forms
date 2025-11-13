@@ -1,4 +1,5 @@
 from pydantic_forms.validators.components.accept import Accept, AcceptValues
+from pydantic_forms.validators.components.callout import Callout, callout
 from pydantic_forms.validators.components.choice import Choice
 from pydantic_forms.validators.components.choice_list import choice_list
 from pydantic_forms.validators.components.contact_person import ContactPerson, ContactPersonName
@@ -40,4 +41,6 @@ __all__ = (
     "Timestamp",
     "unique_conlist",
     "validate_unique_list",
+    "callout",
+    "Callout",
 )
