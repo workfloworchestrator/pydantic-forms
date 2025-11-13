@@ -3,6 +3,7 @@ from uuid import uuid4
 from pydantic_forms.core import FormPage
 from pydantic_forms.validators import DisplaySubscription, Label
 from pydantic_forms.validators.components.callout import CalloutMessageType, callout
+from tests.unit_tests.helpers import PYDANTIC_VERSION
 
 
 def test_callout_default():
@@ -48,10 +49,17 @@ def test_callout_schema():
     class Form(FormPage):
         callout_field: CalloutField
 
+    if PYDANTIC_VERSION == "2.8":
+        callout_field_ref = {"allOf": [{"$ref": "#/$defs/CalloutValue"}]}
+    else:
+        callout_field_ref = {"$ref": "#/$defs/CalloutValue"}
+
     expected = {
+        "$defs": {"CalloutValue": {"properties": {}, "title": "CalloutValue", "type": "object"}},
         "additionalProperties": False,
         "properties": {
             "callout_field": {
+                **callout_field_ref,
                 "default": {
                     "header": "Header",
                     "message": "A message",

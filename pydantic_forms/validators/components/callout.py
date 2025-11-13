@@ -48,7 +48,6 @@ def create_callout_schema(data: CalloutData, schema: dict[str, Any]) -> None:
             "default": data,
         }
     )
-    schema.pop("$ref", None)
 
 
 def callout(
