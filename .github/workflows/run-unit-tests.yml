@@ -9,29 +9,27 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.13']
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
         pydantic-version: ['lockfile']
         fastapi-version: ['lockfile']
         # Test specific older releases to avoid an extremely large test matrix
         include:
-          # Older pydantic releases with the oldest + latest supported python version
-          - python-version: '3.14'
+          # Older pydantic releases with the oldest + second-latest supported python version.
+          # (using python 3.14 requires pydantic 2.12 which is currently the latest)
+          - python-version: '3.13'
+            pydantic-version: '2.11.10'
+            fastapi-version: 'lockfile'
+          - python-version: '3.13'
             pydantic-version: '2.10.6'
             fastapi-version: 'lockfile'
           - python-version: '3.9'
             pydantic-version: '2.10.6'
             fastapi-version: 'lockfile'
-          - python-version: '3.14'
+          - python-version: '3.13'
             pydantic-version: '2.9.2'
             fastapi-version: 'lockfile'
           - python-version: '3.9'
             pydantic-version: '2.9.2'
-            fastapi-version: 'lockfile'
-          - python-version: '3.14'
-            pydantic-version: '2.8.2'
-            fastapi-version: 'lockfile'
-          - python-version: '3.9'
-            pydantic-version: '2.8.2'
             fastapi-version: 'lockfile'
           # Older fastapi releases with the oldest + latest supported python version
           - python-version: '3.14'
