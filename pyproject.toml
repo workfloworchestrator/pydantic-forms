@@ -96,7 +96,7 @@ fastapi = [
 
 [tool.black]
 line-length = 120
-target-version = ["py39"]
+target-version = ["py310"]
 exclude = '''
 (
   /(
@@ -126,7 +126,6 @@ exclude = [
     "venv",
     ".venv",
     "docs",
-    "tests"
 ]
 lint.ignore = [
     "C417",
@@ -148,10 +147,11 @@ lint.ignore = [
     "N801",
     "N815",
     "N802",
+    "S101", # use of assert
 ]
 line-length = 120
 lint.select = ["B", "C", "D", "E", "F", "I", "N", "RET", "S", "T", "W"]
-target-version = "py39"
+target-version = "py310"
 
 [tool.lint.flake8-tidy-imports]
 ban-relative-imports = "all"

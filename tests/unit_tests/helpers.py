@@ -7,7 +7,7 @@ def assert_equal_ignore_key(expected, actual, ignore_keys):
     def deep_remove_keys(d, keys_to_ignore):
         if isinstance(d, dict):
             return {k: deep_remove_keys(v, keys_to_ignore) for k, v in d.items() if k not in keys_to_ignore}
-        elif isinstance(d, list):
+        if isinstance(d, list):
             return [deep_remove_keys(i, keys_to_ignore) for i in d]
         return d
 

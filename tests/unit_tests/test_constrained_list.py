@@ -3,9 +3,6 @@ from pytest import raises
 
 from pydantic_forms.core import FormPage
 from pydantic_forms.validators import unique_conlist
-from pydantic.version import version_short as pydantic_version_short
-
-from tests.unit_tests.helpers import PYDANTIC_VERSION
 
 
 def test_constrained_list_good():
@@ -77,15 +74,11 @@ def test_constrained_list_too_short():
 
     errors = exc_info.value.errors(include_url=False, include_context=False)
 
-    if PYDANTIC_VERSION == "2.8":
-        message = "List should have at least 1 item after validation, not 0"
-    else:
-        message = "Value should have at least 1 item after validation, not 0"
     expected = [
         {
             "input": [],
             "loc": ("v",),
-            "msg": message,
+            "msg": "Value should have at least 1 item after validation, not 0",
             "type": "too_short",
         }
     ]
@@ -117,15 +110,12 @@ def test_constrained_list_inherit_constraints():
         UniqueConListModel(v=[])
 
     errors = exc_info.value.errors(include_url=False, include_context=False)
-    if PYDANTIC_VERSION == "2.8":
-        message = "List should have at least 1 item after validation, not 0"
-    else:
-        message = "Value should have at least 1 item after validation, not 0"
+
     assert errors == [
         {
             "input": [],
             "loc": ("v",),
-            "msg": message,
+            "msg": "Value should have at least 1 item after validation, not 0",
             "type": "too_short",
             # "ctx": {"limit_value": 1},
         }
