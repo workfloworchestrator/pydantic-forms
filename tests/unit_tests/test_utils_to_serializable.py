@@ -1,11 +1,12 @@
 # Test UUID serialization
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from datetime import datetime
-from ipaddress import IPv4Network, IPv6Network, IPv4Address, IPv6Address
+from ipaddress import IPv4Address, IPv4Network, IPv6Address, IPv6Network
 from uuid import UUID
 
-from pydantic_forms.utils.json import to_serializable
 import pytest
+
+from pydantic_forms.utils.json import to_serializable
 
 
 def test_to_serializable_uuid():

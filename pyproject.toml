@@ -128,6 +128,8 @@ exclude = [
     "docs",
 ]
 lint.ignore = [
+    "B904",
+    "B905",
     "C417",
     "D100",
     "D101",
@@ -139,19 +141,22 @@ lint.ignore = [
     "D107",
     "D202",
     "E501",
-    "N806",
-    "B905",
-    "N805",
-    "B904",
-    "N803",
     "N801",
-    "N815",
     "N802",
+    "N803",
+    "N805",
+    "N806",
+    "N815",
     "S101", # use of assert
 ]
 line-length = 120
 lint.select = ["B", "C", "D", "E", "F", "I", "N", "RET", "S", "T", "W"]
 target-version = "py310"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "D205",  # blank line required
+]
 
 [tool.lint.flake8-tidy-imports]
 ban-relative-imports = "all"
