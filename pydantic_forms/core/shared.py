@@ -14,9 +14,12 @@ from inspect import isasyncgenfunction, isgeneratorfunction
 from typing import Any, Callable
 
 import structlog
-from pydantic import BaseModel, ConfigDict, PydanticUndefinedAnnotation
+from pydantic import BaseModel, ConfigDict, PydanticUndefinedAnnotation, version
 
 logger = structlog.get_logger(__name__)
+
+
+PYDANTIC_VERSION = version.version_short()
 
 
 class DisplayOnlyFieldType:
@@ -42,35 +45,54 @@ class FormPage(BaseModel):
         mutable_data = {k: get_value(k, v) for k, v in data.items()}
         super().__init__(**mutable_data)
 
-    @classmethod
-    def __pydantic_init_subclass__(cls, /, **kwargs: Any) -> None:
-        # The default and requiredness of a field is not a property of a field
-        # In the case of DisplayOnlyFieldTypes, we do kind of want that.
-        # Using this method we set the right properties after the form is created
-        needs_rebuild = False
+    if PYDANTIC_VERSION in ("2.9", "2.10", "2.11"):
 
-        for field in cls.model_fields.values():
-            if field.frozen:
-                field.validate_default = False
-                needs_rebuild = True
+        @classmethod
+        def __pydantic_init_subclass__(cls, /, **kwargs: Any) -> None:
+            # The default and requiredness of a field is not a property of a field
+            # In the case of DisplayOnlyFieldTypes, we do kind of want that.
+            # Using this method we set the right properties after the form is created
+            needs_rebuild = False
 
-        if needs_rebuild:
-            try:
-                # Fix for #39:
-                # Core schema used during validation is constructed before __pydantic_init_subclass__ which means
-                # that the field.validate_default change above doesn't take effect.
-                # As a workaround, we explicitly rebuild the model to reconstruct the core schema.
-                #
-                # Downside is that unresolved forward-refs trigger an exception; for now we catch/log/ignore it.
-                # From pydantic 2.12 a new hook __pydantic_on_complete__ can be used to perform the rebuild instead.
-                # https://github.com/pydantic/pydantic/pull/11762
+            for field in cls.model_fields.values():
+                if field.frozen:
+                    field.validate_default = False
+                    needs_rebuild = True
+
+            if needs_rebuild:
+                try:
+                    # Fix for #39:
+                    # Core schema used during validation is constructed before __pydantic_init_subclass__ which means
+                    # that the field.validate_default change above doesn't take effect.
+                    # As a workaround, we explicitly rebuild the model to reconstruct the core schema.
+                    #
+                    # Downside is that unresolved forward-refs trigger an exception; for now we catch/log/ignore it.
+                    # From pydantic 2.12 a new hook __pydantic_on_complete__ can be used to perform the rebuild instead.
+                    # https://github.com/pydantic/pydantic/pull/11762
+                    cls.model_rebuild(force=True)
+                except PydanticUndefinedAnnotation as exc:
+                    logger.warning(
+                        "Failed to rebuild model due to undefined annotation, frozen fields may not work as expected",
+                        undefined_annotation=exc.name,
+                        model=cls.__name__,
+                    )
+
+    else:  # pydantic >= 2.12
+
+        @classmethod
+        def __pydantic_on_complete__(cls) -> None:
+            # The default and requiredness of a field is not a property of a field
+            # In the case of DisplayOnlyFieldTypes, we do kind of want that.
+            # Using this method we set the right properties after the form is created
+            needs_rebuild = False
+
+            for field in cls.model_fields.values():
+                if field.frozen:
+                    field.validate_default = False
+                    needs_rebuild = True
+
+            if needs_rebuild:
                 cls.model_rebuild(force=True)
-            except PydanticUndefinedAnnotation as exc:
-                logger.warning(
-                    "Failed to rebuild model due to undefined annotation, frozen fields may not work as expected",
-                    undefined_annotation=exc.name,
-                    model=cls.__name__,
-                )
 
 
 FORMS: dict[str, Callable] = {}
