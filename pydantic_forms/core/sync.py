@@ -79,7 +79,7 @@ def post_form(
             except ValidationError as e:
                 # Todo: add extra_translation to tr
                 tr = PydanticI18n(translations)
-                raise FormValidationError(generated_form.__name__, e, tr, locale) from e  # type: ignore
+                raise FormValidationError(generated_form.__name__, e, tr, locale) from e
 
             # Update state with validated_data
             current_state.update(form_validated_data.model_dump())

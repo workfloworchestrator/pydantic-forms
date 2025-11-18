@@ -1,16 +1,14 @@
 import json
 from uuid import UUID
 
-from pydantic.config import JsonDict
 import pytest
 from pydantic import BaseModel, ValidationError
-
-from pydantic.version import version_short as pydantic_version_short
+from pydantic.config import JsonDict
 
 from pydantic_forms.core import FormPage
 from pydantic_forms.types import strEnum
-from pydantic_forms.validators import read_only_field, read_only_list, LongText, OrganisationId
 from pydantic_forms.utils.schema import merge_json_schema
+from pydantic_forms.validators import LongText, OrganisationId, read_only_field, read_only_list
 from tests.unit_tests.helpers import PYDANTIC_VERSION
 
 
@@ -36,7 +34,7 @@ def test_read_only_field_schema(read_only_value, schema_value, schema_type, othe
     class Form(FormPage):
         read_only: read_only_field(read_only_value)
 
-    if PYDANTIC_VERSION in ("2.8", "2.9"):
+    if PYDANTIC_VERSION in ("2.9",):
         # Field that was removed in 2.10 https://github.com/pydantic/pydantic/pull/10692
         enum_value = str(read_only_value) if isinstance(read_only_value, UUID) else read_only_value
         enum = {"enum": [enum_value]}

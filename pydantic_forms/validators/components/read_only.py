@@ -93,7 +93,7 @@ def read_only_list(default: list[Any] | None = None) -> Any:
 
     return Annotated[
         list[default_item_type],
-        Field(default, json_schema_extra=json_schema),  # type: ignore[arg-type]
+        Field(default, json_schema_extra=json_schema),
         AfterValidator(validate_list),
         PlainSerializer(serialize_list, when_used="json"),
     ]
@@ -131,7 +131,7 @@ def read_only_field(default: Any, merge_type: Any | None = None) -> Any:
 
     read_only_type = Annotated[
         Literal[default],  # type: ignore[valid-type]
-        Field(default, json_schema_extra=json_schema),  # type: ignore[arg-type]
+        Field(default, json_schema_extra=json_schema),
         BeforeValidator(validate),
         PlainSerializer(serialize_json, when_used="json"),
     ]

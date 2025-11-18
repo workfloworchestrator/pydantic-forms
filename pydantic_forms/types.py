@@ -1,16 +1,11 @@
 from enum import Enum
+from types import UnionType
 from typing import Any, AsyncGenerator, Callable, Generator, Type, TypeVar, Union
 
+from pydantic.main import BaseModel
 from typing_extensions import TypedDict
 
-try:
-    # python3.10 introduces types.UnionType for the new union and optional type defs.
-    from types import UnionType  # type: ignore  # 3.9 compatibility
-
-    union_types = [Union, UnionType]
-except ImportError:
-    union_types = [Union]
-from pydantic.main import BaseModel
+union_types = [Union, UnionType]
 
 UUIDstr = str
 State = dict[str, Any]

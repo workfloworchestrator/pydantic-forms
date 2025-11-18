@@ -2,7 +2,6 @@ from uuid import uuid4
 
 from pydantic_forms.core import FormPage
 from pydantic_forms.validators import DisplaySubscription, Label, migration_summary
-from tests.unit_tests.helpers import PYDANTIC_VERSION
 
 
 def test_display_subscription():
@@ -36,11 +35,6 @@ def test_display_only_schema():
         label: Label
         summary: Summary
 
-    if PYDANTIC_VERSION == "2.8":
-        summary_ref = {"allOf": [{"$ref": "#/$defs/MigrationSummaryValue"}]}
-    else:
-        summary_ref = {"$ref": "#/$defs/MigrationSummaryValue"}
-
     expected = {
         "$defs": {"MigrationSummaryValue": {"properties": {}, "title": "MigrationSummaryValue", "type": "object"}},
         "additionalProperties": False,
@@ -59,7 +53,7 @@ def test_display_only_schema():
                 "type": "string",
             },
             "summary": {
-                **summary_ref,
+                "$ref": "#/$defs/MigrationSummaryValue",
                 "default": None,
                 "format": "summary",
                 "type": "string",

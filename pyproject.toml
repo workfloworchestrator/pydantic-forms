@@ -30,21 +30,21 @@ classifiers = [
     "Intended Audience :: Telecommunications Industry",
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
     "Topic :: Internet :: WWW/HTTP",
 ]
 requires = [
     "more-itertools",
-    "pydantic[email]>=2.7.4",
+    "pydantic[email]>=2.9.0",
     "pydantic-i18n==0.4.5"
 ]
 description-file = "README.md"
-requires-python = ">=3.9,<=3.14"
+requires-python = ">=3.10,<3.15"
 
 [tool.flit.metadata.urls]
 Documentation = "https://github.com/workfloworchestrator/pydantic-forms/blob/main/README.md"
@@ -55,7 +55,7 @@ test = [
     "black",
     "structlog",
     "jsonref",
-    "mypy==1.6.1",
+    "mypy==1.18.2",
     "pytest",
     "pytest-cov",
     "pytest-asyncio",
@@ -96,7 +96,7 @@ fastapi = [
 
 [tool.black]
 line-length = 120
-target-version = ["py39"]
+target-version = ["py310"]
 exclude = '''
 (
   /(
@@ -126,9 +126,10 @@ exclude = [
     "venv",
     ".venv",
     "docs",
-    "tests"
 ]
 lint.ignore = [
+    "B904",
+    "B905",
     "C417",
     "D100",
     "D101",
@@ -140,18 +141,22 @@ lint.ignore = [
     "D107",
     "D202",
     "E501",
-    "N806",
-    "B905",
-    "N805",
-    "B904",
-    "N803",
     "N801",
-    "N815",
     "N802",
+    "N803",
+    "N805",
+    "N806",
+    "N815",
+    "S101", # use of assert
 ]
 line-length = 120
 lint.select = ["B", "C", "D", "E", "F", "I", "N", "RET", "S", "T", "W"]
-target-version = "py39"
+target-version = "py310"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "D205",  # blank line required
+]
 
 [tool.lint.flake8-tidy-imports]
 ban-relative-imports = "all"
