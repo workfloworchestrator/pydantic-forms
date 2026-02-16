@@ -1,4 +1,4 @@
-# Copyright 2019-2025 SURF, ESnet.
+# Copyright 2019-2026 SURF, ESnet.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -22,6 +22,7 @@ from pydantic import AfterValidator, BeforeValidator, Field, PlainSerializer, Ty
 
 from pydantic_forms.types import strEnum
 from pydantic_forms.utils.schema import merge_json_schema
+from pydantic_forms.validators import constants
 
 # from pydantic.json_schema
 JSON_SCHEMA_TYPES = {
@@ -56,7 +57,12 @@ def _get_json_type(default: Any) -> str:
 
 def _get_read_only_schema(default: Any) -> dict:
     """Get base schema dict object for uniforms."""
-    return {"uniforms": {"disabled": True, "value": default}, "type": _get_json_type(default)}
+    forms_schema = {"disabled": True, "value": default}
+    return {
+        "uniforms": forms_schema,  # Deprecated
+        constants.EXTRA_PROPERTIES: forms_schema,
+        "type": _get_json_type(default),
+    }
 
 
 def read_only_list(default: list[Any] | None = None) -> Any:

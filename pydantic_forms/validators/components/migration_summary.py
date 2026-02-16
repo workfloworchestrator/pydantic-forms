@@ -1,4 +1,4 @@
-# Copyright 2019-2023 SURF.
+# Copyright 2019-2026 SURF.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -17,6 +17,7 @@ from typing import Annotated, Any, ClassVar, Optional
 from pydantic import BaseModel, Field
 
 from pydantic_forms.types import SummaryData
+from pydantic_forms.validators import constants
 
 
 class _MigrationSummary(BaseModel):
@@ -27,7 +28,15 @@ MigrationSummary = Annotated[_MigrationSummary, Field(frozen=True, default=None,
 
 
 def create_json_extra_schema(data: SummaryData, schema: dict[str, Any]) -> None:
-    schema.update({"format": "summary", "type": "string", "uniforms": {"data": data}})
+    forms_schema = {"data": data}
+    schema.update(
+        {
+            "format": "summary",
+            "type": "string",
+            "uniforms": forms_schema,  # Deprecated
+            constants.EXTRA_PROPERTIES: forms_schema,
+        }
+    )
 
 
 def migration_summary(data: SummaryData) -> type[MigrationSummary]:

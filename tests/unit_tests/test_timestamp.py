@@ -29,6 +29,14 @@ def test_timestamp_schema():
                     "showTimeSelect": True,
                     "timeFormat": None,
                 },
+                "extraProperties": {
+                    "dateFormat": None,
+                    "locale": None,
+                    "max": None,
+                    "min": None,
+                    "showTimeSelect": True,
+                    "timeFormat": None,
+                },
             },
             "t2": {
                 "format": "timestamp",
@@ -37,6 +45,14 @@ def test_timestamp_schema():
                 "title": "T2",
                 "type": "number",
                 "uniforms": {
+                    "dateFormat": "DD-MM-YYYY HH:mm",
+                    "locale": "nl-nl",
+                    "max": 1672751600,
+                    "min": 1652751600,
+                    "showTimeSelect": True,
+                    "timeFormat": "HH:mm",
+                },
+                "extraProperties": {
                     "dateFormat": "DD-MM-YYYY HH:mm",
                     "locale": "nl-nl",
                     "max": 1672751600,

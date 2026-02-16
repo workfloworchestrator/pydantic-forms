@@ -51,6 +51,7 @@ def test_read_only_field_schema(read_only_value, schema_value, schema_type, othe
                 "default": schema_value,
                 "title": "Read Only",
                 "uniforms": {"disabled": True, "value": schema_value},
+                "extraProperties": {"disabled": True, "value": schema_value},
                 "type": schema_type,
             }
         },
@@ -89,6 +90,7 @@ def test_read_only_field_list_schema(read_only_value, read_only_type, schema_val
                 "items": expected_item_type,
                 "title": "Read Only List",
                 "uniforms": {"disabled": True, "value": schema_value},
+                "extraProperties": {"disabled": True, "value": schema_value},
                 "type": "array",
             }
         },
@@ -175,6 +177,7 @@ def test_read_only_list_model():
                 "items": expected_item_type,
                 "title": "Read Only List",
                 "uniforms": {"disabled": True, "value": schema_value},
+                "extraProperties": {"disabled": True, "value": schema_value},
                 "type": "array",
             }
         },
@@ -223,6 +226,7 @@ def test_read_only_field_merge_json_schema(field_type, value, expected_format):
     read_only_schema = validated.model_json_schema()["properties"]["read_only"]
     assert read_only_schema["format"] == expected_format
     assert read_only_schema["uniforms"]["disabled"]
+    assert read_only_schema["extraProperties"]["disabled"]
 
 
 def test_read_only_unsupported_type():
