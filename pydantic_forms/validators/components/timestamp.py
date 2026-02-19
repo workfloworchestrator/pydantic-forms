@@ -1,4 +1,4 @@
-# Copyright 2019-2023 SURF.
+# Copyright 2019-2026 SURF.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -14,6 +14,9 @@ from typing import Annotated, Any, Optional
 
 from annotated_types import Interval
 from pydantic import Field
+from pydantic.config import JsonDict
+
+from pydantic_forms.validators import constants
 
 
 def timestamp(
@@ -25,18 +28,20 @@ def timestamp(
     date_format: Optional[str] = None,
     time_format: Optional[str] = None,
 ) -> Any:
+    forms_schema: JsonDict = {
+        "showTimeSelect": show_time_select,
+        "locale": locale,
+        "min": min,
+        "max": max,
+        "dateFormat": date_format,
+        "timeFormat": time_format,
+    }
     schema = Field(
         json_schema_extra={
             "format": "timestamp",
             "type": "number",
-            "uniforms": {
-                "showTimeSelect": show_time_select,
-                "locale": locale,
-                "min": min,
-                "max": max,
-                "dateFormat": date_format,
-                "timeFormat": time_format,
-            },
+            "uniforms": forms_schema,  # Deprecated
+            constants.EXTRA_PROPERTIES: forms_schema,
         }
     )
 

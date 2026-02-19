@@ -42,9 +42,8 @@ def test_migration_summary_schema():
                 "default": None,
                 "format": "summary",
                 "type": "string",
-                "uniforms": {
-                    "data": {"headers": ["one"]},
-                },
+                "uniforms": {"data": {"headers": ["one"]}},
+                "extraProperties": {"data": {"headers": ["one"]}},
             },
         },
         "title": "unknown",
