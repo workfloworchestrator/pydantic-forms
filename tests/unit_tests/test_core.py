@@ -1,4 +1,5 @@
 import pytest
+from inline_snapshot import snapshot
 from pydantic import ConfigDict, model_validator
 
 from pydantic_forms.core import FormPage, generate_form, post_form
@@ -7,6 +8,7 @@ from pydantic_forms.types import strEnum
 
 # TODO: Remove when generic forms of pydantic_forms are ready
 from pydantic_forms.utils.json import json_dumps, json_loads
+from pydantic_forms.utils.required import determine_required_form_fields
 
 
 class TestChoices(strEnum):
@@ -223,3 +225,34 @@ def test_loc():
     assert len(e.value.errors) == 1
     assert e.value.errors[0]["loc"] == ("__root__",)
     assert e.value.errors[0]["msg"] == "too high"
+
+
+class FormWithAllDefaultScenarios(FormPage):
+    field1: int
+    field2: int = 1
+    field3: int | None  # Probably not used
+    field4: int | None = None  # Dito
+    field5: int | None = 1
+
+
+def test_defaults():
+    assert FormWithAllDefaultScenarios.model_json_schema() == snapshot(
+        {
+            "additionalProperties": False,
+            "properties": {
+                "field1": {"title": "Field1", "type": "integer"},
+                "field2": {"default": 1, "title": "Field2", "type": "integer"},
+                "field3": {"anyOf": [{"type": "integer"}, {"type": "null"}], "title": "Field3"},
+                "field4": {"anyOf": [{"type": "integer"}, {"type": "null"}], "default": None, "title": "Field4"},
+                "field5": {"anyOf": [{"type": "integer"}, {"type": "null"}], "default": 1, "title": "Field5"},
+            },
+            "required": ["field1", "field2", "field3"],
+            "title": "unknown",
+            "type": "object",
+        }
+    )
+
+
+def test_defaults2():
+    requireds = determine_required_form_fields(FormWithAllDefaultScenarios)
+    assert requireds == snapshot({"field1": True, "field2": True, "field3": True, "field4": False, "field5": False})

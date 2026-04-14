@@ -1,5 +1,7 @@
 from uuid import uuid4
 
+from inline_snapshot import Is, snapshot
+
 from pydantic_forms.core import FormPage
 from pydantic_forms.validators import DisplaySubscription, Label, migration_summary
 
@@ -35,34 +37,37 @@ def test_display_only_schema():
         label: Label
         summary: Summary
 
-    expected = {
-        "$defs": {"MigrationSummaryValue": {"properties": {}, "title": "MigrationSummaryValue", "type": "object"}},
-        "additionalProperties": False,
-        "properties": {
-            "display_sub": {
-                "default": str(some_sub_id),
-                "format": "subscription",
-                "title": "Display Sub",
-                "type": "string",
+    expected = snapshot(
+        {
+            "$defs": {"MigrationSummaryValue": {"properties": {}, "title": "MigrationSummaryValue", "type": "object"}},
+            "additionalProperties": False,
+            "properties": {
+                "display_sub": {
+                    "default": Is(str(some_sub_id)),
+                    "format": "subscription",
+                    "title": "Display Sub",
+                    "type": "string",
+                },
+                "label": {
+                    "anyOf": [{"type": "string"}, {"type": "null"}],
+                    "default": None,
+                    "format": "label",
+                    "title": "Label",
+                    "type": "string",
+                },
+                "summary": {
+                    "$ref": "#/$defs/MigrationSummaryValue",
+                    "default": None,
+                    "extraProperties": {"data": {"headers": ["one"]}},
+                    "format": "summary",
+                    "type": "string",
+                    "uniforms": {"data": {"headers": ["one"]}},
+                },
             },
-            "label": {
-                "anyOf": [{"type": "string"}, {"type": "null"}],
-                "format": "label",
-                "default": None,
-                "title": "Label",
-                "type": "string",
-            },
-            "summary": {
-                "$ref": "#/$defs/MigrationSummaryValue",
-                "default": None,
-                "format": "summary",
-                "type": "string",
-                "uniforms": {"data": {"headers": ["one"]}},
-                "extraProperties": {"data": {"headers": ["one"]}},
-            },
-        },
-        "title": "unknown",
-        "type": "object",
-    }
+            "title": "unknown",
+            "type": "object",
+            "required": ["display_sub"],
+        }
+    )
 
     assert Form.model_json_schema() == expected
