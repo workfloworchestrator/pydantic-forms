@@ -78,6 +78,7 @@ doc = [
 dev = [
     "toml",
     "bumpversion",
+    "inline-snapshot",
     "mypy_extensions",
     "pre-commit",
     "pydocstyle",
