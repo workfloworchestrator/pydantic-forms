@@ -5,21 +5,37 @@ on:
     types: [created]
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: '3.x'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install flit
-    - name: Build and publish
-      env:
-        FLIT_USERNAME: ${{ secrets.FLIT_USERNAME }}
-        FLIT_PASSWORD: ${{ secrets.FLIT_PASSWORD }}
-      run: |
-        flit publish
+    - name: Build
+      run: flit build
+    - name: Upload dist artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-24.04
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+    - name: Download dist artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: dist
+        path: dist/
+    - name: Publish package distributions to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
