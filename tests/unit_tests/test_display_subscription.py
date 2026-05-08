@@ -66,7 +66,6 @@ def test_display_only_schema():
             },
             "title": "unknown",
             "type": "object",
-            "required": ["display_sub"],
         }
     )
 
