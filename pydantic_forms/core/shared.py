@@ -16,6 +16,7 @@ from typing import Any, Callable
 import structlog
 from pydantic import BaseModel, ConfigDict, PydanticUndefinedAnnotation, version
 
+from pydantic_forms.settings import pydantic_form_settings
 from pydantic_forms.utils.required import determine_required_form_fields
 
 logger = structlog.get_logger(__name__)
@@ -50,9 +51,11 @@ class FormPage(BaseModel):
     @classmethod
     def model_json_schema(cls, *args: Any, **kwargs: Any) -> dict[str, Any]:
         schema = super().model_json_schema(*args, **kwargs)
+        if pydantic_form_settings.REQUIRED_FIELD_HANDLING == "default":
+            return schema
+
         required_fields = determine_required_form_fields(cls)
 
-        # TODO add toggle
         if new_required := [k for k, v in required_fields.items() if v]:
             schema["required"] = new_required
         return schema

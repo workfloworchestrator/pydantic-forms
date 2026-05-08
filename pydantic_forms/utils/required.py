@@ -176,19 +176,24 @@ def is_optional_type(t: Any, test_type: type | None = None) -> bool:
 def _is_required(field: FieldInfo) -> bool:
     """Determine whether a FormPage field is required.
 
-    Our logic extends that of Pydantic because of our common practice to use FormPage to transmit data.
-    TODO explain better
+    Extends Pydantic's notion of "required" because FormPage is also used to *transmit* data.
+    A field with a non-None default is still something the user is expected to confirm, so we
+    treat it as required.
+    Exceptions: a default of None means truly optional.
     """
     match field.annotation, field.is_required(), field.default, field.json_schema_extra:
         case _, True, _, _:
             # Pydantic considers the field as required
             return True
         case _, False, None, _:
-            # Pydantic considers the field as optional, and the default is none
+            # Pydantic considers the field as optional, and the default is None.
+            # Display-only types Label, Divider, Hidden, callout, migration_summary are
+            # frozen with default=None and fall through here.
             return False
         case _, _, _, {"format": "read_only_field"}:
-            # pydantic-forms fields which we never want to mark as required
-            # TODO: is this complete?
+            # read_only_field is the one display-only marker that carries a non-None default and
+            # isn't frozen, so it needs its own arm. New display-only markers should follow that
+            # pattern (frozen + default=None) or be added here.
             return False
         case t, _, _, _:
             # A field is required if it's not optional (makes sense, doesn't it?)
