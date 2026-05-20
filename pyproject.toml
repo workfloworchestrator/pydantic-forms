@@ -1,13 +1,18 @@
 [build-system]
-requires = ["flit"]
-build-backend = "flit.buildapi"
+requires = ["uv_build>=0.11.15,<0.12"]
+build-backend = "uv_build"
 
-[tool.flit.metadata]
-module = "pydantic_forms"
-dist-name = "pydantic-forms"
-author = "SURF"
-author-email = "automation-beheer@surf.nl"
-home-page = "https://github.com/workfloworchestrator/pydantic-forms"
+[project]
+name = "pydantic-forms"
+version = "2.5.0"
+description = "Pydantic forms"
+readme = "README.md"
+requires-python = ">=3.10,<3.15"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [
+    { name = "SURF", email = "automation-beheer@surf.nl" },
+]
 classifiers = [
     "Intended Audience :: Information Technology",
     "Intended Audience :: System Administrators",
@@ -38,18 +43,17 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
     "Topic :: Internet :: WWW/HTTP",
 ]
-requires = [
+dependencies = [
     "more-itertools",
     "pydantic[email]>=2.9.0",
     "pydantic-i18n==0.4.5"
 ]
-description-file = "README.md"
-requires-python = ">=3.10,<3.15"
 
-[tool.flit.metadata.urls]
+[project.urls]
 Documentation = "https://github.com/workfloworchestrator/pydantic-forms/blob/main/README.md"
+Homepage = "https://github.com/workfloworchestrator/pydantic-forms"
 
-[tool.flit.metadata.requires-extra]
+[project.optional-dependencies]
 test = [
     "apache-license-check",
     "black",
@@ -93,6 +97,9 @@ orjson = [
 fastapi = [
     "fastapi >=0.80.0"
 ]
+
+[tool.uv.build-backend]
+module-root = ""
 
 [tool.black]
 line-length = 120
@@ -155,17 +162,75 @@ target-version = "py310"
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = [
+    "B033",
     "D205",  # blank line required
+    "N802",
+    "N816",
+    "S101",
 ]
 
-[tool.lint.flake8-tidy-imports]
+[tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"
 
-[tool.lint.per-file-ignores]
-"tests/*" = ["S101", "B033", "N816", "N802"]
-
-[tool.lint.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "google"
 
-[tool.lint.isort]
+[tool.ruff.lint.isort]
 known-third-party = ["pydantic"]
+
+[tool.flake8]
+ignore = ["D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107", "D202", "E501", "RST301", "RST304", "W503", "E203", "C417"]
+exclude = [".git", ".cache", ".eggs", "__pycache__", "dist", "src", "crypt.py", "venv", ".venv"]
+enable-extensions = ["G"]
+select = ["B", "C", "D", "E", "F", "G", "I", "N", "S", "T", "W", "B902", "B903", "R"]
+max-line-length = 120
+ban-relative-imports = true
+per-file-ignores = [
+    "pydantic_forms/*: B902",
+    "tests/*: S101",
+]
+
+[tool.pytest.ini_options]
+addopts = "--doctest-modules --doctest-ignore-import-errors"
+norecursedirs = [".git", "build", "dist", "*.egg", "__pycache__", ".cache", ".*", "docs"]
+testpaths = ["tests"]
+junit_suite_name = "pydantic_forms"
+filterwarnings = [
+    "ignore::pytest.PytestCollectionWarning",
+]
+markers = [
+    "regression: Tests that cover bugs that are fixed to prevent them from regressing",
+]
+asyncio_mode = "auto"
+
+[tool.mypy]
+exclude = "(venv/*)"
+ignore_missing_imports = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+strict_optional = true
+namespace_packages = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_no_return = true
+warn_unreachable = true
+implicit_reexport = false
+strict_equality = true
+show_error_codes = true
+show_column_numbers = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = "test.*"
+disallow_untyped_calls = false
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+warn_untyped_fields = true

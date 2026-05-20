@@ -44,25 +44,21 @@ jobs:
       # Downloads a copy of the code in your repository before running CI tests
       - name: Check out repository code
         uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
       - name: Install dependencies
         run: |
           apt update
           apt install curl git build-essential libpq-dev libffi-dev -y
-          python -m pip install --upgrade pip
-          pip install flit
-          flit install --deps develop
+          uv sync --locked --python ${{ matrix.python-version }} --extra test --extra dev --extra fastapi
           if [ "${{ matrix.pydantic-version }}" != "lockfile" ]; then
-            pip install pydantic[email]~=${{ matrix.pydantic-version }}
+            uv pip install "pydantic[email]~=${{ matrix.pydantic-version }}"
           fi
           if [ "${{ matrix.fastapi-version }}" != "lockfile" ]; then
-            pip install fastapi~=${{ matrix.fastapi-version }}
-          else
-            flit install --extras fastapi
+            uv pip install "fastapi~=${{ matrix.fastapi-version }}"
           fi
-        env:
-          FLIT_ROOT_INSTALL: 1
       - name: Run Unit tests
-        run: pytest tests/unit_tests --cov-branch --cov=pydantic_forms --ignore=tests --cov-report=xml
+        run: uv run --no-sync pytest tests/unit_tests --cov-branch --cov=pydantic_forms --ignore=tests --cov-report=xml
         env:
           COVERAGE_FILE: reports/.coverage.${{ matrix.python-version }}
       - name: "Upload coverage to Codecov"

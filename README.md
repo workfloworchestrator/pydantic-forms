@@ -19,69 +19,52 @@ Documentation regarding the usage of Forms can be found
 ### Installation (Development standalone)
 Install the project and its dependencies to develop on the code.
 
-#### Step 1 - install flit:
+#### Step 1 - install uv:
 
 ```shell
-python3 -m venv venv
-source venv/bin/activate
-pip install flit
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
 #### Step 2 - install the development code:
 ```shell
-flit install --deps develop --symlink --python venv/bin/python
+uv sync --all-extras
 ```
 
-!!! danger
-    Make sure to use the flit binary that is installed in your environment. You can check the correct
-    path by running
-    ```shell
-    which flit
-    ```
-
-To be sure that the packages will be installed against the correct venv you can also prepend the python interpreter
-that you want to use:
-
-```shell
-flit install --deps develop --symlink --python venv/bin/python
-```
+This creates a `.venv` in the project and installs the package in editable mode.
 
 
 ### Running tests
 Run the unit-test suite to verify a correct setup.
 
-#### Step 2 - Run tests
+#### Step 3 - Run tests
 ```shell
-pytest tests/unit_tests
+uv run --all-extras pytest tests/unit_tests
 ```
 
 or with xdist:
 
 ```shell
-pytest -n auto tests/unit_tests
+uv run --all-extras pytest -n auto tests/unit_tests
 ```
 
 If you do not encounter any failures in the test, you should be able to develop features in the pydantic-forms.
 
-### Installation (Development symlinked into project that use pydantic-forms)
+### Installation (Development editable into project that uses pydantic-forms)
 
 If you are working on a project that already uses the `pydantic-forms` and you want to test your new form features
-against it, you can use some `flit` magic to symlink the dev version of the forms to your project. It will
-automatically replace the pypi dep with a symlink to the development version
-of the core and update/downgrade all required packages in your own project.
+against it, you can install the development checkout into that project's virtual environment. It will replace the
+PyPI dependency with an editable install of the development version.
 
-#### Step 1 - install flit:
+#### Step 1 - install uv:
 
 ```shell
-python - m venv venv
-source venv/bin/activate
-pip install flit
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-### Step 2 - symlink pydantic-forms to your own project
+### Step 2 - install pydantic-forms into your own project
 
 ```shell
-flit install --deps develop --symlink --python /path/to/a/project/venv/bin/python
+uv pip install --python /path/to/a/project/venv/bin/python -e .
 ```
 
 # Increasing the version number for a (pre) release.
