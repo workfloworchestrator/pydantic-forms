@@ -1,4 +1,4 @@
-# Copyright 2019-2025 SURF.
+# Copyright 2019-2026 SURF.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -28,7 +28,7 @@ class MarkdownColor(str, Enum):
 
 class MarkdownData(TypedDict, total=False):
     content: Union[str, None]
-    color: Union[MarkdownColor, str, None]
+    color: Union[MarkdownColor, str]
 
 
 class _Markdown(BaseModel):
