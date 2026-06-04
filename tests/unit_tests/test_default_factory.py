@@ -44,3 +44,14 @@ def test_literal_default_is_unchanged():
 
     # Literal defaults already worked; make sure the custom generator keeps them intact.
     assert _form_schema(Form)["properties"]["items"]["default"] == [1, 2]
+
+
+def test_default_factory_that_raises_is_skipped():
+    def boom() -> list[int]:
+        raise RuntimeError("boom")
+
+    class Form(FormPage):
+        items: list[int] = Field(default_factory=boom)
+
+    # A failing factory must never break schema generation; the field simply gets no default.
+    assert "default" not in _form_schema(Form)["properties"]["items"]
