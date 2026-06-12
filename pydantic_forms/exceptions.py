@@ -1,5 +1,6 @@
 import os
 import traceback
+from collections.abc import Mapping
 from typing import Any, Iterable, Optional, TypedDict, Union, cast
 
 import structlog
@@ -36,9 +37,24 @@ class FormOverflowError(FormException):
     """Raised when more inputs are provided than the form can process."""
 
 
+Loc = tuple[Union[int, str], ...]
+
+
+def _error_is_nested_object_validator(error: ErrorDetails) -> bool:
+    """Return True for custom errors raised for an object payload instead of a leaf field."""
+    exc = error.get("ctx", {}).get("error")
+    return (
+        bool(error["loc"])
+        and isinstance(exc, (ValueError, AssertionError))
+        and isinstance(error.get("input"), Mapping)
+    )
+
+
 # def convert_errors(validation_error: ValidationError) -> Iterable[ErrorDetails]:
 def convert_errors(
-    validation_error: ValidationError, tr: PydanticI18n, locale: str = "en_US"
+    validation_error: ValidationError,
+    tr: PydanticI18n,
+    locale: str = "en_US",
 ) -> Iterable[ErrorDetails]:
     """Convert Pydantic's error messages to our needs.
 
@@ -55,6 +71,11 @@ def convert_errors(
             # Reinstate the "__root__" location for validation errors raised by Pydantic v1's root_validator.
             # With Pydantic v2's model_validator the location is an empty string, which breaks frontend clients.
             error["loc"] = ("__root__",)
+        elif _error_is_nested_object_validator(error):
+            # Errors raised by a model_validator on a nested model point at the nested model itself, which
+            # frontend clients cannot map to an input field. Mark them as model-level errors so that clients
+            # display the custom message, like they do for the form's own "__root__" errors.
+            error["loc"] = (*error["loc"], "__root__")
         return
 
     if LOG_LEVEL_PYDANTIC_FORMS == "DEBUG":
@@ -88,9 +109,6 @@ class FormValidationError(FormException):
             f'{no_errors} validation error{"" if no_errors == 1 else "s"} for {self.validator_name}\n'
             f"{display_errors(cast(list[ErrorDict], self.errors))}"
         )
-
-
-Loc = tuple[Union[int, str], ...]
 
 
 class _ErrorDictRequired(TypedDict):
