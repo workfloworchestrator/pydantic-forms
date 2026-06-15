@@ -44,9 +44,7 @@ def _error_is_nested_object_validator(error: ErrorDetails) -> bool:
     """Return True for custom errors raised for an object payload instead of a leaf field."""
     exc = error.get("ctx", {}).get("error")
     return (
-        bool(error["loc"])
-        and isinstance(exc, (ValueError, AssertionError))
-        and isinstance(error.get("input"), Mapping)
+        bool(error["loc"]) and isinstance(exc, (ValueError, AssertionError)) and isinstance(error.get("input"), Mapping)
     )
 
 
