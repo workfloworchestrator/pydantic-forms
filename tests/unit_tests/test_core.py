@@ -1,7 +1,7 @@
 from typing import Optional
 
 import pytest
-from pydantic import BaseModel, ConfigDict, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from pydantic_forms.core import FormPage, generate_form, post_form
 from pydantic_forms.exceptions import FormNotCompleteError, FormOverflowError, FormValidationError
@@ -272,6 +272,25 @@ def test_loc_nested_model_validator(form_field_annotation, user_input, expected_
 
     assert len(e.value.errors) == 1
     assert e.value.errors[0]["loc"] == expected_loc
+    assert e.value.errors[0]["msg"] == "Yowch!"
+
+
+def test_loc_nested_model_validator_with_alias():
+    """Nested model validator errors are remapped when Pydantic reports the field alias in the location."""
+
+    def form_generator(state):
+        class Form(FormPage):
+            nested_: SubModel = Field(alias="nested")
+
+        yield Form
+
+        return {}
+
+    with pytest.raises(FormValidationError) as e:
+        post_form(form_generator, {}, [{"nested": {"enabled": False, "setting_when_enabled": 1}}])
+
+    assert len(e.value.errors) == 1
+    assert e.value.errors[0]["loc"] == ("nested", "__root__")
     assert e.value.errors[0]["msg"] == "Yowch!"
 
 
