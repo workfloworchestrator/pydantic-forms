@@ -62,6 +62,7 @@ def _get_read_only_schema(default: Any) -> dict:
         "uniforms": forms_schema,  # Deprecated
         constants.EXTRA_PROPERTIES: forms_schema,
         "type": _get_json_type(default),
+        "format": "read_only_field",
     }
 
 

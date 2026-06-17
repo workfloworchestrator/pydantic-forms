@@ -1,0 +1,21 @@
+site_name: Pydantic Forms
+site_description: Smart forms for FastAPI and Flask, powered by Pydantic.
+repo_name: workfloworchestrator/pydantic-forms
+repo_url: https://github.com/workfloworchestrator/pydantic-forms
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+
+nav:
+  - Home: index.md
+  - Concepts:
+      - Required field handling: concepts/required-field-handling.md

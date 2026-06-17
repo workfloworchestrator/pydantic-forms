@@ -49,6 +49,7 @@ def test_read_only_field_schema(read_only_value, schema_value, schema_type, othe
                 **enum,
                 "const": schema_value,
                 "default": schema_value,
+                "format": "read_only_field",
                 "title": "Read Only",
                 "uniforms": {"disabled": True, "value": schema_value},
                 "extraProperties": {"disabled": True, "value": schema_value},
@@ -88,6 +89,7 @@ def test_read_only_field_list_schema(read_only_value, read_only_type, schema_val
             "read_only_list": {
                 "default": schema_value,
                 "items": expected_item_type,
+                "format": "read_only_field",
                 "title": "Read Only List",
                 "uniforms": {"disabled": True, "value": schema_value},
                 "extraProperties": {"disabled": True, "value": schema_value},
@@ -175,6 +177,7 @@ def test_read_only_list_model():
             "read_only_list": {
                 "default": schema_value,
                 "items": expected_item_type,
+                "format": "read_only_field",
                 "title": "Read Only List",
                 "uniforms": {"disabled": True, "value": schema_value},
                 "extraProperties": {"disabled": True, "value": schema_value},
