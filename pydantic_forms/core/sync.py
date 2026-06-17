@@ -18,7 +18,7 @@ import structlog
 from pydantic import ValidationError
 from pydantic_i18n import PydanticI18n
 
-from pydantic_forms.core.shared import FORMS
+from pydantic_forms.core.shared import FORMS, GenerateFormJsonSchema
 from pydantic_forms.core.translations import translations
 from pydantic_forms.exceptions import FormException, FormNotCompleteError, FormOverflowError, FormValidationError
 from pydantic_forms.types import InputForm, State, StateInputFormGenerator
@@ -88,7 +88,10 @@ def post_form(
             generated_form = generator.send(form_validated_data)
 
         # Form is not completely filled; raise next form
-        raise FormNotCompleteError(generated_form.model_json_schema(), meta=getattr(generated_form, "meta__", None))
+        raise FormNotCompleteError(
+            generated_form.model_json_schema(schema_generator=GenerateFormJsonSchema),
+            meta=getattr(generated_form, "meta__", None),
+        )
     except StopIteration as e:
         if user_inputs:
             raise FormOverflowError(f"Did not process all user_inputs ({len(user_inputs)} remaining)")

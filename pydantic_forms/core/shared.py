@@ -11,15 +11,46 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from inspect import isasyncgenfunction, isgeneratorfunction
-from typing import Any, Callable
+from typing import Any, Callable, cast
 
 import structlog
 from pydantic import BaseModel, ConfigDict, PydanticUndefinedAnnotation, version
+from pydantic.json_schema import GenerateJsonSchema, JsonSchemaValue
+from pydantic_core import core_schema
 
 logger = structlog.get_logger(__name__)
 
 
 PYDANTIC_VERSION = version.version_short()
+
+
+class GenerateFormJsonSchema(GenerateJsonSchema):
+    """JSON schema generator that also emits ``default`` values produced by ``default_factory``.
+
+    Pydantic intentionally leaves ``default_factory`` results out of the generated JSON schema. For
+    forms this is a problem: ``default_factory`` is the recommended way to declare mutable defaults
+    (``Field(default_factory=list)`` and friends), and frontends pre-fill fields from the schema
+    ``default``. Without it such fields render uninitialised, and dynamic array/object widgets reject
+    submission until the user performs a dummy add/remove interaction to materialise an empty value.
+
+    This generator evaluates argument-less factories and adds their result as the schema ``default``.
+    Factories that need the already-validated data (``default_factory_takes_data``) cannot be
+    evaluated at schema-generation time and are skipped, as is any factory that raises.
+    """
+
+    def default_schema(self, schema: core_schema.WithDefaultSchema) -> JsonSchemaValue:
+        json_schema = super().default_schema(schema)
+        if (
+            "default" not in json_schema
+            and "default_factory" in schema
+            and not schema.get("default_factory_takes_data", False)
+        ):
+            factory = cast(Callable[[], Any], schema["default_factory"])
+            try:
+                json_schema["default"] = self.encode_default(factory())
+            except Exception:  # noqa: B902 - never let a factory break schema generation
+                logger.debug("Could not evaluate default_factory for form schema", exc_info=True)
+        return json_schema
 
 
 class DisplayOnlyFieldType:
