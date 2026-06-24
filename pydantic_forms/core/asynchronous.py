@@ -18,7 +18,7 @@ import structlog
 from pydantic import ValidationError
 from pydantic_i18n import PydanticI18n
 
-from pydantic_forms.core.shared import FORMS
+from pydantic_forms.core.shared import FORMS, GenerateFormJsonSchema
 from pydantic_forms.core.translations import translations
 from pydantic_forms.exceptions import (
     FormException,
@@ -102,7 +102,10 @@ async def post_form(
         return generated_form
 
     # Form is not completely filled raise next form
-    raise FormNotCompleteError(generated_form.model_json_schema(), meta=getattr(generated_form, "meta__", None))
+    raise FormNotCompleteError(
+        generated_form.model_json_schema(schema_generator=GenerateFormJsonSchema),
+        meta=getattr(generated_form, "meta__", None),
+    )
 
 
 def _get_form(key: str) -> StateInputFormGeneratorAsync:

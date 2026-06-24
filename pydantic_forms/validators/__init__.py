@@ -11,6 +11,7 @@ from pydantic_forms.validators.components.label import Label
 from pydantic_forms.validators.components.list_of_one import ListOfOne
 from pydantic_forms.validators.components.list_of_two import ListOfTwo
 from pydantic_forms.validators.components.long_text import LongText
+from pydantic_forms.validators.components.markdown import Markdown, markdown
 from pydantic_forms.validators.components.migration_summary import MigrationSummary, migration_summary
 from pydantic_forms.validators.components.organisation_id import OrganisationId
 from pydantic_forms.validators.components.read_only import read_only_field, read_only_list
@@ -43,4 +44,6 @@ __all__ = (
     "validate_unique_list",
     "callout",
     "Callout",
+    "markdown",
+    "Markdown",
 )
