@@ -1,5 +1,7 @@
+from typing import Optional
+
 import pytest
-from pydantic import ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from pydantic_forms.core import FormPage, generate_form, post_form
 from pydantic_forms.exceptions import FormNotCompleteError, FormOverflowError, FormValidationError
@@ -223,3 +225,106 @@ def test_loc():
     assert len(e.value.errors) == 1
     assert e.value.errors[0]["loc"] == ("__root__",)
     assert e.value.errors[0]["msg"] == "too high"
+
+
+class SubModel(BaseModel):
+    enabled: bool = False
+    setting_when_enabled: Optional[int] = None
+
+    @model_validator(mode="after")
+    def only_when_enabled(self) -> "SubModel":
+        if not self.enabled and self.setting_when_enabled is not None:
+            raise ValueError("Yowch!")
+        return self
+
+
+class NestedSubModel(BaseModel):
+    settings: SubModel
+
+
+@pytest.mark.parametrize(
+    "form_field_annotation, user_input, expected_loc",
+    [
+        (SubModel, {"enabled": False, "setting_when_enabled": 1}, ("nested", "__root__")),
+        (Optional[SubModel], {"enabled": False, "setting_when_enabled": 1}, ("nested", "__root__")),
+        (list[SubModel], [{"enabled": False, "setting_when_enabled": 1}], ("nested", 0, "__root__")),
+        (dict[str, SubModel], {"key": {"enabled": False, "setting_when_enabled": 1}}, ("nested", "key", "__root__")),
+        (
+            NestedSubModel,
+            {"settings": {"enabled": False, "setting_when_enabled": 1}},
+            ("nested", "settings", "__root__"),
+        ),
+    ],
+)
+def test_loc_nested_model_validator(form_field_annotation, user_input, expected_loc):
+    """Custom errors raised by a model_validator on a nested model are marked as model-level ("__root__") errors."""
+
+    def form_generator(state):
+        class Form(FormPage):
+            nested: form_field_annotation
+
+        yield Form
+
+        return {}
+
+    with pytest.raises(FormValidationError) as e:
+        post_form(form_generator, {}, [{"nested": user_input}])
+
+    assert len(e.value.errors) == 1
+    assert e.value.errors[0]["loc"] == expected_loc
+    assert e.value.errors[0]["msg"] == "Yowch!"
+
+
+def test_loc_nested_model_validator_with_alias():
+    """Nested model validator errors are remapped when Pydantic reports the field alias in the location."""
+
+    def form_generator(state):
+        class Form(FormPage):
+            nested_: SubModel = Field(alias="nested")
+
+        yield Form
+
+        return {}
+
+    with pytest.raises(FormValidationError) as e:
+        post_form(form_generator, {}, [{"nested": {"enabled": False, "setting_when_enabled": 1}}])
+
+    assert len(e.value.errors) == 1
+    assert e.value.errors[0]["loc"] == ("nested", "__root__")
+    assert e.value.errors[0]["msg"] == "Yowch!"
+
+
+def test_loc_nested_model_field_errors_are_not_remapped():
+    """Errors on leaf fields and non-validator errors on nested models keep their original location."""
+
+    def form_generator(state):
+        class Form(FormPage):
+            nested: SubModel
+            a: int
+
+            @field_validator("a")
+            @classmethod
+            def validate_a(cls, value: int) -> int:
+                if value > 5:
+                    raise ValueError("too high")
+                return value
+
+        yield Form
+
+        return {}
+
+    # A ValueError on a leaf field keeps pointing at that field
+    with pytest.raises(FormValidationError) as e:
+        post_form(form_generator, {}, [{"nested": {"enabled": True}, "a": 6}])
+
+    assert len(e.value.errors) == 1
+    assert e.value.errors[0]["loc"] == ("a",)
+    assert e.value.errors[0]["msg"] == "too high"
+
+    # A missing nested model is not a custom validator error and keeps pointing at the nested model
+    with pytest.raises(FormValidationError) as e:
+        post_form(form_generator, {}, [{"a": 1}])
+
+    assert len(e.value.errors) == 1
+    assert e.value.errors[0]["loc"] == ("nested",)
+    assert e.value.errors[0]["type"] == "missing"
