@@ -48,7 +48,7 @@ class GenerateFormJsonSchema(GenerateJsonSchema):
             factory = cast(Callable[[], Any], schema["default_factory"])
             try:
                 json_schema["default"] = self.encode_default(factory())
-            except Exception:  # noqa: B902 - never let a factory break schema generation
+            except Exception:  # never let a factory break schema generation
                 logger.debug("Could not evaluate default_factory for form schema", exc_info=True)
         return json_schema
 

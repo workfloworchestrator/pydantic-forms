@@ -1,3 +1,0 @@
-[run]
-include = pydantic_forms
-omit = tests/

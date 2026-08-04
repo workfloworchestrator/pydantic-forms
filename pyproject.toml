@@ -1,25 +1,15 @@
-[build-system]
-requires = ["flit"]
-build-backend = "flit.buildapi"
-
-[tool.flit.metadata]
-module = "pydantic_forms"
-dist-name = "pydantic-forms"
-author = "SURF"
-author-email = "automation-beheer@surf.nl"
-home-page = "https://github.com/workfloworchestrator/pydantic-forms"
+[project]
+name = "pydantic-forms"
+description = "Pydantic-forms engine."
+version = "2.6.0"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [
+    { name = "SURF", email = "automation-beheer@surf.nl" }
+]
+requires-python = ">=3.10,<3.15"
 classifiers = [
-    "Intended Audience :: Information Technology",
-    "Intended Audience :: System Administrators",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python",
-    "Topic :: Internet",
-    "Topic :: Software Development :: Libraries :: Application Frameworks",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-    "Topic :: Software Development :: Libraries",
-    "Topic :: Software Development",
-    "Typing :: Typed",
     "Development Status :: 4 - Beta",
     "Environment :: Web Environment",
     "Framework :: AsyncIO",
@@ -27,72 +17,96 @@ classifiers = [
     "Framework :: Flask",
     "Framework :: Pydantic :: 2",
     "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
     "Intended Audience :: Telecommunications Industry",
-    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python",
     "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
     "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Internet",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development",
+    "Typing :: Typed",
 ]
-requires = [
-    "more-itertools",
+dependencies = [
+    "more-itertools>=10.0.0",
     "pydantic[email]>=2.9.0",
-    "pydantic-i18n==0.4.5"
+    "pydantic-i18n==0.4.5",
 ]
-description-file = "README.md"
-requires-python = ">=3.10,<3.15"
 
-[tool.flit.metadata.urls]
+[project.urls]
 Documentation = "https://github.com/workfloworchestrator/pydantic-forms/blob/main/README.md"
+Homepage = "https://github.com/workfloworchestrator/pydantic-forms"
+Source = "https://github.com/workfloworchestrator/pydantic-forms"
 
-[tool.flit.metadata.requires-extra]
+# Published optional dependencies, or "extras"
+[project.optional-dependencies]
+# Floors reflect what actually resolves and imports on the supported pythons:
+# fastapi <0.100 pins pydantic<2, and orjson <3.10.7 has no wheels for 3.13+.
+fastapi = [
+    "fastapi>=0.103.2",
+]
+orjson = [
+    "orjson>=3.10.7,<4.0.0",
+]
+
+# Local dependencies for development.
+# Lower bounds are required: CI runs `uv sync --resolution lowest-direct`, which
+# would otherwise resolve unbounded entries to their oldest release on PyPI.
+[dependency-groups]
 test = [
-    "apache-license-check",
-    "black",
-    "structlog",
-    "jsonref",
+    "apache-license-check>=1.0.0",
+    "black>=24.2.0",
+    "jsonref>=1.1.0",
     "mypy==1.18.2",
-    "pytest",
-    "pytest-cov",
-    "pytest-asyncio",
-    "pytest-xdist",
-    "ruff",
-    "types-Deprecated",
-    "types-certifi",
-    "types-python-dateutil",
-    "types-pytz",
-    "types-toml",
-    "types-ujson",
-    "types-orjson"
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=5.0.0",
+    "pytest-xdist>=3.5.0",
+    "ruff>=0.14.5",
+    "structlog>=24.1.0",
+    "types-certifi>=2021.10.8.3",
+    "types-Deprecated>=1.2.15",
+    "types-orjson>=3.6.2",
+    "types-python-dateutil>=2.9.0",
+    "types-pytz>=2025.2.0",
+    "types-ujson>=5.10.0",
 ]
 doc = [
-    "mkdocs",
-    "mkdocs-material",
-    "mkdocs-render-swagger-plugin",
-    "mkdocs-include-markdown-plugin"
+    "mkdocs>=1.6.1",
+    "mkdocs-include-markdown-plugin>=7.1.6",
+    "mkdocs-material>=9.6.14",
+    "mkdocs-render-swagger-plugin>=0.1.2",
 ]
 dev = [
-    "toml",
-    "bumpversion",
-    "mypy_extensions",
-    "pre-commit",
-    "pydocstyle",
-    "python-dotenv",
-    "watchdog",
+    "mypy-extensions>=1.1.0",
+    "pre-commit>=4.2.0",
+    "pydocstyle>=6.3.0",
+    "python-dotenv>=1.0.1",
+    "watchdog>=6.0.0",
+    { include-group = "test" },
+    { include-group = "doc" },
 ]
-#rapidjson = [
-#    "rapidjson >=1.0.0,<2.0.0",
-#]
-orjson = [
-    "orjson >=3.6.0,<4.0.0",
-]
-fastapi = [
-    "fastapi >=0.80.0"
-]
+
+[build-system]
+requires = ["uv_build>=0.10,<0.13"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "pydantic_forms"
+module-root = ""
+# Ship the test suite in the sdist so downstream packagers can run it from the tarball.
+source-include = ["tests/**"]
 
 [tool.black]
 line-length = 120
@@ -112,9 +126,6 @@ exclude = '''
 )
 '''
 
-[tool.nitpick]
-style="github://workfloworchestrator/nitpick-style@main/nitpick-style-orchestrator-core.toml"
-
 [tool.ruff]
 exclude = [
     ".git",
@@ -127,7 +138,11 @@ exclude = [
     ".venv",
     "docs",
 ]
-lint.ignore = [
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+ignore = [
     "B904",
     "B905",
     "C417",
@@ -149,23 +164,75 @@ lint.ignore = [
     "N815",
     "S101", # use of assert
 ]
-line-length = 120
-lint.select = ["B", "C", "D", "E", "F", "I", "N", "RET", "S", "T", "W"]
-target-version = "py310"
+select = ["B", "C", "D", "E", "F", "I", "N", "RET", "S", "T", "TID", "W"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.isort]
+known-third-party = ["pydantic"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = [
-    "D205",  # blank line required
+    "B033",
+    "D205", # blank line required
+    "N802",
+    "N816",
+    "S101",
 ]
 
-[tool.lint.flake8-tidy-imports]
-ban-relative-imports = "all"
-
-[tool.lint.per-file-ignores]
-"tests/*" = ["S101", "B033", "N816", "N802"]
-
-[tool.lint.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "google"
 
-[tool.lint.isort]
-known-third-party = ["pydantic"]
+[tool.pytest.ini_options]
+addopts = "--doctest-modules --doctest-ignore-import-errors"
+asyncio_mode = "auto"
+filterwarnings = [
+    "ignore::pytest.PytestCollectionWarning",
+]
+junit_suite_name = "pydantic_forms"
+markers = [
+    "regression: Tests that cover bugs that are fixed to prevent them from regressing",
+]
+norecursedirs = [".git", "build", "dist", "*.egg", "__pycache__", ".cache", ".*", "docs"]
+testpaths = ["tests"]
+
+[tool.mypy]
+exclude = "(venv)"
+ignore_missing_imports = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+# check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+strict_optional = true
+namespace_packages = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+# Disable due to flaky results in mypy itself
+# warn_return_any = true
+warn_no_return = true
+warn_unreachable = true
+implicit_reexport = false
+strict_equality = true
+show_error_codes = true
+show_column_numbers = true
+# lineprecision_report = mypy-coverage
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_calls = false
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+warn_untyped_fields = true
+
+[tool.coverage.run]
+source = ["pydantic_forms"]
+omit = ["tests/*"]
