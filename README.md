@@ -17,71 +17,46 @@ Documentation regarding the usage of Forms can be found
 [here](https://github.com/workfloworchestrator/orchestrator-core/blob/main/docs/architecture/application/forms-frontend.md)
 
 ### Installation (Development standalone)
-Install the project and its dependencies to develop on the code.
 
-#### Step 1 - install flit:
-
-```shell
-python3 -m venv venv
-source venv/bin/activate
-pip install flit
-```
-
-#### Step 2 - install the development code:
-```shell
-flit install --deps develop --symlink --python venv/bin/python
-```
-
-!!! danger
-    Make sure to use the flit binary that is installed in your environment. You can check the correct
-    path by running
-    ```shell
-    which flit
-    ```
-
-To be sure that the packages will be installed against the correct venv you can also prepend the python interpreter
-that you want to use:
+This project uses [uv](https://docs.astral.sh/uv/). Install the project and its dependencies to develop on the code:
 
 ```shell
-flit install --deps develop --symlink --python venv/bin/python
+uv sync --all-extras
 ```
 
+This creates a `.venv`, installs `pydantic-forms` in editable mode, and installs the `dev` dependency group
+(which chains in `test` and `doc`) plus the `fastapi` and `orjson` extras. There is no need to create or
+activate a virtualenv yourself -- prefix commands with `uv run` and uv will use the right interpreter.
 
 ### Running tests
 Run the unit-test suite to verify a correct setup.
 
-#### Step 2 - Run tests
 ```shell
-pytest tests/unit_tests
+uv run pytest tests/unit_tests
 ```
 
 or with xdist:
 
 ```shell
-pytest -n auto tests/unit_tests
+uv run pytest -n auto tests/unit_tests
 ```
 
 If you do not encounter any failures in the test, you should be able to develop features in the pydantic-forms.
 
-### Installation (Development symlinked into project that use pydantic-forms)
+### Installation (Development version used by a project that depends on pydantic-forms)
 
-If you are working on a project that already uses the `pydantic-forms` and you want to test your new form features
-against it, you can use some `flit` magic to symlink the dev version of the forms to your project. It will
-automatically replace the pypi dep with a symlink to the development version
-of the core and update/downgrade all required packages in your own project.
-
-#### Step 1 - install flit:
+If you are working on a project that already uses `pydantic-forms` and you want to test your new form features
+against it, point that project at your local checkout. Run this **from the other project**:
 
 ```shell
-python - m venv venv
-source venv/bin/activate
-pip install flit
+uv add --editable /path/to/pydantic-forms
 ```
 
-### Step 2 - symlink pydantic-forms to your own project
+This replaces the PyPI dependency with an editable install of your working copy and records it under
+`[tool.uv.sources]` in that project's `pyproject.toml`. Undo it with:
 
 ```shell
-flit install --deps develop --symlink --python /path/to/a/project/venv/bin/python
+uv remove pydantic-forms && uv add pydantic-forms
 ```
 
 # Increasing the version number for a (pre) release.
@@ -91,11 +66,11 @@ When your PR is accepted you will get a version number.
 You can do the necessary change with a clean, e.g. every change committed, branch:
 
 ```shell
-bumpversion patch --new-version 0.0.1
+uv version 0.0.1
 ```
 
-Note: specifying it like this, instead of relying on bumpversion itself to increase the version, allows you to
-set a "RC1" version if needed.
+Note: specifying the version explicitly, instead of relying on `uv version --bump patch` to increase it, allows
+you to set a "RC1" version if needed -- e.g. `uv version 0.0.1rc1`.
 
 # Debugging Form behaviour
 

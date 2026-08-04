@@ -4,69 +4,112 @@ on:
   workflow_call:
 
 jobs:
-  container_job:
-    name: Unit tests (Python ${{ matrix.python-version }}, Pydantic ${{ matrix.pydantic-version }}, FastAPI ${{ matrix.fastapi-version }})
+  unit-tests:
+    name: "Unit tests (Python ${{ matrix.python-version }}, ${{ matrix.resolution }}, Pydantic ${{ matrix.pydantic-version }}, FastAPI ${{ matrix.fastapi-version }})"
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
+        resolution: ['locked']
         pydantic-version: ['lockfile']
         fastapi-version: ['lockfile']
-        # Test specific older releases to avoid an extremely large test matrix
+        # Every include entry must spell out all four keys. GitHub only merges an
+        # include into an existing combination when it overwrites no original key;
+        # because `resolution` and `pydantic-version` are original keys, these rows
+        # create new combinations that contain *only* the keys listed here. Omitting
+        # one would silently expand to an empty string below.
         include:
+          # Floor and ceiling of the declared dependency ranges. lowest-direct stops
+          # at 3.13: pydantic-core ships no 3.14 wheel for the pydantic 2.9.0 floor.
+          - python-version: '3.10'
+            resolution: 'lowest-direct'
+            pydantic-version: 'lockfile'
+            fastapi-version: 'lockfile'
+          - python-version: '3.13'
+            resolution: 'lowest-direct'
+            pydantic-version: 'lockfile'
+            fastapi-version: 'lockfile'
+          - python-version: '3.13'
+            resolution: 'highest'
+            pydantic-version: 'lockfile'
+            fastapi-version: 'lockfile'
+          - python-version: '3.14'
+            resolution: 'highest'
+            pydantic-version: 'lockfile'
+            fastapi-version: 'lockfile'
+          # Specific older releases, to avoid an extremely large test matrix.
           # Older pydantic releases with the oldest + second-latest supported python version.
           # (using python 3.14 requires pydantic 2.12 which is currently the latest)
           - python-version: '3.13'
+            resolution: 'locked'
             pydantic-version: '2.11.10'
             fastapi-version: 'lockfile'
           - python-version: '3.13'
+            resolution: 'locked'
             pydantic-version: '2.10.6'
             fastapi-version: 'lockfile'
           - python-version: '3.10'
+            resolution: 'locked'
             pydantic-version: '2.10.6'
             fastapi-version: 'lockfile'
           - python-version: '3.13'
+            resolution: 'locked'
             pydantic-version: '2.9.2'
             fastapi-version: 'lockfile'
           - python-version: '3.10'
+            resolution: 'locked'
             pydantic-version: '2.9.2'
             fastapi-version: 'lockfile'
           # Older fastapi releases with the oldest + latest supported python version
           - python-version: '3.14'
+            resolution: 'locked'
             pydantic-version: 'lockfile'
             fastapi-version: '0.103.2'
           - python-version: '3.10'
+            resolution: 'locked'
             pydantic-version: 'lockfile'
             fastapi-version: '0.103.2'
       fail-fast: false
-    container: python:${{ matrix.python-version }}-slim
     steps:
-      # Downloads a copy of the code in your repository before running CI tests
       - name: Check out repository code
-        uses: actions/checkout@v4
-      - name: Install dependencies
+        uses: actions/checkout@v6
+
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v7
+        with:
+          # Pinned to the version that generated uv.lock, so `--locked` cannot
+          # fail on an unrelated lockfile-format bump.
+          version: "0.10.9"
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+
+      - name: Install the project
+        # --all-extras: [project.optional-dependencies], i.e. fastapi + orjson
+        # The 'dev' group from [dependency-groups] is synced by default and
+        # chains in 'test' and 'doc' via include-group.
         run: |
-          apt update
-          apt install curl git build-essential libpq-dev libffi-dev -y
-          python -m pip install --upgrade pip
-          pip install flit
-          flit install --deps develop
+          case "${{ matrix.resolution }}" in
+            locked)        uv sync --all-extras --locked ;;
+            lowest-direct) uv sync --all-extras --resolution lowest-direct --upgrade ;;
+            highest)       uv sync --all-extras --resolution highest --upgrade ;;
+            *)             echo "::error::unknown resolution '${{ matrix.resolution }}'" && exit 1 ;;
+          esac
+          # Force specific older releases on top of the resolved set. This
+          # deliberately deviates from the lockfile, hence --no-sync when running.
           if [ "${{ matrix.pydantic-version }}" != "lockfile" ]; then
-            pip install pydantic[email]~=${{ matrix.pydantic-version }}
+            uv pip install "pydantic[email]~=${{ matrix.pydantic-version }}"
           fi
           if [ "${{ matrix.fastapi-version }}" != "lockfile" ]; then
-            pip install fastapi~=${{ matrix.fastapi-version }}
-          else
-            flit install --extras fastapi
+            uv pip install "fastapi~=${{ matrix.fastapi-version }}"
           fi
-        env:
-          FLIT_ROOT_INSTALL: 1
+
       - name: Run Unit tests
-        run: pytest tests/unit_tests --cov-branch --cov=pydantic_forms --ignore=tests --cov-report=xml
+        run: uv run --no-sync pytest tests/unit_tests --cov-branch --cov=pydantic_forms --ignore=tests --cov-report=xml
         env:
           COVERAGE_FILE: reports/.coverage.${{ matrix.python-version }}
+
       - name: "Upload coverage to Codecov"
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
