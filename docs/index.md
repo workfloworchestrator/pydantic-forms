@@ -1,11 +1,11 @@
-# Pydantic Forms
+# Introduction
 
-Pydantic Forms lets FastAPI or Flask applications collect user input as forms, defined as
+pydantic-forms is a library that lets APIs (e.g. FastAPI) collect user input through forms defined as
 [Pydantic](https://docs.pydantic.dev/) models. A form definition is turned into a JSON schema that a frontend
-can render, validate the submitted input against the model, and return the validated data.
+can render. The submitted input can be validated against and transformed by the model.
 
-Forms can also be wizards: a generator function `yield`s one form page at a time, using the result of each page to
+Forms can also be chained together to create "form wizards", using the result of each form page to
 decide what the next page looks like.
 
-It's used by [orchestrator-core](https://workfloworchestrator.org/orchestrator-core/) to render the input forms of
-its workflows.
+This library is a spinoff from [orchestrator-core](https://workfloworchestrator.org/orchestrator-core/) in which it was
+originally developed, and where it is still used to render the input forms of its workflows.
