@@ -9,7 +9,12 @@ from pydantic_i18n import PydanticI18n
 from pydantic_forms.core import FormPage
 from pydantic_forms.core.translations import translations
 from pydantic_forms.exception_handlers.fastapi import form_error_handler
-from pydantic_forms.exceptions import FormNotCompleteError, FormOverflowError, FormValidationError
+from pydantic_forms.exceptions import (
+    FormNotCompleteError,
+    FormNotFoundError,
+    FormOverflowError,
+    FormValidationError,
+)
 
 
 async def test_form_not_complete():
@@ -76,6 +81,15 @@ async def test_form_validation_with_stack_trace(example_form_error_invalid_int, 
     assert "FormValidationError" in body
     assert "should be a valid integer" in body
     assert "traceback" in body
+
+
+async def test_form_not_found():
+    exception = FormNotFoundError("Form my_form does not exist.")
+    response = await form_error_handler(mock.Mock(spec=Request), exception)
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    body = response.body.decode()
+    assert "FormNotFoundError" in body
+    assert "Form my_form does not exist." in body
 
 
 async def test_overflow_error():

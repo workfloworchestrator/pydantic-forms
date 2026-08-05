@@ -3,8 +3,15 @@ from typing import Optional
 import pytest
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from pydantic_forms.core import FormPage, generate_form, post_form
-from pydantic_forms.exceptions import FormNotCompleteError, FormOverflowError, FormValidationError
+from pydantic_forms.core import FormPage, generate_form, post_form, register_form, start_form
+from pydantic_forms.core.shared import FORMS
+from pydantic_forms.exceptions import (
+    FormException,
+    FormNotCompleteError,
+    FormNotFoundError,
+    FormOverflowError,
+    FormValidationError,
+)
 from pydantic_forms.types import strEnum
 
 # TODO: Remove when generic forms of pydantic_forms are ready
@@ -328,3 +335,24 @@ def test_loc_nested_model_field_errors_are_not_remapped():
     assert len(e.value.errors) == 1
     assert e.value.errors[0]["loc"] == ("nested",)
     assert e.value.errors[0]["type"] == "missing"
+
+
+def test_start_form_unknown_key():
+    with pytest.raises(FormNotFoundError, match="Form nonexistent does not exist."):
+        start_form("nonexistent")
+
+
+def test_start_form_wrong_generator_type():
+    """A form registered as an async generator is not a 'not found' error for the sync start_form."""
+
+    async def async_input_form(state):
+        user_input = yield TestForm
+        yield user_input.model_dump()
+
+    register_form("async_only_form", async_input_form)
+    try:
+        with pytest.raises(FormException, match="is not a generator function") as e:
+            start_form("async_only_form")
+        assert not isinstance(e.value, FormNotFoundError)
+    finally:
+        FORMS.pop("async_only_form", None)

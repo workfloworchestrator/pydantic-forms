@@ -1,0 +1,35 @@
+# workfloworchestrator.github.io uses site_name in the URL, don't change it
+site_name: Pydantic Forms
+site_description: JSON schema form generation for FastAPI/Flask, powered by Pydantic v2.
+repo_url: "https://github.com/workfloworchestrator/pydantic-forms"
+repo_name: "workfloworchestrator/pydantic-forms"
+nav:
+  - index.md
+  - installation.md
+  - usage.md
+  - fields.md
+  - errors.md
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: cyan
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: cyan
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - search.suggest
+    - search.highlight
+    - navigation.sections
+plugins:
+  - search
+  - include-markdown
+copyright: "&copy; 2019 - 2026 SURF"

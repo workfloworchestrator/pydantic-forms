@@ -23,6 +23,7 @@ from pydantic_forms.core.translations import translations
 from pydantic_forms.exceptions import (
     FormException,
     FormNotCompleteError,
+    FormNotFoundError,
     FormOverflowError,
     FormValidationError,
 )
@@ -110,7 +111,7 @@ async def post_form(
 
 def _get_form(key: str) -> StateInputFormGeneratorAsync:
     if not (func := FORMS.get(key)):
-        raise FormException(f"Form {key} does not exist.")
+        raise FormNotFoundError(f"Form {key} does not exist.")
 
     if not isasyncgenfunction(func):
         raise FormException(f"Form {key} is not an asyncgenerator function")

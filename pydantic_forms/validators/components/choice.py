@@ -41,7 +41,7 @@ class Choice(strEnum):
     def __new__(cls, value: str, label: Optional[str] = None) -> "Choice":
         obj = str.__new__(cls, value)
         obj._value_ = value
-        obj.label = label or value  # type:ignore
+        obj.label = label or value  # type: ignore
         return obj
 
     @classmethod

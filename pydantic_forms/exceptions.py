@@ -37,6 +37,10 @@ class FormOverflowError(FormException):
     """Raised when more inputs are provided than the form can process."""
 
 
+class FormNotFoundError(FormException):
+    """Raised when the requested form key is not registered."""
+
+
 Loc = tuple[Union[int, str], ...]
 
 

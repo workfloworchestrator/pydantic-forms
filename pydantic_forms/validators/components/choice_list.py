@@ -34,12 +34,12 @@ def choice_list(
     # Note: min_items always need to be there to remain backward compatible with frontend components
     if max_items:
         return Annotated[  # type: ignore[return-value]
-            list[item_type],  # type:ignore[valid-type]
+            list[item_type],  # type: ignore[valid-type]
             MinLen(min_items or 0),
             MaxLen(max_items),
         ]
 
     return Annotated[  # type: ignore[return-value]
-        list[item_type],  # type:ignore[valid-type]
+        list[item_type],  # type: ignore[valid-type]
         MinLen(min_items or 0),
     ]
