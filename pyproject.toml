@@ -45,7 +45,7 @@ dependencies = [
 ]
 
 [project.urls]
-Documentation = "https://github.com/workfloworchestrator/pydantic-forms/blob/main/README.md"
+Documentation = "https://workfloworchestrator.org/pydantic-forms/"
 Homepage = "https://github.com/workfloworchestrator/pydantic-forms"
 Source = "https://github.com/workfloworchestrator/pydantic-forms"
 
