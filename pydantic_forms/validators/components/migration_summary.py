@@ -25,6 +25,7 @@ class _MigrationSummary(BaseModel):
 
 
 MigrationSummary = Annotated[_MigrationSummary, Field(frozen=True, default=None, validate_default=False)]
+"""A static summary table. Use `migration_summary()` to supply its data."""
 
 
 def create_json_extra_schema(data: SummaryData, schema: dict[str, Any]) -> None:
@@ -40,6 +41,7 @@ def create_json_extra_schema(data: SummaryData, schema: dict[str, Any]) -> None:
 
 
 def migration_summary(data: SummaryData) -> type[MigrationSummary]:
+    """Create a static table from a `{headers, labels, columns}` mapping."""
     namespace = {"data": data}
     klass: type[MigrationSummary] = new_class(
         "MigrationSummaryValue", (_MigrationSummary,), {}, lambda ns: ns.update(namespace)

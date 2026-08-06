@@ -15,6 +15,7 @@ from typing import Annotated
 from pydantic import BaseModel, EmailStr, Field
 
 ContactPersonName = Annotated[str, Field(json_schema_extra={"format": "contactPersonName"})]
+"""A string tagged so the frontend renders it as a contact person name."""
 
 
 class ContactPerson(BaseModel):

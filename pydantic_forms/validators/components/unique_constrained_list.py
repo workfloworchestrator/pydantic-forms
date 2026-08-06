@@ -21,6 +21,7 @@ T = TypeVar("T")
 
 
 def validate_unique_list(values: list[T]) -> list[T]:
+    """Return the list unchanged, raising `PydanticCustomError` if it holds duplicates."""
     if not all_unique(values):
         raise PydanticCustomError("unique_list", "List must be unique")
     return values
@@ -32,6 +33,7 @@ def unique_conlist(
     min_items: Optional[int] = None,
     max_items: Optional[int] = None,
 ) -> type[list[T]]:
+    """Create a list whose items must all be unique."""
     return Annotated[  # type: ignore[return-value]
         list[item_type],  # type: ignore[valid-type]  # sssh
         AfterValidator(validate_unique_list),

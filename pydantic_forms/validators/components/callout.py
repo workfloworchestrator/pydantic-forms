@@ -38,6 +38,7 @@ class _Callout(BaseModel):
 
 
 Callout = Annotated[_Callout, Field(frozen=True, default=None, validate_default=False)]
+"""A callout box. Use `callout()` to set its content and styling."""
 
 
 def create_callout_schema(data: CalloutData, schema: dict[str, Any]) -> None:
@@ -57,6 +58,11 @@ def callout(
     icon_type: Union[str, None] = "info",
     message_type: Union[CalloutMessageType, str] = CalloutMessageType.PRIMARY,
 ) -> type[Callout]:
+    """Create a callout box.
+
+    `message_type` selects the styling and accepts a `CalloutMessageType`: `primary`, `success`,
+    `warning`, `danger` or `accent`. `icon_type` names the icon to show, and defaults to `"info"`.
+    """
 
     data: CalloutData = {
         "header": header,

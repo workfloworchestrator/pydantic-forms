@@ -19,11 +19,18 @@ from pydantic_forms.types import AcceptData, strEnum
 
 
 class AcceptValues(strEnum):
+
     ACCEPTED = "ACCEPTED"
     INCOMPLETE = "INCOMPLETE"
 
 
 class Accept(str):
+    """A checklist the user works through before the form can be submitted.
+
+    Validation fails while the value is still `"INCOMPLETE"`. Subclass it and set `data` to
+    describe the items to display.
+    """
+
     data: ClassVar[Optional[AcceptData]] = None
 
     _enum_adapter = TypeAdapter(AcceptValues)

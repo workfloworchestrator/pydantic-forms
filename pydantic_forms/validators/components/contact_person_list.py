@@ -28,6 +28,11 @@ def contact_person_list(
     min_items: Optional[int] = None,
     max_items: Optional[int] = None,
 ) -> type[list[T]]:
+    """Create a list of `ContactPerson` entries.
+
+    Deprecated: use `orchestrator.forms.validators.customer_contact_list` instead.
+    """
+
     def json_schema_extra() -> Generator:
         if organisation:
             yield "organisationId", organisation

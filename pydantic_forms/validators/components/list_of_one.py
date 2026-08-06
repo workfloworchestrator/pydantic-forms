@@ -18,3 +18,4 @@ from pydantic import Field
 from pydantic_forms.validators.components.unique_constrained_list import T
 
 ListOfOne = Annotated[list[T], Field(min_length=1, max_length=1)]
+"""A list constrained to exactly one item."""

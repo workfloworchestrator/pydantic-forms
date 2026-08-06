@@ -3,7 +3,7 @@
 ## Defining a form
 
 A form page is a `FormPage`, a `pydantic.BaseModel` subclass. Its fields become the inputs the frontend renders,
-using either plain Python/Pydantic types or the [field types](fields.md) this library provides:
+using either plain Python/Pydantic types or the [field types](examples.md#field-types) this library provides:
 
 ```python
 from pydantic_forms.core import FormPage

@@ -20,3 +20,7 @@ DisplaySubscription = Annotated[
     UUID,
     Field(frozen=True, json_schema_extra={"format": "subscription", "type": "string"}),
 ]
+"""Displays a subscription, identified by UUID. Display-only: it collects no input.
+
+Deprecated: use `orchestrator.forms.validators.DisplaySubscription` instead.
+"""

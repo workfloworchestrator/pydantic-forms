@@ -7,9 +7,10 @@ nav:
   - index.md
   - installation.md
   - usage.md
-  - fields.md
+  - examples.md
   - errors.md
   - how-it-works.md
+  - reference.md
 
 theme:
   name: material
@@ -33,4 +34,8 @@ theme:
 plugins:
   - search
   - include-markdown
+  # Deliberately unconfigured: the options live per-block in docs/reference.md, so that they also
+  # hold when this page is built as a subproject of workfloworchestrator.github.io, which uses the
+  # parent's mkdocs.yml and would otherwise apply the parent's options here. See that page.
+  - mkdocstrings
 copyright: "&copy; 2019 - 2026 SURF"

@@ -33,6 +33,7 @@ logger = structlog.get_logger(__name__)
 
 
 async def form_error_handler(request: Request, exc: FormException) -> JSONResponse:
+    """FastAPI exception handler that turns a FormException into a HTTP 4xx/5xx response with JSON body."""
     match exc:
         case FormValidationError():
             status = HTTPStatus.BAD_REQUEST

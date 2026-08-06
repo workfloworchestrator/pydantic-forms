@@ -15,3 +15,4 @@ from typing import Annotated, Optional
 from pydantic import Field
 
 Divider = Annotated[Optional[str], Field(None, frozen=True, json_schema_extra={"format": "divider", "type": "string"})]
+"""A horizontal separator line. Display-only: it collects no input."""

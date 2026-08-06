@@ -22,3 +22,4 @@ ListOfTwo = Annotated[
     AfterValidator(validate_unique_list),
     Field(min_length=2, max_length=2, json_schema_extra={"uniqueItems": True}),
 ]
+"""A list constrained to exactly two items, which must differ from each other."""

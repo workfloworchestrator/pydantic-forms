@@ -142,12 +142,15 @@ def _display_error_type_and_ctx(error: "ErrorDict") -> str:
 def show_ex(ex: Exception, stacklimit: Union[int, None] = None) -> str:
     """Show an exception, including its class name, message and (limited) stacktrace.
 
-    >>> try:
-    ...     raise Exception("Something went wrong")
-    ... except Exception as e:
-    ...     print(show_ex(e))
-    Exception: Something went wrong
-    ...
+    Examples:
+    --------
+        >>> try:
+        ...     raise Exception("Something went wrong")
+        ... except Exception as e:
+        ...     print(show_ex(e))
+        Exception: Something went wrong
+        ...
+
     """
     tbfmt = "".join(traceback.format_tb(ex.__traceback__, stacklimit))
     return "{}: {}\n{}".format(type(ex).__name__, ex, tbfmt)

@@ -36,6 +36,7 @@ class _Markdown(BaseModel):
 
 
 Markdown = Annotated[_Markdown, Field(frozen=True, default=None, validate_default=False)]
+"""A block of rendered Markdown. Use `markdown()` to set its content."""
 
 
 def create_markdown_schema(data: MarkdownData, schema: dict[str, Any]) -> None:
@@ -53,6 +54,10 @@ def markdown(
     content: Union[str, None] = None,
     color: Union[MarkdownColor, str] = MarkdownColor.PRIMARY,
 ) -> type[Markdown]:
+    """Create a block of rendered Markdown.
+
+    `color` accepts a `MarkdownColor`: `primary`, `success`, `warning`, `danger` or `accent`.
+    """
 
     data: MarkdownData = {
         "content": content,

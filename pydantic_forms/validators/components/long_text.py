@@ -15,3 +15,4 @@ from typing import Annotated
 from pydantic import Field
 
 LongText = Annotated[str, Field(json_schema_extra={"format": "long"})]
+"""A multi-line text input."""

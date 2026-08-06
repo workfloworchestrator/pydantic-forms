@@ -20,6 +20,9 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-docstring-first
+        # The field types are module-level Annotated aliases documented with PEP 258 attribute
+        # docstrings, which this hook cannot tell apart from a misplaced module docstring.
+        exclude: ^pydantic_forms/validators/components/
       - id: check-json
       - id: check-yaml
         exclude: (charts/.*|\.gitlab-ci\.yml|mkdocs\.yml)
