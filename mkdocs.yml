@@ -9,6 +9,7 @@ nav:
   - usage.md
   - fields.md
   - errors.md
+  - how-it-works.md
 
 theme:
   name: material

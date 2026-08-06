@@ -27,7 +27,10 @@ corresponding page's input has been validated; the validated data is sent back i
 value is the combined result once there are no more pages:
 
 ```python
-def create_service_form(state):
+from pydantic_forms.types import FormGenerator, State
+
+
+def create_service_form(state: State) -> FormGenerator:
     user_input = yield CreateServiceForm
 
     class ConfirmForm(FormPage):
@@ -38,41 +41,13 @@ def create_service_form(state):
     return user_input.model_dump()
 ```
 
-`post_form` drives a generator with a list of submitted inputs (one dict per page) and returns the final result:
-
-```python
-from pydantic_forms.core import post_form
-
-result = post_form(
-    create_service_form,
-    state={},
-    user_inputs=[
-        {"service_name": "svc-1", "service_speed": "1000"},
-        {},  # Empty input suffices for the ConfirmForm
-    ],
-)
-```
-
-Passing fewer inputs than the wizard has pages — an empty list for the very first request — raises
-`FormNotCompleteError` carrying the JSON schema of the next page instead. That is the normal flow: a frontend keeps
-posting the inputs it has collected so far, and each response tells it what to render next.
-
-`generate_form` wraps `post_form` and returns the next page's JSON schema (or `None` once the form is done) instead
-of raising:
-
-```python
-from pydantic_forms.core import generate_form
-
-schema = generate_form(create_service_form, state={}, user_inputs=[])
-```
-
-Both are low-level: they need the generator object itself. Applications normally register forms by name and expose
-them through a single endpoint — see [FastAPI integration](#fastapi-integration).
+You don't call this generator yourself but register it under a key for `start_form` to access it, as shown in the
+next section. Read [How it works](how-it-works.md) for details about the machinery.
 
 ### Registering forms
 
 `register_form` associates a generator with a key. `start_form` then resolves that key, seeds the initial state and
-hands off to `post_form`:
+iterates over the user inputs:
 
 ```python
 from pydantic_forms.core import register_form, start_form
@@ -88,6 +63,18 @@ result = start_form(
 )
 ```
 
+The result is whatever the generator returned, with every value already validated and coerced to its annotated
+type:
+
+```pycon
+>>> result["service_name"]
+'svc-1'
+>>> result["service_speed"]
+<Speed._1000: '1000'>
+```
+
+Omitting the second `{}` from the user input would produce a `FormNotCompleteError`.
+
 ## Async
 
 An async equivalent lives in `pydantic_forms.core.asynchronous`, with the same `post_form`, `generate_form` and
@@ -97,32 +84,24 @@ One difference matters: an async generator cannot `return` a value, so the final
 returned. Writing `return user_input.model_dump()` in an `async def` generator is a `SyntaxError`:
 
 ```python
-import asyncio
-
-from pydantic_forms.core.asynchronous import post_form
+from pydantic_forms.types import FormGeneratorAsync
 
 
-async def create_service_form(state):
+async def create_service_form(state: State) -> FormGeneratorAsync:
     user_input = yield CreateServiceForm
     yield user_input.model_dump()  # yield, not return
-
-
-result = asyncio.run(
-    post_form(
-        create_service_form,
-        state={},
-        user_inputs=[{"service_name": "svc-1", "service_speed": "1000"}],
-    )
-)
 ```
 
-Use `asyncio.run` only at the outermost level; inside a FastAPI endpoint you would simply `await post_form(...)`.
+Note the return type: `FormGeneratorAsync` rather than `FormGenerator`, since the result is yielded rather than
+returned.
+
+Register it exactly as above; the endpoint in the next section awaits `start_form` to drive it.
 
 ## FastAPI integration
 
-### The form endpoint
+### An example endpoint
 
-One endpoint serves every registered form:
+An example of how you can hook up the form wizard in an API:
 
 ```python
 from typing import Any
