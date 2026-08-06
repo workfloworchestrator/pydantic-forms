@@ -138,3 +138,45 @@ app.include_router(router)
 ```
 
 An unknown `form_key` raises `FormNotFoundError`, which the handler reports as a 404.
+
+## Page metadata
+
+Sometimes the frontend needs to know something about a page that its JSON schema cannot express. Setting
+`meta__` on a form page attaches arbitrary JSON to the response that carries it:
+
+```python
+from typing import ClassVar
+
+from pydantic_forms.types import JSON
+
+
+class ConfirmForm(FormPage):
+    meta__: ClassVar[JSON] = {"hasNext": False}
+
+    service_name: str
+```
+
+It comes back as `.meta` on the `FormNotCompleteError`, and as the `meta` key of the JSON response:
+
+```pycon
+>>> from pydantic_forms.core import post_form
+>>> from pydantic_forms.exceptions import FormNotCompleteError
+>>> def confirm_only(state: State) -> FormGenerator:
+...     yield ConfirmForm
+...     return {}
+...
+>>> try:
+...     post_form(confirm_only, state={}, user_inputs=[])
+... except FormNotCompleteError as exc:
+...     exc.meta
+...
+{'hasNext': False}
+```
+
+The value is entirely free-form. This library never looks inside it, it only passes it through, so whatever it
+holds is a contract between your own backend and frontend. The `hasNext` key above is just one example: it is
+what orchestrator-core uses to mark the final page, so that its frontend can label and style the submit button
+accordingly.
+
+`meta__` is a `ClassVar`, which keeps it out of the generated schema and out of the validated result: it is
+metadata about the page, not a field on it.

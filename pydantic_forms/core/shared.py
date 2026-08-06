@@ -11,12 +11,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from inspect import isasyncgenfunction, isgeneratorfunction
-from typing import Any, Callable, cast
+from typing import Any, Callable, ClassVar, cast
 
 import structlog
 from pydantic import BaseModel, ConfigDict, PydanticUndefinedAnnotation, version
 from pydantic.json_schema import GenerateJsonSchema, JsonSchemaValue
 from pydantic_core import core_schema
+
+from pydantic_forms.types import JSON
 
 logger = structlog.get_logger(__name__)
 
@@ -64,6 +66,14 @@ class FormPage(BaseModel):
         extra="forbid",
         validate_default=True,
     )
+
+    meta__: ClassVar[JSON] = None
+    """Data about the page itself, passed to the frontend alongside its JSON schema.
+
+    Set it on a subclass to tell the frontend something the schema cannot express, such as whether
+    another page follows. It travels out as the `meta` key of the `FormNotCompleteError` response.
+    Being a `ClassVar` it is not a form field, so it stays out of the schema and the validated result.
+    """
 
     def __init__(self, **data: Any):
         frozen_fields = {k: v for k, v in self.__class__.model_fields.items() if v.frozen}

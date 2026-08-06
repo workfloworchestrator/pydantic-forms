@@ -4,7 +4,7 @@ All exceptions live in `pydantic_forms.exceptions` and subclass `FormException`.
 
 | Exception | Raised when |
 |---|---|
-| `FormNotCompleteError` | The wizard has more pages left; carries the next page's JSON schema (`.form`). |
+| `FormNotCompleteError` | The wizard has more pages left; carries the next page's JSON schema (`.form`) and, if the page defines any, its [page metadata](usage.md#page-metadata) (`.meta`, otherwise `None`). |
 | `FormValidationError` | Submitted input failed Pydantic validation; carries the translated errors (`.errors`). |
 | `FormOverflowError` | More inputs were submitted than the wizard has pages for. |
 | `FormNotFoundError` | `start_form` was called with a key that no form is registered under. |
