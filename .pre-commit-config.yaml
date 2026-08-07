@@ -20,6 +20,9 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-docstring-first
+        # The field types are module-level Annotated aliases documented with PEP 258 attribute
+        # docstrings, which this hook cannot tell apart from a misplaced module docstring.
+        exclude: ^pydantic_forms/validators/components/
       - id: check-json
       - id: check-yaml
         exclude: (charts/.*|\.gitlab-ci\.yml|mkdocs\.yml)
@@ -55,3 +58,12 @@ repos:
     rev: 0.10.9
     hooks:
       - id: uv-lock
+  - repo: local
+    hooks:
+      - id: docs-snippets
+        name: run the code snippets in docs/
+        # --all-extras: the docs snippets import fastapi, which is an optional dependency
+        entry: uv run --all-extras pytest tests/unit_tests/test_documentation.py -q
+        language: system
+        pass_filenames: false
+        files: ^(docs/.*\.md|tests/unit_tests/test_documentation\.py)$

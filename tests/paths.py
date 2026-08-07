@@ -1,4 +1,4 @@
-# Copyright 2019-2023 SURF.
+# Copyright 2019-2026 SURF.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -10,9 +10,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Annotated
+"""Locations in the repository that tests need to reach.
 
-from pydantic import Field
+Keeping these here means a test module that moves between directories does not have to
+recount how far up the repository root is; only this file knows.
+"""
 
-LongText = Annotated[str, Field(json_schema_extra={"format": "long"})]
-"""A multi-line text input."""
+from pathlib import Path
+
+ROOT = Path(__file__).parents[1]

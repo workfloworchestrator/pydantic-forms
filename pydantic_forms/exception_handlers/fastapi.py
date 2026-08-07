@@ -14,60 +14,71 @@ import os
 
 # TODO Decide how to expose this so pydantic-forms can be framework agnostic
 from http import HTTPStatus
+from typing import Any
 
 import structlog
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 
-from pydantic_forms.exceptions import FormException, FormNotCompleteError, FormValidationError, show_ex
+from pydantic_forms.exceptions import (
+    FormException,
+    FormNotCompleteError,
+    FormNotFoundError,
+    FormValidationError,
+    show_ex,
+)
 from pydantic_forms.utils.json import json_dumps, json_loads
 
 logger = structlog.get_logger(__name__)
 
 
 async def form_error_handler(request: Request, exc: FormException) -> JSONResponse:
+    """FastAPI exception handler that turns a FormException into a HTTP 4xx/5xx response with JSON body."""
+    match exc:
+        case FormValidationError():
+            status = HTTPStatus.BAD_REQUEST
+            base_content = _create_content(exc, status, "Form not valid")
+            detail_content = base_content | {
+                "validation_errors": json_loads(json_dumps(exc.errors)),
+            }
+            debug_content = _add_traceback(exc, detail_content)
+            return JSONResponse(debug_content, status_code=status)
+
+        case FormNotCompleteError():
+            status = HTTPStatus.NOT_EXTENDED
+            base_content = _create_content(exc, status, "Form not complete")
+            detail_content = base_content | {
+                "form": json_loads(json_dumps(exc.form)),
+                "meta": getattr(exc, "meta", None),
+            }
+            debug_content = _add_traceback(exc, detail_content)
+            return JSONResponse(debug_content, status_code=status)
+
+        case FormNotFoundError():
+            status = HTTPStatus.NOT_FOUND
+            base_content = _create_content(exc, status, "Form not found")
+            return JSONResponse(base_content, status_code=status)
+
+        case _:
+            status = HTTPStatus.INTERNAL_SERVER_ERROR
+            base_content = _create_content(exc, status, "Internal Server Error")
+            return JSONResponse(base_content, status_code=status)
+
+
+def _create_content(exc: FormException, status: HTTPStatus, title: str) -> dict[str, str | HTTPStatus]:
+    return {
+        "type": type(exc).__name__,
+        "detail": str(exc),
+        "title": title,
+        "status": status,
+    }
+
+
+def _add_traceback(exc: FormException, content: dict[str, Any]) -> dict[str, Any]:
     LOG_LEVEL_PYDANTIC_FORMS = "DEBUG" if os.getenv("LOG_LEVEL_PYDANTIC_FORMS", "INFO").upper() == "DEBUG" else "INFO"
-    if isinstance(exc, FormValidationError):
-        result = {
-            "type": type(exc).__name__,
-            "detail": str(exc),
-            "title": "Form not valid",
-            # We need to make sure there is nothing the default json.dumps cannot handle
-            "validation_errors": json_loads(json_dumps(exc.errors)),
-            "status": HTTPStatus.BAD_REQUEST,
-        }
-        if LOG_LEVEL_PYDANTIC_FORMS == "DEBUG":
-            result["traceback"] = show_ex(exc)
-            logger.debug("Form validation Response", result=result)
-        return JSONResponse(
-            result,
-            status_code=HTTPStatus.BAD_REQUEST,
-        )
+    if LOG_LEVEL_PYDANTIC_FORMS == "DEBUG":
+        content_with_traceback = content | {"traceback": show_ex(exc)}
+        logger.debug("Form validation Response", result=content_with_traceback)
+        return content_with_traceback
 
-    if isinstance(exc, FormNotCompleteError):
-        result = {
-            "type": type(exc).__name__,
-            "detail": str(exc),
-            # We need to make sure the is nothing the default json.dumps cannot handle
-            "form": json_loads(json_dumps(exc.form)),
-            "title": "Form not complete",
-            "status": HTTPStatus.NOT_EXTENDED,
-            "meta": getattr(exc, "meta", None),
-        }
-        if LOG_LEVEL_PYDANTIC_FORMS == "DEBUG":
-            result["traceback"] = show_ex(exc)
-            logger.debug("Form validation Response", result=result)
-        return JSONResponse(
-            result,
-            status_code=HTTPStatus.NOT_EXTENDED,
-        )
-
-    return JSONResponse(
-        {
-            "detail": str(exc),
-            "title": "Internal Server Error",
-            "status": HTTPStatus.INTERNAL_SERVER_ERROR,
-            "type": type(exc).__name__,
-        },
-        status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
-    )
+    return content

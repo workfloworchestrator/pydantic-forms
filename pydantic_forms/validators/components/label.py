@@ -15,3 +15,4 @@ from typing import Annotated, Optional
 from pydantic import Field
 
 Label = Annotated[Optional[str], Field(None, frozen=True, json_schema_extra={"format": "label", "type": "string"})]
+"""A plain string formatted as a label. Display-only: it collects no input."""

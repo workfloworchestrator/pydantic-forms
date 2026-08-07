@@ -19,3 +19,7 @@ OrganisationId = Annotated[
     str,
     Field(json_schema_extra={"format": "organisationId"}),
 ]
+"""A string tagged for organisation-ID rendering.
+
+Deprecated: use `orchestrator.forms.validators.CustomerId` instead.
+"""

@@ -1,13 +1,12 @@
-# Runs the pre-commit suite. pre-commit builds its own isolated environments per
-# hook, so this does not need a python version matrix; uv is only required for
-# the uv-lock hook.
+# Runs the pre-commit suite. Most hooks build their own isolated environment, so this
+# does not need a python version matrix. The exceptions are uv-lock and docs-snippets,
+# which run uv directly; docs-snippets syncs the project (including the extras, because
+# the snippets in docs/ import fastapi) in order to execute them.
 
 name: Linting tests
 
 on:
   push:
-  pull_request:
-    branches: [master]
   workflow_call:
 
 jobs:

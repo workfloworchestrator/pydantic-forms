@@ -2,8 +2,13 @@ from pydantic import ConfigDict
 from pytest import raises
 
 from pydantic_forms.core import FormPage
-from pydantic_forms.core.asynchronous import generate_form, post_form
-from pydantic_forms.exceptions import FormNotCompleteError, FormOverflowError, FormValidationError
+from pydantic_forms.core.asynchronous import generate_form, post_form, start_form
+from pydantic_forms.exceptions import (
+    FormNotCompleteError,
+    FormNotFoundError,
+    FormOverflowError,
+    FormValidationError,
+)
 from pydantic_forms.types import strEnum
 
 # TODO: Remove when generic forms of pydantic_forms are ready
@@ -202,3 +207,8 @@ async def test_generate_form():
     # Submit complete
     form = await generate_form(input_form, {"previous": True}, [{"generic_select1": "b"}, {"generic_select3": "a"}])
     assert form is None
+
+
+async def test_start_form_unknown_key():
+    with raises(FormNotFoundError, match="Form nonexistent does not exist."):
+        await start_form("nonexistent")

@@ -15,3 +15,4 @@ from typing import Annotated, Optional
 from pydantic import Field
 
 Hidden = Annotated[Optional[str], Field(None, frozen=True, json_schema_extra={"format": "hidden", "type": "string"})]
+"""A field that is not shown to the user. Display-only: it collects no input."""

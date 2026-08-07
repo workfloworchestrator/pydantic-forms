@@ -26,6 +26,7 @@ def choice_list(
     max_items: Optional[int] = None,
     unique_items: Optional[bool] = None,
 ) -> type[list[Choice]]:
+    """Create a multi-select list of `Choice` values."""
     if unique_items:
         from pydantic_forms.validators import unique_conlist
 
@@ -34,12 +35,12 @@ def choice_list(
     # Note: min_items always need to be there to remain backward compatible with frontend components
     if max_items:
         return Annotated[  # type: ignore[return-value]
-            list[item_type],  # type:ignore[valid-type]
+            list[item_type],  # type: ignore[valid-type]
             MinLen(min_items or 0),
             MaxLen(max_items),
         ]
 
     return Annotated[  # type: ignore[return-value]
-        list[item_type],  # type:ignore[valid-type]
+        list[item_type],  # type: ignore[valid-type]
         MinLen(min_items or 0),
     ]

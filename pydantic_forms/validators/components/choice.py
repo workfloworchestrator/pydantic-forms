@@ -19,7 +19,10 @@ from pydantic_forms.types import strEnum
 
 
 class Choice(strEnum):
-    """Let the user choose from an enum and submit the label.
+    """Let the user choose from an enum, showing a label that may differ from the stored value.
+
+    Each member is a `(value, label)` pair: the value is what the form submits, the label is what
+    the frontend displays. A member declared without a label uses its value for both.
 
     As of March 2023 mypy does not yet support functional API on Enum subclasses
     https://github.com/python/mypy/issues/6037
@@ -41,7 +44,7 @@ class Choice(strEnum):
     def __new__(cls, value: str, label: Optional[str] = None) -> "Choice":
         obj = str.__new__(cls, value)
         obj._value_ = value
-        obj.label = label or value  # type:ignore
+        obj.label = label or value  # type: ignore
         return obj
 
     @classmethod

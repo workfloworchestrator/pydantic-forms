@@ -20,7 +20,13 @@ from pydantic_i18n import PydanticI18n
 
 from pydantic_forms.core.shared import FORMS, GenerateFormJsonSchema
 from pydantic_forms.core.translations import translations
-from pydantic_forms.exceptions import FormException, FormNotCompleteError, FormOverflowError, FormValidationError
+from pydantic_forms.exceptions import (
+    FormException,
+    FormNotCompleteError,
+    FormNotFoundError,
+    FormOverflowError,
+    FormValidationError,
+)
 from pydantic_forms.types import InputForm, State, StateInputFormGenerator
 
 logger = structlog.get_logger(__name__)
@@ -102,7 +108,7 @@ def post_form(
 
 def _get_form(key: str) -> StateInputFormGenerator:
     if not (func := FORMS.get(key)):
-        raise FormException(f"Form {key} does not exist.")
+        raise FormNotFoundError(f"Form {key} does not exist.")
 
     if not isgeneratorfunction(func):
         raise FormException(f"Form {key} is not a generator function")

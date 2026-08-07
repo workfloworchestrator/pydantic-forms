@@ -1,0 +1,39 @@
+# Nothing else in CI builds the docs, and several mkdocstrings options fail *silently* when wrong:
+# dropping one empties a whole section of docs/reference.md without any warning. Building with
+# --strict here catches that before workfloworchestrator.github.io rebuilds from this repository.
+
+name: Test mkdocs build
+
+on:
+  push:
+  workflow_call:
+
+env:
+  NO_MKDOCS_2_WARNING: "true"
+
+jobs:
+  mkdocs-build:
+    name: Test mkdocs build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v6
+
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v7
+        with:
+          # Pinned to the version that generated uv.lock, so `--locked` cannot
+          # fail on an unrelated lockfile-format bump.
+          version: "0.10.9"
+          python-version: "3.13"
+          enable-cache: true
+
+      - name: Install the project
+        # --no-dev: skip [dependency-groups] 'dev', which chains in 'test' and is not needed here.
+        # The 'fastapi' extra is deliberately not synced: mkdocstrings reads the source statically,
+        # so pydantic_forms.exception_handlers.fastapi documents fine without fastapi installed.
+        run: uv sync --no-dev --group doc --locked
+
+      - name: Build the documentation with --strict
+        run: uv run --no-sync mkdocs build --strict
