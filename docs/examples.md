@@ -127,7 +127,7 @@ class ModifyPortForm(FormPage):
 The fixed values are normally read from whatever is being modified rather than written as literals, so a form
 like this is defined inside the generator, where that data is in hand.
 
-Read-only fields still come back in the result, so the rest of the workflow sees the complete picture:
+Read-only fields may be omitted from the submitted input, and still come back in the result:
 
 ```pycon
 >>> ModifyPortForm(description="uplink to core, upgraded").model_dump()

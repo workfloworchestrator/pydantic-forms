@@ -105,6 +105,15 @@ def test_read_only_field_list_schema(read_only_value, read_only_type, schema_val
     assert validated.model_dump_json() == json.dumps({"read_only_list": schema_value}, separators=(",", ":"))
 
 
+def test_read_only_fields_can_be_omitted():
+    class Form(FormPage):
+        read_only: read_only_field("a")
+        read_only_list: read_only_list(["b"])
+
+    assert "required" not in Form.model_json_schema()
+    assert Form().model_dump() == {"read_only": "a", "read_only_list": ["b"]}
+
+
 @pytest.mark.parametrize(
     "wrong_value",
     (None, [], ["a"], ["a", "bb"], ["b", "a"], ["a", "a", "b"]),

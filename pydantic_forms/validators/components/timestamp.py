@@ -31,6 +31,8 @@ def timestamp(
     """Create a date/time picker, backed by an `int` holding a unix timestamp.
 
     Pass `validate=False` to emit the widget bounds without enforcing `min`/`max` on the value.
+    This can be useful to implement custom validation error messages while still having the same
+    UI representation.
     """
     forms_schema: JsonDict = {
         "showTimeSelect": show_time_select,
