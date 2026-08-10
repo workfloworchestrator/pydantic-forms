@@ -11,6 +11,9 @@ nav:
   - errors.md
   - how-it-works.md
   - reference.md
+  - Architecture Decisions:
+      - Records: decisions/index.md
+      - Open Design Questions: decisions/open-questions.md
 
 theme:
   name: material
