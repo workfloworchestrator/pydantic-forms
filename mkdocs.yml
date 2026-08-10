@@ -10,10 +10,13 @@ nav:
   - examples.md
   - errors.md
   - how-it-works.md
+  - reference.md
   - Architecture Decisions:
-      - Records: decisions/index.md
-      - Open Design Questions: decisions/open-questions.md
-        - Required Fields: required-fields.md
+      - Records:
+        - Overview: decisions/records.md
+      - Open Design Questions:
+        - Overview: decisions/questions.md
+        - Required Fields: decisions/questions/required-fields.md
 
 theme:
   name: material

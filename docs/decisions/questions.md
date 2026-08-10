@@ -1,12 +1,12 @@
 # Open Design Questions
 
-This page tracks design problems that are known but not yet resolved. Unlike an [ADR](index.md), nothing listed
+This page tracks design problems that are known but not yet resolved. Unlike an [ADR](records.md), nothing listed
 here is a decision — these are backlog items for discussion. Once a question is resolved, write it up as a
 numbered ADR using the [template](template.md), then remove or update its entry below.
 
 | Problem                         | Notes                                                          |
 |---------------------------------|----------------------------------------------------------------|
-| When to show fields as required | See [full page](./docs/decisions/questions/required-fields.md) |
+| When to show fields as required | See [full page](questions/required-fields.md)                   |
 
 ## Adding a new open question
 

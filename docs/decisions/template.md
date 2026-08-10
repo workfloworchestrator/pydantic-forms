@@ -5,7 +5,7 @@
 - **Supersedes:** link to the ADR this one replaces — omit the line unless it replaces an earlier decision.
 - **Superseded by:** link to the ADR that replaced this one — leave the line out until that happens.
 
-See [the statuses](index.md#statuses) for what each status means and when it changes.
+See [the statuses](records.md#statuses) for what each status means and when it changes.
 
 ## Context
 
