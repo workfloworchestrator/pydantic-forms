@@ -1,0 +1,37 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "labels": ["kind/dependencies"],
+  "packageRules": [
+    {
+      "matchManagers": ["uv"]
+    },
+    {
+      "description": "Label GitHub Actions bumps so they land in the CI/Build release-notes section",
+      "matchManagers": ["github-actions"],
+      "labels": ["kind/ci"]
+    },
+    {
+      "matchPackageNames": ["python"],
+      "rangeStrategy": "widen",
+      "enabled": false
+    }
+  ],
+  "minimumReleaseAge": "3 days",
+  "vulnerabilityAlerts": {
+    "enabled": false
+  },
+  "osvVulnerabilityAlerts": false,
+  "internalChecksFilter": "strict",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 3am on Tuesday"]
+  },
+  "schedule": [
+    "* 1-5 * * *"
+  ],
+  "timezone": "Europe/Amsterdam",
+  "updateNotScheduled": false
+}
