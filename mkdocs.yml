@@ -10,10 +10,10 @@ nav:
   - examples.md
   - errors.md
   - how-it-works.md
-  - reference.md
   - Architecture Decisions:
       - Records: decisions/index.md
       - Open Design Questions: decisions/open-questions.md
+        - Required Fields: required-fields.md
 
 theme:
   name: material
@@ -41,4 +41,12 @@ plugins:
   # hold when this page is built as a subproject of workfloworchestrator.github.io, which uses the
   # parent's mkdocs.yml and would otherwise apply the parent's options here. See that page.
   - mkdocstrings
+markdown_extensions:
+  - admonition  # classic:  !!! note "Title"
+  # blocks:   /// note | Title
+  # https://facelessuser.github.io/pymdown-extensions/extensions/blocks/plugins/admonition/#options
+  - pymdownx.blocks.admonition
+  # collapsible blocks: /// details | Title  (with "    type: note" as first line of content)
+  # https://facelessuser.github.io/pymdown-extensions/extensions/blocks/plugins/details/
+  - pymdownx.blocks.details
 copyright: "&copy; 2019 - 2026 SURF"

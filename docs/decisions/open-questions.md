@@ -4,9 +4,9 @@ This page tracks design problems that are known but not yet resolved. Unlike an 
 here is a decision — these are backlog items for discussion. Once a question is resolved, write it up as a
 numbered ADR using the [template](template.md), then remove or update its entry below.
 
-| Problem | Notes |
-|---------|-------|
-| _none yet_ | |
+| Problem                         | Notes                                                          |
+|---------------------------------|----------------------------------------------------------------|
+| When to show fields as required | See [full page](./docs/decisions/questions/required-fields.md) |
 
 ## Adding a new open question
 
