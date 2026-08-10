@@ -1,6 +1,6 @@
 # Required fields on forms with defaults
 
-* Date: 2026-08-10
+* **Date:** 2026-08-10
 
 There is an intricate (but not critical) problem in pydantic-forms which has not been solved yet.
 It relates to using pydantic-forms with default values and how this changes the representation in a UI.
@@ -110,28 +110,20 @@ class MyModifyForm(FormPage):
     str_b: str
     int_a: int = 1
     int_b: int
-
-
-pprint(MyModifyForm.model_json_schema())
 ```
 
 The output shows `str_a` and `int_a` have a default value, while `str_b` and `int_b` are in `required`:
 
-<!-- TODO convert to pycon block -->
-
-```python
-{
-    "additionalProperties": False,
-    "properties": {
-        "int_a": {"default": 1, "title": "Int A", "type": "integer"},
-        "int_b": {"title": "Int B", "type": "integer"},
-        "str_a": {"default": "foo", "title": "Str A", "type": "string"},
-        "str_b": {"title": "Str B", "type": "string"},
-    },
-    "required": ["str_b", "int_b"],
-    "title": "unknown",
-    "type": "object",
-}
+```pycon
+>>> pprint(MyModifyForm.model_json_schema())
+{'additionalProperties': False,
+ 'properties': {'int_a': {'default': 1, 'title': 'Int A', 'type': 'integer'},
+                'int_b': {'title': 'Int B', 'type': 'integer'},
+                'str_a': {'default': 'foo', 'title': 'Str A', 'type': 'string'},
+                'str_b': {'title': 'Str B', 'type': 'string'}},
+ 'required': ['str_b', 'int_b'],
+ 'title': 'unknown',
+ 'type': 'object'}
 ```
 
 In a UI, such as the orchestrator-ui-library, this form looks like this:

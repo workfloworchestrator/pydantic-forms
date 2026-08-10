@@ -6,7 +6,7 @@ numbered ADR using the [template](template.md), then remove or update its entry 
 
 | Problem                         | Notes                                                          |
 |---------------------------------|----------------------------------------------------------------|
-| When to show fields as required | See [full page](questions/required-fields.md)                   |
+| Required fields on forms with defaults | See [full page](questions/required-fields.md)                   |
 
 ## Adding a new open question
 
