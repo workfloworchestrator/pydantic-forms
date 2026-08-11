@@ -234,6 +234,5 @@ The same holds for `list` fields without a minimal length requirement.
 
 ## Discussion
 
-If you want to weigh in on this discussion, feel free to leave a comment here!
-
-https://github.com/workfloworchestrator/pydantic-forms/discussions/77
+If you want to weigh in on this discussion, feel free to leave a comment
+[here](https://github.com/workfloworchestrator/pydantic-forms/discussions/77)!
