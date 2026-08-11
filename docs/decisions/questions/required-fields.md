@@ -231,3 +231,9 @@ We could choose to only show strings as required if they declare a minimum lengt
 It may be perfectly valid to accept empty strings as values, and this is now not easily possible.
 
 The same holds for `list` fields without a minimal length requirement.
+
+## Discussion
+
+If you want to weigh in on this discussion, feel free to leave a comment here!
+
+https://github.com/workfloworchestrator/pydantic-forms/discussions/77
