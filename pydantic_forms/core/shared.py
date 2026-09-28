@@ -18,7 +18,7 @@ from pydantic import BaseModel, ConfigDict, PydanticUndefinedAnnotation, version
 from pydantic.json_schema import GenerateJsonSchema, JsonSchemaValue
 from pydantic_core import core_schema
 
-from pydantic_forms.types import JSON
+from pydantic_forms.types import FormMeta
 
 logger = structlog.get_logger(__name__)
 
@@ -67,11 +67,12 @@ class FormPage(BaseModel):
         validate_default=True,
     )
 
-    meta__: ClassVar[JSON] = None
+    meta__: ClassVar[FormMeta | None] = None
     """Data about the page itself, passed to the frontend alongside its JSON schema.
 
     Set it on a subclass to tell the frontend something the schema cannot express, such as whether
-    another page follows. It travels out as the `meta` key of the `FormNotCompleteError` response.
+    another page follows (`hasNext`) or how to label/style the previous/next buttons
+    (`customButtons`). It travels out as the `meta` key of the `FormNotCompleteError` response.
     Being a `ClassVar` it is not a form field, so it stays out of the schema and the validated result.
     """
 
