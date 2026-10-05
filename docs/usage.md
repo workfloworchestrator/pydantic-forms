@@ -147,11 +147,11 @@ Sometimes the frontend needs to know something about a page that its JSON schema
 ```python
 from typing import ClassVar
 
-from pydantic_forms.types import JSON
+from pydantic_forms.types import FormMeta
 
 
 class ConfirmForm(FormPage):
-    meta__: ClassVar[JSON] = {"hasNext": False}
+    meta__: ClassVar[FormMeta] = {"hasNext": False}
 
     service_name: str
 ```
@@ -173,10 +173,77 @@ It comes back as `.meta` on the `FormNotCompleteError`, and as the `meta` key of
 {'hasNext': False}
 ```
 
-The value is entirely free-form. This library never looks inside it, it only passes it through, so whatever it
-holds is a contract between your own backend and frontend. The `hasNext` key above is just one example: it is
-what orchestrator-core uses to mark the final page, so that its frontend can label and style the submit button
-accordingly.
+The value is entirely free-form: this library never looks inside it, it only passes it through, so whatever it
+holds is a contract between your own backend and frontend. `FormMeta` documents the well-known keys — `hasNext`
+marks whether another page follows, and `customButtons` relabels or restyles the previous/next buttons — but
+being `total=False`, it doesn't stop a page from adding further keys of its own.
+
+### Custom buttons
+
+To relabel or restyle the previous/next buttons of a page, add a field with a `ButtonsConfig` as its default.
+Each `Button` takes a `text` label and a `color`; set only the buttons and keys you want to change,
+and the frontend keeps its defaults for the rest. The config is sent as `customButtons` in the meta of the
+page, alongside the rest of its `meta__`, while the field itself stays out of the schema and the validated result:
+
+```python
+from pydantic_forms.validators import Button, ButtonsConfig
+
+
+class ConfirmButtonsForm(FormPage):
+    meta__: ClassVar[FormMeta] = {"hasNext": False}
+
+    custom_buttons: ButtonsConfig = ButtonsConfig(
+        previous=Button(text="Back"),
+        next=Button(text="Confirm", color="danger"),
+    )
+    confirm: bool
+```
+
+```pycon
+>>> def buttons_form(state: State) -> FormGenerator:
+...     yield ConfirmButtonsForm
+...     return {}
+...
+>>> try:
+...     post_form(buttons_form, state={}, user_inputs=[])
+... except FormNotCompleteError as exc:
+...     exc.meta
+...
+{'hasNext': False, 'customButtons': {'previous': {'text': 'Back'}, 'next': {'text': 'Confirm', 'color': 'danger'}}}
+```
+
+Or set the same overrides as `customButtons` in `meta__` directly:
+
+```python
+class ConfirmMetaForm(FormPage):
+    meta__: ClassVar[FormMeta] = {
+        "hasNext": False,
+        "customButtons": {
+            "previous": {"text": "Back"},
+            "next": {
+                "text": "Confirm",
+                "color": "danger",
+            },
+        },
+    }
+
+    confirm: bool
+```
+
+```pycon
+>>> def meta_form(state: State) -> FormGenerator:
+...     yield ConfirmMetaForm
+...     return {}
+...
+>>> try:
+...     post_form(meta_form, state={}, user_inputs=[])
+... except FormNotCompleteError as exc:
+...     exc.meta["customButtons"]["next"]
+...
+{'text': 'Confirm', 'color': 'danger'}
+```
+
+Use one or the other, combining them will result in an error. The same goes for using `ButtonsConfig` multiple times.
 
 `meta__` is a `ClassVar`, which keeps it out of the generated schema and out of the validated result: it is
 metadata about the page, not a field on it.

@@ -18,7 +18,8 @@ from pydantic import BaseModel, ConfigDict, PydanticUndefinedAnnotation, version
 from pydantic.json_schema import GenerateJsonSchema, JsonSchemaValue
 from pydantic_core import core_schema
 
-from pydantic_forms.types import JSON
+from pydantic_forms.types import FormMeta
+from pydantic_forms.validators.components.buttons import merge_buttons_into_meta
 
 logger = structlog.get_logger(__name__)
 
@@ -67,12 +68,16 @@ class FormPage(BaseModel):
         validate_default=True,
     )
 
-    meta__: ClassVar[JSON] = None
+    meta__: ClassVar[FormMeta | None] = None
     """Data about the page itself, passed to the frontend alongside its JSON schema.
 
     Set it on a subclass to tell the frontend something the schema cannot express, such as whether
-    another page follows. It travels out as the `meta` key of the `FormNotCompleteError` response.
-    Being a `ClassVar` it is not a form field, so it stays out of the schema and the validated result.
+    another page follows (`hasNext`). It travels out as the `meta` key of the `FormNotCompleteError`
+    response, see `form_meta()`. Being a `ClassVar` it is not a form field, so it stays out of the
+    schema and the validated result.
+
+    Relabel or restyle the previous/next buttons with a `ButtonsConfig` field, or else with
+    `customButtons` here. The two can't be combined.
     """
 
     def __init__(self, **data: Any):
@@ -86,6 +91,11 @@ class FormPage(BaseModel):
         mutable_data = {k: get_value(k, v) for k, v in data.items()}
         super().__init__(**mutable_data)
 
+    @classmethod
+    def form_meta(cls) -> FormMeta | None:
+        """Return `meta__` with the page's `ButtonsConfig` field added."""
+        return merge_buttons_into_meta(cls.__name__, cls.meta__, cls.model_fields)
+
     if PYDANTIC_VERSION in ("2.9", "2.10", "2.11"):
 
         @classmethod
@@ -93,6 +103,7 @@ class FormPage(BaseModel):
             # The default and requiredness of a field is not a property of a field
             # In the case of DisplayOnlyFieldTypes, we do kind of want that.
             # Using this method we set the right properties after the form is created
+            cls.form_meta()  # run now so a conflicting declaration fails on import, not when the page is first sent
             needs_rebuild = False
 
             for field in cls.model_fields.values():
@@ -125,6 +136,7 @@ class FormPage(BaseModel):
             # The default and requiredness of a field is not a property of a field
             # In the case of DisplayOnlyFieldTypes, we do kind of want that.
             # Using this method we set the right properties after the form is created
+            cls.form_meta()
             needs_rebuild = False
 
             for field in cls.model_fields.values():
@@ -152,3 +164,13 @@ def register_form(key: str, form: Callable) -> None:
 
 def list_forms() -> list[str]:
     return list(FORMS.keys())
+
+
+def get_form_meta(form: type[BaseModel]) -> Any:
+    """Return the meta to send to the frontend with `form`.
+
+    A generator may yield any pydantic model, not only a `FormPage`; such a model can still carry a `meta__`.
+    """
+    if issubclass(form, FormPage):
+        return form.form_meta()
+    return getattr(form, "meta__", None)

@@ -41,6 +41,30 @@ class SummaryData(TypedDict, total=False):
     columns: list[list[Union[str, int, bool, float]]]
 
 
+class ButtonConfig(TypedDict, total=False):
+    text: str
+    color: str
+
+
+class CustomButtons(TypedDict, total=False):
+    previous: ButtonConfig
+    next: ButtonConfig
+
+
+class FormMeta(TypedDict, total=False):
+    """Documented keys for ``FormPage.meta__``, not enforced at runtime; extra keys are allowed.
+
+    Attributes:
+        hasNext: Whether another page follows, so the frontend can label the submit button
+            accordingly.
+        customButtons: Per-button overrides (label, color) for "previous" and "next". Prefer a `ButtonsConfig`
+            field on the page, which sets this key; the two cannot be combined.
+    """
+
+    hasNext: bool
+    customButtons: CustomButtons
+
+
 InputForm = Type[BaseModel]
 AcceptData = list[Union[tuple[str, AcceptItemType], tuple[str, AcceptItemType, dict]]]
 

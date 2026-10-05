@@ -1,4 +1,5 @@
 from pydantic_forms.validators.components.accept import Accept, AcceptValues
+from pydantic_forms.validators.components.buttons import Button, ButtonsConfig
 from pydantic_forms.validators.components.callout import Callout, callout
 from pydantic_forms.validators.components.choice import Choice
 from pydantic_forms.validators.components.choice_list import choice_list
@@ -21,6 +22,8 @@ from pydantic_forms.validators.components.unique_constrained_list import unique_
 __all__ = (
     "Accept",
     "AcceptValues",
+    "Button",
+    "ButtonsConfig",
     "Choice",
     "choice_list",
     "contact_person_list",
