@@ -1,5 +1,4 @@
 from http import HTTPStatus
-from typing import ClassVar
 from unittest import mock
 
 import pytest
@@ -8,19 +7,18 @@ from fastapi.requests import Request
 from pydantic_forms.core import FormPage, post_form
 from pydantic_forms.exception_handlers.fastapi import form_error_handler
 from pydantic_forms.exceptions import FormNotCompleteError
-from pydantic_forms.types import FormMeta
 from pydantic_forms.utils.json import json_loads
 
 
 async def test_meta_passed_through_to_response():
-    meta: FormMeta = {
+    meta = {
         "hasNext": False,
         "customButtons": {"next": {"text": "Confirm", "color": "danger"}},
         "more_data": "test",
     }
 
     class MetaForm(FormPage):
-        meta__: ClassVar[FormMeta] = meta
+        meta__ = meta
 
         name: str
 

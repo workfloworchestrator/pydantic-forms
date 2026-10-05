@@ -57,7 +57,8 @@ class FormMeta(TypedDict, total=False):
     Attributes:
         hasNext: Whether another page follows, so the frontend can label the submit button
             accordingly.
-        customButtons: Per-button overrides (label, color) for "previous" and "next".
+        customButtons: Per-button overrides (label, color) for "previous" and "next". Prefer a `ButtonsConfig`
+            field on the page, which sets this key; the two cannot be combined.
     """
 
     hasNext: bool
