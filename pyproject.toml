@@ -1,7 +1,7 @@
 [project]
 name = "pydantic-forms"
 description = "Pydantic-forms engine."
-version = "2.6.0"
+version = "2.7.0"
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
