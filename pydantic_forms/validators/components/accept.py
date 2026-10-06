@@ -33,7 +33,7 @@ class Accept(str):
 
     data: ClassVar[Optional[AcceptData]] = None
 
-    _enum_adapter = TypeAdapter(AcceptValues)
+    _enum_adapter: ClassVar[TypeAdapter[AcceptValues]] = TypeAdapter(AcceptValues)
 
     @classmethod
     def __get_pydantic_json_schema__(cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler) -> dict[str, Any]:

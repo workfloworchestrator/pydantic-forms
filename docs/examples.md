@@ -35,6 +35,9 @@ number and checkbox inputs. Beyond those:
 **Contact persons.** [`ContactPerson`](reference.md#pydantic_forms.validators.ContactPerson) and
 [`contact_person_list()`](reference.md#pydantic_forms.validators.contact_person_list).
 
+**Layout.** [`Layout`](reference.md#pydantic_forms.validators.Layout) is not a field type but metadata that
+places any field on the frontend's 12-column grid, see [Field layout](usage.md#field-layout).
+
 ## A form using them
 
 Field types are ordinary annotations, so a page mixes them freely with plain Python types:
