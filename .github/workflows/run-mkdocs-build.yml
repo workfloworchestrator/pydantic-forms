@@ -14,7 +14,9 @@ env:
 jobs:
   mkdocs-build:
     name: Test mkdocs build
-    runs-on: ubuntu-latest
+    # A real docs build (`mkdocs build --strict`), not a lightweight check, so it
+    # stays on a pinned full runner rather than `ubuntu-slim`.
+    runs-on: ubuntu-26.04
 
     steps:
       - name: Check out repository code
