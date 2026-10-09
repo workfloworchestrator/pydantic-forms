@@ -14,7 +14,9 @@ env:
 jobs:
   mkdocs-build:
     name: Test mkdocs build
-    runs-on: ubuntu-latest
+    # A real docs build (`mkdocs build --strict`), not a lightweight check, so it
+    # stays on a pinned full runner rather than `ubuntu-slim`.
+    runs-on: ubuntu-26.04
 
     steps:
       - name: Check out repository code
@@ -25,7 +27,7 @@ jobs:
         with:
           # Pinned to the version that generated uv.lock, so `--locked` cannot
           # fail on an unrelated lockfile-format bump.
-          version: "0.12.22"
+          version: "0.12.23"
           python-version: "3.13"
           enable-cache: true
 

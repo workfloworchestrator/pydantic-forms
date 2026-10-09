@@ -6,7 +6,7 @@ on:
 jobs:
   unit-tests:
     name: "Unit tests (Python ${{ matrix.python-version }}, ${{ matrix.resolution }}, Pydantic ${{ matrix.pydantic-version }}, FastAPI ${{ matrix.fastapi-version }})"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       matrix:
         python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
@@ -79,7 +79,7 @@ jobs:
         with:
           # Pinned to the version that generated uv.lock, so `--locked` cannot
           # fail on an unrelated lockfile-format bump.
-          version: "0.12.22"
+          version: "0.12.23"
           python-version: ${{ matrix.python-version }}
           enable-cache: true
 
