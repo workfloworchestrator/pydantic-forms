@@ -247,3 +247,69 @@ Use one or the other, combining them will result in an error. The same goes for 
 
 `meta__` is a `ClassVar`, which keeps it out of the generated schema and out of the validated result: it is
 metadata about the page, not a field on it.
+
+## Field layout
+
+By default the frontend stacks every field below the previous one, each taking the full width of the form.
+[`Layout`](reference.md#pydantic_forms.validators.Layout) places fields next to each other on a 12-column
+grid. It is `Annotated` metadata, so it combines freely with other constraints and with `Field(...)`:
+
+```python
+from datetime import date
+from typing import Annotated
+
+from pydantic import Field
+
+from pydantic_forms.validators import Layout, LongText
+
+
+class ProfileForm(FormPage):
+    # Row 1: three fields side by side, their spans add up to 12
+    full_name: Annotated[str, Layout(span=6)]
+    age: Annotated[int, Layout(span=3)]
+    birth_date: Annotated[date, Layout(span=3)]
+
+    # Row 2 and 3: the comments take two rows on the left half, the next fields fill the right half
+    comments: Annotated[LongText, Layout(span=6, row_span=2)] = Field(title="Comments")
+    phone: Annotated[str, Layout(span=6)]
+    email: Annotated[str, Layout(span=6)]
+
+    # No Layout: a row of its own
+    remarks: str
+```
+
+Each option is optional:
+
+| Option     | Default          | Description                                                                      |
+|------------|------------------|----------------------------------------------------------------------------------|
+| `span`     | 12, full width   | Width of the field in columns, 1-12.                                             |
+| `start`    | next free column | Column to start at, 1-12. The columns before it stay empty.                      |
+| `new_row`  | `False`          | Always start on a new row, even when the current row has space left.             |
+| `row_span` | 1                | Height of the field in rows. The following fields are placed next to it.         |
+| `align`    | `"stretch"`      | Vertical position within the row: `"start"`, `"center"`, `"end"` or `"stretch"`. |
+
+`Layout` only adds a `layout` object to the field's JSON schema, using camelCase keys and leaving out the
+options that are not set. It does not change validation:
+
+```pycon
+>>> ProfileForm.model_json_schema()["properties"]["comments"]["layout"]
+{'rowSpan': 2, 'span': 6}
+>>> class NoticeForm(FormPage):
+...     notice: Annotated[str, Layout(span=6, start=7, new_row=True, align="end")]
+...
+>>> NoticeForm.model_json_schema()["properties"]["notice"]["layout"]
+{'align': 'end', 'newRow': True, 'span': 6, 'start': 7}
+```
+
+A field that would not fit on the grid is rejected when the form is defined:
+
+```pycon
+>>> Layout(start=10, span=6)
+Traceback (most recent call last):
+...
+ValueError: start + span exceeds the 12 column grid
+```
+
+Placing the fields is up to the frontend. The [pydantic-forms npm package](https://www.npmjs.com/package/pydantic-forms)
+renders the `layout` on a CSS grid, also inside nested models and list items, where the 12 columns are the width of
+the nested object. Fields without a `Layout` take the full width, so existing forms render as before.
