@@ -177,7 +177,7 @@ if IS_ORJSON:
     logger.debug("Using orjson")
 
     def json_loads(s: Union[str, bytes, bytearray]) -> PY_JSON_TYPES:
-        o = orjson.loads(s)
+        o = orjson.loads(bytes(s) if isinstance(s, bytearray) else s)
         if isinstance(o, list):
             return [from_serializable(dikt) for dikt in o]
         return from_serializable(o)
