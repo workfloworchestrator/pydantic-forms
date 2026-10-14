@@ -1,7 +1,7 @@
 [project]
 name = "pydantic-forms"
 description = "Pydantic-forms engine."
-version = "2.7.0"
+version = "2.8.0rc1"
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
@@ -238,7 +238,6 @@ disallow_incomplete_defs = false
 init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true
-warn_untyped_fields = true
 
 [tool.coverage.run]
 source = ["pydantic_forms"]
