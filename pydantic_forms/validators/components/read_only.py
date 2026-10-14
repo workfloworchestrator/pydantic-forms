@@ -123,7 +123,9 @@ def read_only_field(default: Any, merge_type: Any | None = None) -> Any:
     if isinstance(default, list):
         raise TypeError(f"Use {read_only_list.__name__}")
 
-    dynamic_validator = TypeAdapter(default.__class__) if isinstance(default, STRINGY_TYPES) else None
+    dynamic_validator: TypeAdapter[Any] | None = (
+        TypeAdapter(default.__class__) if isinstance(default, STRINGY_TYPES) else None
+    )
 
     def validate(v: Any) -> Any:
         if dynamic_validator:
