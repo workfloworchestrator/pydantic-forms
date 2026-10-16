@@ -1,4 +1,4 @@
-# Runs the pre-commit suite. Most hooks build their own isolated environment, so this
+# Runs the pre-commit hooks (via prek). Most hooks build their own isolated environment, so this
 # does not need a python version matrix. The exceptions are uv-lock and docs-snippets,
 # which run uv directly; docs-snippets syncs the project (including the extras, because
 # the snippets in docs/ import fastapi) in order to execute them.
