@@ -93,7 +93,7 @@ doc = [
 ]
 dev = [
     "mypy-extensions>=1.1.0",
-    "pre-commit>=4.2.0",
+    "prek>=0.5.5",
     "pydocstyle>=6.3.0",
     "python-dotenv>=1.0.1",
     "watchdog>=6.0.0",

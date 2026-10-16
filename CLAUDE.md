@@ -16,7 +16,7 @@ uv run pytest -n auto tests/unit_tests          # parallel
 uv run pytest tests/unit_tests --cov=pydantic_forms  # coverage
 
 # Lint/format
-uv run pre-commit run --all-files        # all checks
+uv run prek run --all-files              # all checks
 uv run black --check .                   # formatting
 uv run ruff check .                      # linting
 uv run mypy pydantic_forms               # type checking
