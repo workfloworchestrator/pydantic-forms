@@ -16,10 +16,17 @@ from typing import Any, Union
 
 import structlog
 from pydantic import ValidationError
-from pydantic_i18n import PydanticI18n
 
-from pydantic_forms.core.shared import FORMS, GenerateFormJsonSchema, get_form_meta
-from pydantic_forms.core.translations import translations
+from pydantic_forms.core.shared import (
+    FORMS,
+    Complete,
+    NextPage,
+    Rejected,
+    WalkOutcome,
+    get_form_meta,
+    page_schema,
+    validation_error,
+)
 from pydantic_forms.exceptions import (
     FormException,
     FormNotCompleteError,
@@ -51,17 +58,26 @@ def generate_form(
     return None
 
 
-def post_form(
+def walk_form(
     form_generator: Union[StateInputFormGenerator, None],
     state: State,
     user_inputs: list[State],
     locale: str = "en_US",
     extra_translations: Union[dict[str, str], None] = None,
-) -> State:
-    """Post user_input based ond serve a new form if the form wizard logic dictates it."""
+) -> WalkOutcome:
+    """Feed ``user_inputs`` to the form page by page and say where that ends: the next page, the result, or a rejected page.
+
+    This is the walk ``post_form`` makes, with its three endings as values instead of a return and two
+    exceptions: ``NextPage`` carries the page model itself rather than its schema, and ``Rejected`` names the
+    page that did not validate. A program that reads a form goes through this; an endpoint that serves one
+    keeps using ``post_form``.
+
+    Raises:
+        FormOverflowError: more inputs than the form has pages.
+    """
     # there is no form_generator so we return no validated data
     if not form_generator:
-        return {}
+        return Complete({})
 
     current_state = deepcopy(state)
 
@@ -70,6 +86,7 @@ def post_form(
     # Generate generator
     generator = form_generator(current_state)
 
+    pages = len(user_inputs)
     user_inputs = user_inputs.copy()
     try:
         # Generate first form (we need to send None here, since the arguments are already given
@@ -84,8 +101,8 @@ def post_form(
                 form_validated_data = generated_form(**user_input)
             except ValidationError as e:
                 # Todo: add extra_translation to tr
-                tr = PydanticI18n(translations)
-                raise FormValidationError(generated_form.__name__, e, tr, locale) from e
+                verdict = validation_error(generated_form, e, locale)
+                return Rejected(generated_form, pages - len(user_inputs) - 1, verdict)
 
             # Update state with validated_data
             current_state.update(form_validated_data.model_dump())
@@ -93,17 +110,32 @@ def post_form(
             # Make next form or trigger StopIteration
             generated_form = generator.send(form_validated_data)
 
-        # Form is not completely filled; raise next form
-        raise FormNotCompleteError(
-            generated_form.model_json_schema(schema_generator=GenerateFormJsonSchema),
-            meta=get_form_meta(generated_form),
-        )
+        # Form is not completely filled; the next form
+        return NextPage(generated_form, pages)
     except StopIteration as e:
         if user_inputs:
             raise FormOverflowError(f"Did not process all user_inputs ({len(user_inputs)} remaining)")
 
         # Form is completely filled, so we can return the last of the data and
-        return e.value
+        return Complete(e.value)
+
+
+def post_form(
+    form_generator: Union[StateInputFormGenerator, None],
+    state: State,
+    user_inputs: list[State],
+    locale: str = "en_US",
+    extra_translations: Union[dict[str, str], None] = None,
+) -> State:
+    """Post user_input based ond serve a new form if the form wizard logic dictates it."""
+    match walk_form(form_generator, state, user_inputs, locale, extra_translations):
+        case Complete(state=result):
+            return result
+        case Rejected(error=error):
+            raise error
+        case NextPage(model=page):
+            # Form is not completely filled; raise next form
+            raise FormNotCompleteError(page_schema(page), meta=get_form_meta(page))
 
 
 def _get_form(key: str) -> StateInputFormGenerator:

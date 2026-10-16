@@ -10,8 +10,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from pydantic_forms.core.shared import DisplayOnlyFieldType, FormPage, list_forms, register_form
-from pydantic_forms.core.sync import generate_form, post_form, start_form
+from pydantic_forms.core.shared import (
+    Complete,
+    DisplayOnlyFieldType,
+    FormFieldError,
+    FormPage,
+    NextPage,
+    Rejected,
+    WalkOutcome,
+    form_errors,
+    list_forms,
+    page_schema,
+    register_form,
+)
+from pydantic_forms.core.sync import generate_form, post_form, start_form, walk_form
 
 __all__ = [
     "list_forms",
@@ -21,4 +33,12 @@ __all__ = [
     "post_form",
     "start_form",
     "generate_form",
+    "walk_form",
+    "NextPage",
+    "Complete",
+    "Rejected",
+    "WalkOutcome",
+    "page_schema",
+    "form_errors",
+    "FormFieldError",
 ]

@@ -53,6 +53,7 @@ def test_read_only_field_schema(read_only_value, schema_value, schema_type, othe
                 "uniforms": {"disabled": True, "value": schema_value},
                 "extraProperties": {"disabled": True, "value": schema_value},
                 "type": schema_type,
+                "readOnly": True,
             }
         },
         "additionalProperties": False,
@@ -92,6 +93,7 @@ def test_read_only_field_list_schema(read_only_value, read_only_type, schema_val
                 "uniforms": {"disabled": True, "value": schema_value},
                 "extraProperties": {"disabled": True, "value": schema_value},
                 "type": "array",
+                "readOnly": True,
             }
         },
         "additionalProperties": False,
@@ -188,6 +190,7 @@ def test_read_only_list_model():
                 "uniforms": {"disabled": True, "value": schema_value},
                 "extraProperties": {"disabled": True, "value": schema_value},
                 "type": "array",
+                "readOnly": True,
             }
         },
         "additionalProperties": False,

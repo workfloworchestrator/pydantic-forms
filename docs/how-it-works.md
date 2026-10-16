@@ -1,8 +1,9 @@
 # How it works
 
-The main logic is implemented in `post_form` which validates each submitted form page and decides whether the
-wizard is finished, or if an error should be returned. Instead of interacting with it directly, applications
-should typically use the wrapper `start_form` or in some cases `generate_form`.
+The main logic is `walk_form`, which validates each submitted form page and says where the wizard stands: the
+next page, the result, or a rejected page. `post_form` wraps it for a frontend, turning those endings into a return
+value and two exceptions. Instead of interacting with either directly, applications typically use the wrapper
+`start_form` or in some cases `generate_form`; a program that reads a form uses `walk_form` and `page_schema`.
 
 ## post_form
 
@@ -63,6 +64,71 @@ pydantic_forms.exceptions.FormNotCompleteError: {...}
 That is the normal flow: a frontend keeps posting the inputs it has collected so far, and each response tells it
 what to render next.
 
+## walk_form
+
+`post_form` is a thin wrapper around `walk_form`, which makes the same walk and returns where it ended as a value
+rather than through a return and two exceptions. That is the entry point for a program that reads a form, such as an
+agent filling it in: it wants the pending page as a model to inspect rather than as a schema to render, and a rejected
+page told apart from a failure.
+
+```python
+from pydantic_forms.core import Complete, NextPage, Rejected, walk_form
+
+outcome = walk_form(create_service_form, state={}, user_inputs=[])
+```
+
+The three endings are `NextPage`, with the page model and its index, `Complete`, with the result, and `Rejected`,
+with the page that did not validate, its index, and the `FormValidationError` that `post_form` would have raised:
+
+```pycon
+>>> outcome
+NextPage(model=<class '...CreateServiceForm'>, index=0)
+>>> walk_form(create_service_form, state={}, user_inputs=[{"service_name": "svc-1"}])
+Complete(state={'service_name': 'svc-1'})
+>>> rejected = walk_form(create_service_form, state={}, user_inputs=[{"service_name": 42}])
+>>> rejected.index, rejected.error.errors[0]["msg"]
+(0, 'Input should be a valid string')
+```
+
+More inputs than pages still raise `FormOverflowError`: that is a caller's mistake, not an ending of the form.
+
+## A page for a program
+
+A frontend renders the schema `post_form` raises. A program can read the same schema, and `page_schema` gives it the
+page as one self-contained document:
+
+```python
+from pydantic_forms.core import form_errors, page_schema
+
+schema = page_schema(CreateServiceForm, inline_refs=True)
+```
+
+```pycon
+>>> schema["properties"]["service_name"]
+{'title': 'Service Name', 'type': 'string'}
+>>> schema["required"]
+['service_name']
+```
+
+JSON Schema already says most of what a program needs: `type`, `enum`, `format`, `default`, `required`, and the
+length and range keywords. Three things make it sufficient:
+
+- `inline_refs=True` replaces every `$ref` with the definition it points to, so a choice or a nested model is read in
+  place. Only a model that contains itself keeps its reference, with its definition under `$defs`.
+- A field that is shown and never submitted carries the standard `readOnly: true`: a label, a divider, a summary
+  table, a read-only value. Submit nothing for it.
+- A `Choice` lists its values in `enum` and, where they differ from what a person sees, the labels in `options`.
+  Submit the value. An `Accept` field lists `ACCEPTED` and `INCOMPLETE` for the checkbox that renders it; only
+  `ACCEPTED` passes validation.
+
+`form_errors` is the verdict on a rejected page as data: one entry per message, with its location on the page,
+translated the way the frontend shows it:
+
+```pycon
+>>> form_errors(rejected.error)
+[FormFieldError(loc=['service_name'], msg='Input should be a valid string', type='string_type')]
+```
+
 ## The wrappers
 
 ### start_form
@@ -108,4 +174,5 @@ True
 
 The variants in `pydantic_forms.core.asynchronous` work the same way, interacting with the generator through `asend`
 instead of `send`. Because an async generator cannot return a value the result is yielded instead, and `post_form`
-treats a yielded `dict` as the end of the wizard. Also see [Async](usage.md#async).
+treats a yielded `dict` as the end of the wizard, as does the async `walk_form`, which ends in the same three
+outcomes. Also see [Async](usage.md#async).
