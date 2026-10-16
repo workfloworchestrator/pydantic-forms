@@ -42,6 +42,7 @@ labels=(
   "kind/dependencies|0052cc|Dependency version updates"
   "skip-changelog|ededed|Exclude this PR from the generated release notes"
   "dev-only|ededed|Only touches development files (uv.lock, .github, ...); excluded from release notes (auto-applied)"
+  "dev-dependencies|ededed|Bumps a development-only dependency; excluded from release notes (set by Renovate)"
 )
 
 for entry in "${labels[@]}"; do

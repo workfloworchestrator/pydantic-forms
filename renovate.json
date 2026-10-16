@@ -18,6 +18,12 @@
       "matchPackageNames": ["python"],
       "rangeStrategy": "widen",
       "enabled": false
+    },
+    {
+      "description": "Development-only dependencies never reach users of this library; keep their bumps out of the release notes",
+      "matchManagers": ["pep621"],
+      "matchDepTypes": ["dependency-groups"],
+      "addLabels": ["dev-dependencies"]
     }
   ],
   "minimumReleaseAge": "3 days",
