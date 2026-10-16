@@ -67,10 +67,9 @@ def walk_form(
 ) -> WalkOutcome:
     """Feed ``user_inputs`` to the form page by page and say where that ends: the next page, the result, or a rejected page.
 
-    This is the walk ``post_form`` makes, with its three endings as values instead of a return and two
-    exceptions: ``NextPage`` carries the page model itself rather than its schema, and ``Rejected`` names the
-    page that did not validate. A program that reads a form goes through this; an endpoint that serves one
-    keeps using ``post_form``.
+    ``NextPage`` carries the model of the pending page and its index, ``Complete`` the result of the whole form,
+    and ``Rejected`` the page that did not validate, with its verdict. A program that reads a form goes through
+    this; ``post_form`` wraps it for use in an API.
 
     Raises:
         FormOverflowError: more inputs than the form has pages.

@@ -14,7 +14,7 @@ consecutive forms. The forms and the validation logic are defined by
 using [Pydantic](https://pydantic-docs.helpmanual.io/) models.
 
 A program can fill a form too: `walk_form` says where a wizard stands and `page_schema` renders a page as one
-self-contained JSON schema, with `readOnly` on the fields that are only shown.
+self-contained JSON schema.
 
 Documentation regarding the usage of Forms can be found at
 [workfloworchestrator.org/pydantic-forms](https://workfloworchestrator.org/pydantic-forms/).

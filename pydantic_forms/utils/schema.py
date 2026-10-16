@@ -44,6 +44,14 @@ def inline_refs(schema: dict[str, Any]) -> dict[str, Any]:
     The keys beside a ``$ref`` (a field's own ``title``, ``default``, ``readOnly``) win over the definition's.
     A reference that is part of a cycle, a model that contains itself, is left as it is and its definition is
     kept under ``$defs``; when no such reference remains, ``$defs`` is dropped.
+
+    >>> inline_refs(
+    ...     {
+    ...         "properties": {"port": {"$ref": "#/$defs/Port", "title": "Uplink"}},
+    ...         "$defs": {"Port": {"type": "string", "title": "Port"}},
+    ...     }
+    ... )
+    {'properties': {'port': {'type': 'string', 'title': 'Uplink'}}}
     """
     defs: dict[str, Any] = schema.get("$defs") or {}
     kept: set[str] = set()

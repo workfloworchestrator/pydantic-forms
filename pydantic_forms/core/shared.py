@@ -201,14 +201,14 @@ class NextPage:
 
 @dataclass(frozen=True)
 class Complete:
-    """Every page was accepted: the result of the form, what ``post_form`` returns."""
+    """Every page was accepted: the result of the form."""
 
     state: State
 
 
 @dataclass(frozen=True)
 class Rejected:
-    """A page did not validate: which one, its model, and the verdict as ``post_form`` would raise it."""
+    """A page did not validate: which one, its model, and the verdict."""
 
     model: InputForm
     index: int
@@ -220,14 +220,14 @@ WalkOutcome = Union[NextPage, Complete, Rejected]
 
 
 def validation_error(page: InputForm, error: ValidationError, locale: str = "en_US") -> FormValidationError:
-    """The verdict on a page that did not validate, its messages translated, as ``post_form`` raises it."""
+    """The verdict on a page that did not validate, its messages translated."""
     verdict = FormValidationError(page.__name__, error, PydanticI18n(translations), locale)
     verdict.__cause__ = error  # as ``raise ... from error`` would chain it
     return verdict
 
 
 def page_schema(page: type[BaseModel], *, inline_refs: bool = False) -> JsonSchemaValue:
-    """The JSON schema of a page, as ``post_form`` sends it to a frontend.
+    """The JSON schema of a page.
 
     With ``inline_refs`` every ``$ref`` to a ``$defs`` entry is replaced by that entry, so a program gets one
     self-contained document per page; see ``pydantic_forms.utils.schema.inline_refs``.
@@ -243,10 +243,10 @@ class FormFieldError(BaseModel):
         description="Path of the rejected value on the page: the field name, then an index or a sub-field. "
         '``["__root__"]`` for a page-level error.'
     )
-    msg: str = Field(description="The message, translated as a frontend shows it.")
+    msg: str = Field(description="The translated validation error.")
     type: str = Field(description='pydantic\'s error type, e.g. "missing", "enum", "value_error".')
 
 
 def form_errors(error: FormValidationError) -> list[FormFieldError]:
-    """The verdict on a rejected page as data: one ``FormFieldError`` per message, as a frontend shows them."""
+    """The verdict on a rejected page as data: one ``FormFieldError`` per message."""
     return [FormFieldError(loc=list(e["loc"]), msg=e["msg"], type=e["type"]) for e in error.errors]

@@ -8,7 +8,7 @@ Forms can also be chained together to create "form wizards", using the result of
 decide what the next page looks like.
 
 A program can read and fill a form as well: `walk_form` says where a wizard stands and `page_schema` renders a
-page as one self-contained JSON schema, with `readOnly` on the fields that are only shown. See
+page as one self-contained JSON schema. See
 [How it works](how-it-works.md#a-page-for-a-program).
 
 This library is a spinoff from [orchestrator-core](https://workfloworchestrator.org/orchestrator-core/) in which it was
