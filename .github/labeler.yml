@@ -27,3 +27,18 @@ kind/build:
           - "pyproject.toml"
           - "uv.lock"
           - "renovate.json"
+
+# Applied only when EVERY changed file is development-only, i.e. nothing that
+# ends up in the published package. Excluded from the release notes in
+# .github/release.yml. Unlike skip-changelog this label is path-managed:
+# sync-labels removes it again as soon as a PR touches any other file.
+#
+# The patterns are ONE brace-expanded glob on purpose. `any-glob-to-all-files`
+# requires a single glob to match every changed file; with a YAML list of
+# separate patterns each pattern is tested against all files independently, so a
+# PR touching both uv.lock and .github/** would match no single pattern and stay
+# unlabeled. The brace keeps the "every file matches one of these" meaning.
+dev-only:
+  - changed-files:
+      - any-glob-to-all-files:
+          - "{uv.lock,.github/**,.pre-commit-config.yaml,codecov.yml,renovate.json,.gitignore,CLAUDE.md,AGENTS.md,.claude/**}"
