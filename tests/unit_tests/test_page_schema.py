@@ -13,7 +13,7 @@
 """A page as a program reads it: ``readOnly`` on fields that are only shown, references inlined, the verdict as data."""
 
 import json
-from typing import Optional
+from typing import Literal, Optional
 
 import pytest
 from pydantic import BaseModel, Field, model_validator
@@ -137,6 +137,23 @@ def test_inline_refs_follows_a_definition_that_refers_to_another_and_ignores_for
             "x": {"$ref": "https://example.org/B"},
         }
     }
+
+
+def test_a_discriminated_union_keeps_the_definitions_its_mapping_names():
+    class Cat(BaseModel):
+        kind: Literal["cat"]
+
+    class Dog(BaseModel):
+        kind: Literal["dog"]
+
+    class Pets(FormPage):
+        pet: Cat | Dog = Field(discriminator="kind")
+
+    schema = page_schema(Pets, inline_refs=True)
+    pet = schema["properties"]["pet"]
+    assert [member["properties"]["kind"]["const"] for member in pet["oneOf"]] == ["cat", "dog"]
+    assert pet["discriminator"]["mapping"] == {"cat": "#/$defs/Cat", "dog": "#/$defs/Dog"}
+    assert set(schema["$defs"]) == {"Cat", "Dog"}
 
 
 class Counted(FormPage):

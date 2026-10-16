@@ -42,8 +42,8 @@ def inline_refs(schema: dict[str, Any]) -> dict[str, Any]:
     """Replace each local ``$ref`` by the ``$defs`` entry it points to, so a reader needs no lookup.
 
     The keys beside a ``$ref`` (a field's own ``title``, ``default``, ``readOnly``) win over the definition's.
-    A reference that is part of a cycle, a model that contains itself, is left as it is and its definition is
-    kept under ``$defs``; when no such reference remains, ``$defs`` is dropped.
+    A reference that is part of a cycle, a model that contains itself, is left as it is. ``$defs`` keeps the
+    definitions still referred to, by such a reference or by a discriminator ``mapping``, and is dropped when empty.
 
     >>> inline_refs(
     ...     {
@@ -63,6 +63,9 @@ def inline_refs(schema: dict[str, Any]) -> dict[str, Any]:
                     kept.add(name)
                     return node
                 return {**expand(defs[name], (*stack, name)), **expand(siblings, stack)}
+            case {"discriminator": {"mapping": dict() as mapping}}:
+                kept.update(_definitions_named_in(mapping, defs))
+                return {key: expand(value, stack) for key, value in node.items()}
             case dict():
                 return {key: expand(value, stack) for key, value in node.items()}
             case list():
@@ -75,6 +78,11 @@ def inline_refs(schema: dict[str, Any]) -> dict[str, Any]:
     while pending := kept - kept_defs.keys():  # a kept definition may itself refer to another one
         kept_defs.update({name: expand(defs[name], (name,)) for name in pending})
     return {**result, "$defs": kept_defs} if kept_defs else result
+
+
+def _definitions_named_in(mapping: dict[str, Any], defs: dict[str, Any]) -> set[str]:
+    """The ``$defs`` entries a discriminator ``mapping`` points to."""
+    return {name for name in map(_local_definition, mapping.values()) if name is not None and name in defs}
 
 
 def _local_definition(ref: str) -> Union[str, None]:
