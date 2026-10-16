@@ -44,17 +44,7 @@ class GenerateFormJsonSchema(GenerateJsonSchema):
     This generator evaluates argument-less factories and adds their result as the schema ``default``.
     Factories that need the already-validated data (``default_factory_takes_data``) cannot be
     evaluated at schema-generation time and are skipped, as is any factory that raises.
-
-    It also marks a frozen field ``readOnly``: such a field is shown and never submitted (a label, a
-    divider, a summary table), which a frontend knows from its ``format`` and a program can now read in
-    the standard way.
     """
-
-    def model_field_schema(self, schema: core_schema.ModelField) -> JsonSchemaValue:
-        json_schema = super().model_field_schema(schema)
-        if schema.get("frozen"):
-            json_schema["readOnly"] = True
-        return json_schema
 
     def default_schema(self, schema: core_schema.WithDefaultSchema) -> JsonSchemaValue:
         json_schema = super().default_schema(schema)
@@ -229,10 +219,17 @@ def validation_error(page: InputForm, error: ValidationError, locale: str = "en_
 def page_schema(page: type[BaseModel], *, inline_refs: bool = False) -> JsonSchemaValue:
     """The JSON schema of a page.
 
+    A frozen field of the page is marked ``readOnly``: the page sets its value itself and ignores anything submitted
+    for it. A frozen field of a nested model is regular input and carries no marker.
+
     With ``inline_refs`` every ``$ref`` to a ``$defs`` entry is replaced by that entry, so a program gets one
     self-contained document per page; see ``pydantic_forms.utils.schema.inline_refs``.
     """
     schema = page.model_json_schema(schema_generator=GenerateFormJsonSchema)
+    properties = schema.get("properties", {})
+    frozen = (field.alias or name for name, field in page.model_fields.items() if field.frozen)
+    for key in filter(properties.__contains__, frozen):
+        properties[key]["readOnly"] = True
     return schema_utils.inline_refs(schema) if inline_refs else schema
 
 

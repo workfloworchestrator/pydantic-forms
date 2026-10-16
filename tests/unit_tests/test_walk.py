@@ -16,7 +16,7 @@ import pytest
 from pydantic import ValidationError
 
 from pydantic_forms.core import Complete, FormPage, NextPage, Rejected, asynchronous, post_form, walk_form
-from pydantic_forms.exceptions import FormValidationError
+from pydantic_forms.exceptions import FormOverflowError, FormValidationError
 
 
 class First(FormPage):
@@ -65,6 +65,13 @@ async def test_the_result_is_what_post_form_returns():
     assert await asynchronous.walk_form(two_pages_async, STATE, DONE) == Complete(
         await asynchronous.post_form(two_pages_async, STATE, DONE)
     )
+
+
+async def test_more_inputs_than_pages_is_a_callers_mistake_not_an_ending():
+    with pytest.raises(FormOverflowError, match="1 remaining"):
+        walk_form(two_pages, STATE, [*DONE, {"extra": True}])
+    with pytest.raises(FormOverflowError, match="1 remaining"):
+        await asynchronous.walk_form(two_pages_async, STATE, [*DONE, {"extra": True}])
 
 
 def test_a_rejected_page_is_named_with_the_verdict_post_form_raises():

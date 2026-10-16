@@ -103,6 +103,18 @@ def test_a_model_that_contains_itself_keeps_its_reference_and_its_definition():
     assert "$ref" not in json.dumps({key: value for key, value in PROPERTIES.items() if key != "tree"})
 
 
+def test_a_frozen_field_of_a_nested_model_is_still_input():
+    class Account(BaseModel):
+        owner: str = Field(frozen=True)  # frozen in a nested model: regular input, set once
+
+    class Login(FormPage):
+        account: Account
+
+    owner = page_schema(Login, inline_refs=True)["properties"]["account"]["properties"]["owner"]
+    assert "readOnly" not in owner
+    assert Login(account={"owner": "o"}).account.owner == "o"
+
+
 def test_no_definitions_are_left_when_none_is_needed_and_the_frontends_schema_is_unchanged():
     class Picks(FormPage):
         color: Color
