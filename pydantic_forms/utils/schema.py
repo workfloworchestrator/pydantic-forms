@@ -13,7 +13,7 @@
 
 """Helper utilities for dealing with json schema objects (json_schema_extra, etc)."""
 
-from typing import Any, Iterable, get_args
+from typing import Any, Iterable, Union, get_args
 
 from more_itertools import first
 from pydantic.fields import FieldInfo
@@ -36,3 +36,56 @@ def merge_json_schema(source_type: Any, target_type: Any) -> Any:
 
     source_schema.update(target_schema)  # type: ignore[union-attr,arg-type]
     return source_type
+
+
+def inline_refs(schema: dict[str, Any]) -> dict[str, Any]:
+    """Replace each local ``$ref`` by the ``$defs`` entry it points to, so a reader needs no lookup.
+
+    The keys beside a ``$ref`` (a field's own ``title``, ``default``, ``readOnly``) win over the definition's.
+    A reference that is part of a cycle, a model that contains itself, is left as it is. ``$defs`` keeps the
+    definitions still referred to, by such a reference or by a discriminator ``mapping``, and is dropped when empty.
+
+    >>> inline_refs(
+    ...     {
+    ...         "properties": {"port": {"$ref": "#/$defs/Port", "title": "Uplink"}},
+    ...         "$defs": {"Port": {"type": "string", "title": "Port"}},
+    ...     }
+    ... )
+    {'properties': {'port': {'type': 'string', 'title': 'Uplink'}}}
+    """
+    defs: dict[str, Any] = schema.get("$defs") or {}
+    kept: set[str] = set()
+
+    def expand(node: Any, stack: tuple[str, ...]) -> Any:
+        match node:
+            case {"$ref": str() as ref, **siblings} if (name := _local_definition(ref)) in defs:
+                if name in stack:
+                    kept.add(name)
+                    return node
+                return {**expand(defs[name], (*stack, name)), **expand(siblings, stack)}
+            case {"discriminator": {"mapping": dict() as mapping}}:
+                kept.update(_definitions_named_in(mapping, defs))
+                return {key: expand(value, stack) for key, value in node.items()}
+            case dict():
+                return {key: expand(value, stack) for key, value in node.items()}
+            case list():
+                return [expand(item, stack) for item in node]
+            case _:
+                return node
+
+    result = expand({key: value for key, value in schema.items() if key != "$defs"}, ())
+    kept_defs: dict[str, Any] = {}
+    while pending := kept - kept_defs.keys():  # a kept definition may itself refer to another one
+        kept_defs.update({name: expand(defs[name], (name,)) for name in pending})
+    return {**result, "$defs": kept_defs} if kept_defs else result
+
+
+def _definitions_named_in(mapping: dict[str, Any], defs: dict[str, Any]) -> set[str]:
+    """The ``$defs`` entries a discriminator ``mapping`` points to."""
+    return {name for name in map(_local_definition, mapping.values()) if name is not None and name in defs}
+
+
+def _local_definition(ref: str) -> Union[str, None]:
+    """The name a ``#/$defs/<name>`` reference points to; None for any other reference."""
+    prefix = "#/$defs/"
+    return ref[len(prefix) :] if ref.startswith(prefix) else None

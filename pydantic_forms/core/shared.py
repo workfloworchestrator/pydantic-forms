@@ -10,15 +10,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from dataclasses import dataclass
 from inspect import isasyncgenfunction, isgeneratorfunction
-from typing import Any, Callable, ClassVar, cast
+from typing import Any, Callable, ClassVar, Union, cast
 
 import structlog
-from pydantic import BaseModel, ConfigDict, PydanticUndefinedAnnotation, version
+from pydantic import BaseModel, ConfigDict, Field, PydanticUndefinedAnnotation, ValidationError, version
 from pydantic.json_schema import GenerateJsonSchema, JsonSchemaValue
 from pydantic_core import core_schema
+from pydantic_i18n import PydanticI18n
 
-from pydantic_forms.types import FormMeta
+from pydantic_forms.core.translations import translations
+from pydantic_forms.exceptions import FormValidationError
+from pydantic_forms.types import FormMeta, InputForm, State
+from pydantic_forms.utils import schema as schema_utils
 from pydantic_forms.validators.components.buttons import merge_buttons_into_meta
 
 logger = structlog.get_logger(__name__)
@@ -174,3 +179,71 @@ def get_form_meta(form: type[BaseModel]) -> Any:
     if issubclass(form, FormPage):
         return form.form_meta()
     return getattr(form, "meta__", None)
+
+
+@dataclass(frozen=True)
+class NextPage:
+    """The form asks for another page: its model, and its index (the number of pages accepted before it)."""
+
+    model: InputForm
+    index: int
+
+
+@dataclass(frozen=True)
+class Complete:
+    """Every page was accepted: the result of the form."""
+
+    state: State
+
+
+@dataclass(frozen=True)
+class Rejected:
+    """A page did not validate: which one, its model, and the verdict."""
+
+    model: InputForm
+    index: int
+    error: FormValidationError
+
+
+# The three endings of ``walk_form``.
+WalkOutcome = Union[NextPage, Complete, Rejected]
+
+
+def validation_error(page: InputForm, error: ValidationError, locale: str = "en_US") -> FormValidationError:
+    """The verdict on a page that did not validate, its messages translated."""
+    verdict = FormValidationError(page.__name__, error, PydanticI18n(translations), locale)
+    verdict.__cause__ = error  # as ``raise ... from error`` would chain it
+    return verdict
+
+
+def page_schema(page: type[BaseModel], *, inline_refs: bool = False) -> JsonSchemaValue:
+    """The JSON schema of a page.
+
+    A frozen field of the page is marked ``readOnly``: the page sets its value itself and ignores anything submitted
+    for it. A frozen field of a nested model is regular input and carries no marker.
+
+    With ``inline_refs`` every ``$ref`` to a ``$defs`` entry is replaced by that entry, so a program gets one
+    self-contained document per page; see ``pydantic_forms.utils.schema.inline_refs``.
+    """
+    schema = page.model_json_schema(schema_generator=GenerateFormJsonSchema)
+    properties = schema.get("properties", {})
+    frozen = (field.alias or name for name, field in page.model_fields.items() if field.frozen)
+    for key in filter(properties.__contains__, frozen):
+        properties[key]["readOnly"] = True
+    return schema_utils.inline_refs(schema) if inline_refs else schema
+
+
+class FormFieldError(BaseModel):
+    """One message of the verdict on a rejected page, as data."""
+
+    loc: list[Union[int, str]] = Field(
+        description="Path of the rejected value on the page: the field name, then an index or a sub-field. "
+        '``["__root__"]`` for a page-level error.'
+    )
+    msg: str = Field(description="The translated validation error.")
+    type: str = Field(description='pydantic\'s error type, e.g. "missing", "enum", "value_error".')
+
+
+def form_errors(error: FormValidationError) -> list[FormFieldError]:
+    """The verdict on a rejected page as data: one ``FormFieldError`` per message."""
+    return [FormFieldError(loc=list(e["loc"]), msg=e["msg"], type=e["type"]) for e in error.errors]
