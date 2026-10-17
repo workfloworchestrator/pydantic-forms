@@ -10,8 +10,10 @@ Fixes # (issue number)
 <!--
 Set a label on this PR so it is categorized in the release notes. This is
 required — the "require-release-label" check fails without one.
-Some labels (kind/documentation, kind/test, kind/ci, kind/build) are applied
-automatically from the files you changed; set the rest yourself.
+kind/documentation, kind/test, kind/ci and kind/build are applied automatically,
+but only when EVERY file you changed is of that kind (e.g. a tests-only PR gets
+kind/test). A PR that changes library code needs a type label set by hand, such
+as kind/feature, kind/bug, kind/deprecation or kind/refactor.
 
 A PR lands in only the FIRST matching release-notes section, and Breaking
 Changes comes first — so a breaking feature is listed there rather than under
@@ -19,6 +21,7 @@ Features. That is intended: it is the section people read when upgrading.
 -->
 - [ ] I have set a `kind/*` label describing the change (e.g. `kind/feature`, `kind/bug`, `kind/refactor`), or `skip-changelog` if it should be left out of the notes.
 - [ ] If this is a breaking change, I have set `kind/breaking`. Breaking changes belong in a **major** release, and the summary above should describe what users must do to upgrade — it ends up in the release notes.
+- [ ] If this deprecates something users rely on (a public function, schema, API call or core behavior), I have set `kind/deprecation`, the summary above says what to use instead (it ends up in the release notes), and I have opened a follow-up issue to remove it in the next **major** release.
 
 ## Checklist
 
