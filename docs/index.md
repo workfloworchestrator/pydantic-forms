@@ -7,5 +7,9 @@ can render. The submitted input can be validated against and transformed by the 
 Forms can also be chained together to create "form wizards", using the result of each form page to
 decide what the next page looks like.
 
+A program can read and fill a form as well: `walk_form` says where a wizard stands and `page_schema` renders a
+page as one self-contained JSON schema. See
+[How it works](how-it-works.md#a-page-for-a-program).
+
 This library is a spinoff from [orchestrator-core](https://workfloworchestrator.org/orchestrator-core/) in which it was
 originally developed, and where it is still used to render the input forms of its workflows.
