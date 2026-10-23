@@ -14,11 +14,13 @@ from typing import Annotated
 
 from pydantic import BaseModel, EmailStr, Field
 
+from pydantic_forms.validators.components.layout import Layout
+
 ContactPersonName = Annotated[str, Field(json_schema_extra={"format": "contactPersonName"})]
 """A string tagged so the frontend renders it as a contact person name."""
 
 
 class ContactPerson(BaseModel):
-    name: ContactPersonName
-    email: EmailStr
-    phone: str = ""
+    name: Annotated[ContactPersonName, Layout(span=4)]
+    email: Annotated[EmailStr, Layout(span=4)]
+    phone: Annotated[str, Layout(span=4)] = ""

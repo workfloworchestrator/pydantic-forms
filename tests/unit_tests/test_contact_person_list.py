@@ -41,9 +41,9 @@ def test_contact_persons_schema():
         "$defs": {
             "ContactPerson": {
                 "properties": {
-                    "email": {"format": "email", "title": "Email", "type": "string"},
-                    "name": {"format": "contactPersonName", "title": "Name", "type": "string"},
-                    "phone": {"default": "", "title": "Phone", "type": "string"},
+                    "email": {"format": "email", "layout": {"span": 4}, "title": "Email", "type": "string"},
+                    "name": {"format": "contactPersonName", "layout": {"span": 4}, "title": "Name", "type": "string"},
+                    "phone": {"default": "", "layout": {"span": 4}, "title": "Phone", "type": "string"},
                 },
                 "required": ["name", "email"],
                 "title": "ContactPerson",
