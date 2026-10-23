@@ -115,7 +115,7 @@ schema = page_schema(CreateServiceForm, inline_refs=True)
 ```
 
 JSON Schema already says most of what a program needs: `type`, `enum`, `format`, `default`, `required`, and the
-length and range keywords. Three things make it sufficient:
+length and range keywords. Four things make it sufficient:
 
 - `inline_refs=True` replaces every `$ref` with the definition it points to, so a choice or a nested model is read in
   place. Only a model that contains itself keeps its reference, with its definition under `$defs`.
@@ -124,6 +124,25 @@ length and range keywords. Three things make it sufficient:
 - A `Choice` lists its values in `enum` and, where they differ from what a person sees, the labels in `options`.
   Submit the value. An `Accept` field lists `ACCEPTED` and `INCOMPLETE` for the checkbox that renders it; only
   `ACCEPTED` passes validation.
+- A field whose options are fetched from an endpoint says where in `optionsSource`, see
+  [Usage](usage.md#fields-whose-options-come-from-an-endpoint). `options_sources` lists a page's sourced fields by
+  their location in the schema, nested models and list items included.
+
+```python
+from typing import Annotated
+
+from pydantic_forms.utils.schema import options_sources
+from pydantic_forms.validators import OptionsSource
+
+
+class PickLocationForm(FormPage):
+    location: Annotated[str, OptionsSource(url="/api/locations")]
+```
+
+```pycon
+>>> options_sources(page_schema(PickLocationForm))
+{'/properties/location': {'url': '/api/locations'}}
+```
 
 `form_errors` is the verdict on a rejected page as data: one entry per message, with its location on the page,
 translated the way the frontend shows it:

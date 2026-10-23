@@ -15,7 +15,15 @@ from inspect import isasyncgenfunction, isgeneratorfunction
 from typing import Any, Callable, ClassVar, Union, cast
 
 import structlog
-from pydantic import BaseModel, ConfigDict, Field, PydanticUndefinedAnnotation, ValidationError, version
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    PydanticUndefinedAnnotation,
+    PydanticUserError,
+    ValidationError,
+    version,
+)
 from pydantic.json_schema import GenerateJsonSchema, JsonSchemaValue
 from pydantic_core import core_schema
 from pydantic_i18n import PydanticI18n
@@ -101,6 +109,19 @@ class FormPage(BaseModel):
         """Return `meta__` with the page's `ButtonsConfig` field added."""
         return merge_buttons_into_meta(cls.__name__, cls.meta__, cls.model_fields)
 
+    @classmethod
+    def _check_options_sources(cls) -> None:
+        """Refuse a sourced field whose pointer reaches no field now, as the page is defined, not when it is first sent.
+
+        A page whose JSON schema cannot be made yet (a forward reference still unresolved) or at all (an arbitrary
+        type) is left alone here; ``page_schema`` reports on it later, as it does today.
+        """
+        try:
+            schema = cls.model_json_schema()
+        except (PydanticUserError, PydanticUndefinedAnnotation):
+            return
+        schema_utils.check_options_sources(schema, cls.__name__)
+
     if PYDANTIC_VERSION in ("2.9", "2.10", "2.11"):
 
         @classmethod
@@ -133,6 +154,7 @@ class FormPage(BaseModel):
                         undefined_annotation=exc.name,
                         model=cls.__name__,
                     )
+            cls._check_options_sources()
 
     else:  # pydantic >= 2.12
 
@@ -151,6 +173,7 @@ class FormPage(BaseModel):
 
             if needs_rebuild:
                 cls.model_rebuild(force=True)
+            cls._check_options_sources()
 
 
 FORMS: dict[str, Callable] = {}
@@ -224,8 +247,14 @@ def page_schema(page: type[BaseModel], *, inline_refs: bool = False) -> JsonSche
 
     With ``inline_refs`` every ``$ref`` to a ``$defs`` entry is replaced by that entry, so a program gets one
     self-contained document per page; see ``pydantic_forms.utils.schema.inline_refs``.
+
+    Raises ``ValueError`` when a field's ``OptionsSource`` points at a field the page does not have. A ``FormPage``
+    already refuses such a field when it is defined; this is the check for any other model yielded as a page, and
+    for a ``FormPage`` whose schema could not be made at that time. See
+    ``pydantic_forms.utils.schema.check_options_sources``.
     """
     schema = page.model_json_schema(schema_generator=GenerateFormJsonSchema)
+    schema_utils.check_options_sources(schema, page.__name__)
     properties = schema.get("properties", {})
     frozen = (field.alias or name for name, field in page.model_fields.items() if field.frozen)
     for key in filter(properties.__contains__, frozen):
