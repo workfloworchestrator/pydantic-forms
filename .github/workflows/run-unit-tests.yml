@@ -83,7 +83,7 @@ jobs:
         with:
           # Pinned to the version that generated uv.lock, so `--locked` cannot
           # fail on an unrelated lockfile-format bump.
-          version: "0.13.3"
+          version: "0.13.4"
           python-version: ${{ matrix.python-version }}
           enable-cache: true
 
