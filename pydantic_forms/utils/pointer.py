@@ -31,13 +31,15 @@ class Pointer(NamedTuple):
 
 
 _RELATIVE = re.compile(r"(0|[1-9][0-9]*)((?:/[^/]*)*)")
+_BAD_ESCAPE = re.compile(r"~(?![01])")
 
 
 def parse_pointer(pointer: str) -> Union[Pointer, None]:
     """Split a JSON Pointer or a Relative JSON Pointer into levels up and segments down.
 
     ``"/a/b"`` starts at the root. ``"2/a"`` goes two values up, then into ``a``. Anything else gives None, including
-    the relative form's ``#`` suffix, which names a member rather than a value.
+    the relative form's ``#`` suffix, which names a member rather than a value, and a ``~`` not followed by ``0``
+    or ``1``, which escapes nothing.
 
     >>> parse_pointer("1/node")
     Pointer(levels_up=1, segments=('node',))
@@ -45,7 +47,11 @@ def parse_pointer(pointer: str) -> Union[Pointer, None]:
     Pointer(levels_up=None, segments=('a/b',))
     >>> parse_pointer("node") is None
     True
+    >>> parse_pointer("/a~2b") is None
+    True
     """
+    if _BAD_ESCAPE.search(pointer):
+        return None
     if pointer.startswith("/"):
         return Pointer(None, _segments(pointer))
     if match := _RELATIVE.fullmatch(pointer):

@@ -12,7 +12,7 @@
 # limitations under the License.
 import re
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from pydantic import GetJsonSchemaHandler
@@ -58,13 +58,17 @@ class OptionsSource:
     items: str | None = None
     value: str | None = None
     label: str | None = None
-    depends_on: Mapping[str, str] | None = None
+    # A mapping cannot be hashed, and a union such as Optional[...] hashes the metadata of its members: the hash
+    # leaves depends_on out, equality still reads it.
+    depends_on: Mapping[str, str] | None = field(default=None, hash=False)
 
     def __post_init__(self) -> None:
         if not self.url:
             raise ValueError("url must not be empty")
-        if self.items is not None and not self.items.startswith("/"):
-            raise ValueError("items must be a JSON pointer, which starts with '/'")
+        if self.items is not None and (not self.items.startswith("/") or parse_pointer(self.items) is None):
+            raise ValueError(
+                "items must be a JSON pointer, which starts with '/' and writes '~' as '~0' and '/' as '~1'"
+            )
         placeholders = set(_PLACEHOLDER.findall(self.url))
         pointers = dict(self.depends_on or {})
         if unmapped := placeholders - pointers.keys():

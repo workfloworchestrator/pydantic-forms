@@ -288,6 +288,17 @@ def test_a_pointer_looks_through_an_optional_nested_model():
     assert "/properties/port" in options_sources(page_schema(Form))
 
 
+def test_a_sourced_alias_may_be_made_optional():
+    """A union hashes the metadata of its members, a mapping in ``depends_on`` included."""
+    assert isinstance(hash(CONTACTS), int)
+
+    class Form(FormPage):
+        customer: CustomerId
+        contact: Optional[Annotated[str, CONTACTS]] = None
+
+    assert page_schema(Form)["properties"]["contact"]["anyOf"][0]["optionsSource"] == CONTACTS_SCHEMA
+
+
 def test_a_model_that_contains_itself_lists_each_field_once():
     class Tree(BaseModel):
         name: Annotated[str, OptionsSource(url="/api/names")]
@@ -297,6 +308,35 @@ def test_a_model_that_contains_itself_lists_each_field_once():
         tree: Tree
 
     assert list(options_sources(page_schema(Form))) == ["/properties/tree/properties/name"]
+
+
+@pytest.mark.parametrize(
+    ("pointer", "accepted"),
+    [
+        pytest.param("/tree/children/0/name", True, id="one-level-into-the-model"),
+        pytest.param("/tree/children/-/children/0/name", True, id="two-levels-into-the-model"),
+        pytest.param("/tree/children/0/size", False, id="a-name-the-model-does-not-have"),
+    ],
+)
+def test_a_pointer_follows_a_model_into_itself(pointer, accepted):
+    """Inlining keeps the reference a model makes to itself; a pointer goes through it, as many times as it says."""
+
+    class Tree(BaseModel):
+        name: str
+        children: list["Tree"] = Field(default_factory=list)
+
+    def page():
+        class Form(FormPage):
+            tree: Tree
+            pick: Annotated[str, OptionsSource(url="/api/picks?name={name}", depends_on={"name": pointer})]
+
+        return Form
+
+    if accepted:
+        assert "/properties/pick" in options_sources(page_schema(page()))
+    else:
+        with pytest.raises(ValueError, match="/properties/pick fills 'name'"):
+            page()
 
 
 @pytest.mark.parametrize(
@@ -354,7 +394,12 @@ def test_the_source_does_not_change_validation():
         pytest.param({"url": "/a/{b}", "depends_on": {"b": "-1/b"}}, "is not a JSON pointer", id="a-negative-level"),
         pytest.param({"url": "/a/{b}", "depends_on": {"b": "1#"}}, "is not a JSON pointer", id="the-name-form"),
         pytest.param({"url": "/a/{b}", "depends_on": {"b": ""}}, "is not a JSON pointer", id="an-empty-pointer"),
+        pytest.param(
+            {"url": "/a/{b}", "depends_on": {"b": "/a~2b"}}, "is not a JSON pointer", id="a-tilde-that-escapes-nothing"
+        ),
+        pytest.param({"url": "/a/{b}", "depends_on": {"b": "1/a~"}}, "is not a JSON pointer", id="a-tilde-at-the-end"),
         pytest.param({"url": "/a", "items": "data"}, "items must be a JSON pointer", id="items-that-is-no-pointer"),
+        pytest.param({"url": "/a", "items": "/a~2b"}, "items must be a JSON pointer", id="items-with-a-bad-escape"),
     ],
 )
 def test_a_source_that_cannot_be_followed_is_refused_when_declared(kwargs, message):
@@ -370,6 +415,7 @@ def test_a_source_that_cannot_be_followed_is_refused_when_declared(kwargs, messa
         pytest.param({"url": "/a/{b}", "depends_on": {"b": "0/b"}}, id="into-the-fields-own-value"),
         pytest.param({"url": "/a/{b}", "depends_on": {"b": "12/a/b"}}, id="many-levels-up"),
         pytest.param({"url": "/a/{b}", "depends_on": {"b": "/x~1y/b"}}, id="an-escaped-slash"),
+        pytest.param({"url": "/a/{b}", "depends_on": {"b": "/x~0y~01"}}, id="an-escaped-tilde-then-a-one"),
         pytest.param({"url": "/a", "items": "/data/items"}, id="a-json-pointer-into-the-response"),
         pytest.param({"url": "https://crm.example.org/customers"}, id="an-absolute-url"),
         pytest.param({"url": "/a", "label": "{name} ({code})"}, id="a-label-template-names-item-keys-not-fields"),

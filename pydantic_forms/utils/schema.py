@@ -161,30 +161,34 @@ def resolve_pointer(node: Located, pointer: str) -> Union[dict[str, Any], None]:
 
     A JSON Pointer starts at the page, a Relative JSON Pointer at the node and goes up its lineage first. Then a
     member name goes through ``properties``, an index or ``-`` through ``items`` or ``prefixItems``, and an ``anyOf``
-    or ``oneOf`` branch is looked through.
+    or ``oneOf`` branch is looked through. A ``$ref`` that ``inline_refs`` kept, where a model contains itself, is
+    followed into the page's ``$defs``.
     """
     if (parsed := parse_pointer(pointer)) is None:
         return None
+    defs: dict[str, Any] = node.lineage[0].get("$defs") or {}
     if parsed.levels_up is None:
-        return _descend(node.lineage[0], parsed.segments)
+        return _descend(node.lineage[0], parsed.segments, defs)
     if parsed.levels_up >= len(node.lineage):
         return None
-    return _descend(node.lineage[-1 - parsed.levels_up], parsed.segments)
+    return _descend(node.lineage[-1 - parsed.levels_up], parsed.segments, defs)
 
 
-def _descend(schema: dict[str, Any], segments: tuple[str, ...]) -> Union[dict[str, Any], None]:
+def _descend(schema: dict[str, Any], segments: tuple[str, ...], defs: dict[str, Any]) -> Union[dict[str, Any], None]:
     if not segments:
         return schema
     head, rest = segments[0], segments[1:]
     match schema:
+        case {"$ref": str() as ref, **siblings} if (name := _local_definition(ref)) in defs:
+            return _descend({**defs[name], **siblings}, segments, defs)
         case {"properties": dict() as properties} if head in properties:
-            return _descend(properties[head], rest)
+            return _descend(properties[head], rest, defs)
         case {"items": dict() as items} if head == "-" or head.isdigit():
-            return _descend(items, rest)
+            return _descend(items, rest, defs)
         case {"prefixItems": list() as items} if head.isdigit() and int(head) < len(items):
-            return _descend(items[int(head)], rest)
+            return _descend(items[int(head)], rest, defs)
         case _:
-            found = (_descend(branch, segments) for _, branch in _branches(schema) if isinstance(branch, dict))
+            found = (_descend(branch, segments, defs) for _, branch in _branches(schema) if isinstance(branch, dict))
             return first(filter(None, found), None)
 
 
