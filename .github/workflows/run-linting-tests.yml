@@ -19,7 +19,7 @@ jobs:
       - name: Install uv and set the python version
         uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
-          version: "0.13.1"
+          version: "0.13.3"
           python-version: '3.13'
           enable-cache: true
       - name: Install the project
@@ -27,6 +27,6 @@ jobs:
       - name: Check with mypy
         run: uv run --no-sync mypy pydantic_forms
       - name: Run prek hooks
-        uses: j178/prek-action@1382ad72dea72f9d53832f2bcb65b3e87a947204 # v3.0.1
+        uses: j178/prek-action@af4d4fcb6922b8e6f65c0426947125fcc38794ce # v3.0.2
         env:
           SKIP: mypy
