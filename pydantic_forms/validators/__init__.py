@@ -15,6 +15,7 @@ from pydantic_forms.validators.components.list_of_two import ListOfTwo
 from pydantic_forms.validators.components.long_text import LongText
 from pydantic_forms.validators.components.markdown import Markdown, markdown
 from pydantic_forms.validators.components.migration_summary import MigrationSummary, migration_summary
+from pydantic_forms.validators.components.options_source import OptionsSource
 from pydantic_forms.validators.components.organisation_id import OrganisationId
 from pydantic_forms.validators.components.read_only import read_only_field, read_only_list
 from pydantic_forms.validators.components.timestamp import Timestamp, timestamp
@@ -40,6 +41,7 @@ __all__ = (
     "LongText",
     "migration_summary",
     "MigrationSummary",
+    "OptionsSource",
     "OrganisationId",
     "read_only_field",
     "read_only_list",

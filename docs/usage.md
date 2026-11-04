@@ -313,3 +313,143 @@ ValueError: start + span exceeds the 12 column grid
 Placing the fields is up to the frontend. The [pydantic-forms npm package](https://www.npmjs.com/package/pydantic-forms)
 renders the `layout` on a CSS grid, also inside nested models and list items, where the 12 columns are the width of
 the nested object. Fields without a `Layout` take the full width, so existing forms render as before.
+
+## Fields whose options come from an endpoint
+
+A `Choice` carries its options in the schema. Many fields cannot: the customers, locations or ports a person picks
+from live in another system and are fetched when the form is shown. Until now each client knew, in its own code,
+which endpoint goes with which `format`. [`OptionsSource`](reference.md#pydantic_forms.validators.OptionsSource)
+lets the field type say so itself, so that any client that renders or fills the form reads one description:
+
+```python
+from typing import Annotated
+
+from pydantic import BaseModel, Field
+
+from pydantic_forms.core import page_schema
+from pydantic_forms.validators import OptionsSource
+
+LocationCode = Annotated[
+    str,
+    Field(json_schema_extra={"format": "locationCode"}),
+    OptionsSource(url="/api/locations"),
+]
+
+CustomerId = Annotated[
+    str,
+    Field(json_schema_extra={"format": "customerId"}),
+    OptionsSource(
+        url="/api/customers", value="customer_id", label="{fullname} ({shortcode})"
+    ),
+]
+
+
+class NewServiceForm(FormPage):
+    customer: CustomerId
+    contact: Annotated[
+        str,
+        OptionsSource(
+            url="/api/customers/{customer}/contacts",
+            value="email",
+            label="name",
+            depends_on={"customer": "1/customer"},
+        ),
+    ]
+    location: LocationCode
+```
+
+The location codes come back as a list of strings, so each item is both value and label. The customers come back
+as objects: `value` names the key that is submitted, `label` what a person sees, here a template over two keys. The
+contacts depend on the chosen customer: `{customer}` in the URL is filled with the value of the `customer` field
+beside it, which `1/customer` points at, and the client offers no contacts until it has one.
+
+Only `url` is required:
+
+| Option       | Meaning                                                                                                  |
+|--------------|----------------------------------------------------------------------------------------------------------|
+| `url`        | Relative to the API that serves the form, or absolute, query string included. A `{name}` placeholder in the path or the query string is filled with the value `depends_on[name]` points at. |
+| `search`     | Name of the query parameter that narrows the list on the server. Without it a client fetches the list once and filters it itself. |
+| `items`      | JSON pointer to the list inside the response, such as `"/data/customers"`. Without it the response is the list. |
+| `value`      | Key of an item that is the field's value. Without it the item itself is.                                 |
+| `label`      | Key of an item, or a `{key}` template, shown to a person. Without it the value is shown.                  |
+| `depends_on` | Where each `{name}` in the URL gets its value while the page is filled in, as a pointer into the page's data. See [below](#pointing-at-the-fields-a-request-needs). |
+
+The URL carries its own query string, written by the form author the way the route reads it, repeated keys and
+all. The `{name}` placeholders are those of a [URI Template](https://www.rfc-editor.org/rfc/rfc6570) at its
+simplest level, so a client percent-encodes the value it fills in. It then appends `search` when it is declared,
+and fetches.
+
+`OptionsSource` only adds an `optionsSource` object to the field's JSON schema, with camelCase keys and the options
+that are not set left out. It does not change validation, and it composes with the `format` the type already has,
+with a `Layout` and with `Field(...)`:
+
+```pycon
+>>> schema = page_schema(NewServiceForm)
+>>> schema["properties"]["location"]
+{'format': 'locationCode', 'optionsSource': {'url': '/api/locations'}, 'title': 'Location', 'type': 'string'}
+>>> schema["properties"]["contact"]["optionsSource"]
+{'dependsOn': {'customer': '1/customer'}, 'label': 'name', 'url': '/api/customers/{customer}/contacts', 'value': 'email'}
+```
+
+### Pointing at the fields a request needs
+
+Dependencies come in two kinds. A value the form already knows when it builds the page, such as the node chosen on
+the previous page, is written into the URL by the form author. A value the person chooses on this page is a
+`{name}` in the URL, and `depends_on` says where in the page's data it is read from: a
+[JSON pointer](https://www.rfc-editor.org/rfc/rfc6901) from the page, or a
+[relative JSON pointer](https://json-schema.org/draft/2020-12/relative-json-pointer), as published with JSON
+Schema 2020-12, from the field's own value. The relative form's `#` suffix, which yields a name rather than a
+value, is not accepted. A pointer is a path, so two fields with the same name at different depths are never
+confused, and a client never searches for a name:
+
+```python
+class Port(BaseModel):
+    node: Annotated[int, OptionsSource(url="/api/nodes")]
+    port: Annotated[
+        int,
+        OptionsSource(
+            url="/api/nodes/{node}/ports?speed={speed}",
+            depends_on={"node": "1/node", "speed": "/service_speed"},
+        ),
+    ]
+
+
+class PortsForm(FormPage):
+    service_speed: int
+    ports: list[Port]
+```
+
+For the `port` in a row, `1/node` goes one level up, to the row, then into its `node`: the node chosen in that same
+row. `/service_speed` starts at the page and reads the speed chosen once for all rows; from inside a row the same
+field is `3/service_speed`, up through the row and the list to the page. Until a row has a node, its port has no
+options yet.
+
+A placeholder that `depends_on` does not map, a mapping the URL does not use, and a pointer that is not one are
+refused when the type is defined. A pointer that points at no field of the page is refused when the page is
+defined, inside list items and nested models as well. A page that is a plain `BaseModel` rather than a `FormPage`
+is checked when `page_schema` makes its schema:
+
+```pycon
+>>> OptionsSource(url="/api/nodes/{node}/ports")
+Traceback (most recent call last):
+...
+ValueError: url names ['node'], which depends_on does not map to a field
+>>> class ContactForm(FormPage):
+...     contact: Annotated[
+...         str,
+...         OptionsSource(
+...             url="/api/customers/{customer}/contacts",
+...             depends_on={"customer": "1/customer"},
+...         ),
+...     ]
+...
+Traceback (most recent call last):
+...
+ValueError: ContactForm: /properties/contact fills 'customer' from '1/customer', which points at no field
+```
+
+On a list field the source describes the options of its items; a list of a sourced type, `list[LocationCode]`,
+carries it on `items`, and a relative pointer then starts at each item. Fetching is the client's job: it calls the
+URL with the person's credentials and shows `label` for each item while submitting `value`. This library takes no
+dependency on HTTP. A program reading a page gets the sourced fields by their location in the schema from
+`options_sources`, see [A page for a program](how-it-works.md#a-page-for-a-program).

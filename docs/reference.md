@@ -93,6 +93,18 @@ duplicates the heading and nests every member a level deeper, hiding them from t
       show_root_toc_entry: false
       show_source: false
 
+## Pointers
+
+::: pydantic_forms.utils.pointer
+    options:
+      show_if_no_docstring: true
+      filters: ["!^_", "!^logger$"]
+      members_order: source
+      heading_level: 3
+      show_root_heading: false
+      show_root_toc_entry: false
+      show_source: false
+
 ## FastAPI exception handler
 
 ::: pydantic_forms.exception_handlers.fastapi
