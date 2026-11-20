@@ -86,6 +86,7 @@ def test_every_key_is_emitted_in_camel_case_and_unset_ones_are_left_out():
             OptionsSource(
                 url="/api/locations/{location}/nodes?status=active",
                 search="q",
+                lookup="/api/locations/{location}/nodes/{value}",
                 items="/data/nodes",
                 value="id",
                 label="{name} ({status})",
@@ -96,6 +97,7 @@ def test_every_key_is_emitted_in_camel_case_and_unset_ones_are_left_out():
     assert page_schema(Form)["properties"]["node"]["optionsSource"] == {
         "url": "/api/locations/{location}/nodes?status=active",
         "search": "q",
+        "lookup": "/api/locations/{location}/nodes/{value}",
         "items": "/data/nodes",
         "value": "id",
         "label": "{name} ({status})",
@@ -398,6 +400,15 @@ def test_the_source_does_not_change_validation():
             {"url": "/a/{b}", "depends_on": {"b": "/a~2b"}}, "is not a JSON pointer", id="a-tilde-that-escapes-nothing"
         ),
         pytest.param({"url": "/a/{b}", "depends_on": {"b": "1/a~"}}, "is not a JSON pointer", id="a-tilde-at-the-end"),
+        pytest.param({"url": "/a", "lookup": "/a/one"}, "lookup must name {value}", id="a-lookup-without-the-value"),
+        pytest.param(
+            {"url": "/a/{value}", "lookup": "/a/{value}", "depends_on": {"value": "1/b"}},
+            "lookup must name {value}",
+            id="a-lookup-whose-value-is-another-field",
+        ),
+        pytest.param(
+            {"url": "/a", "lookup": "/a/{b}/{value}"}, r"lookup names \['b'\]", id="a-lookup-placeholder-not-mapped"
+        ),
         pytest.param({"url": "/a", "items": "data"}, "items must be a JSON pointer", id="items-that-is-no-pointer"),
         pytest.param({"url": "/a", "items": "/a~2b"}, "items must be a JSON pointer", id="items-with-a-bad-escape"),
     ],

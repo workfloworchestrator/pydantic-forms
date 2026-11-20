@@ -24,6 +24,8 @@ from pydantic_forms.utils.schema import DEPENDS_ON, OPTIONS_SOURCE
 
 # A ``{name}`` in the url, filled by the client with the value ``depends_on[name]`` points at.
 _PLACEHOLDER = re.compile(r"\{([^{}]*)\}")
+# The placeholder of ``lookup`` that stands for the field's own value.
+_LOOKUP_VALUE = "value"
 
 
 @dataclass(frozen=True)
@@ -41,6 +43,11 @@ class OptionsSource:
             in the path or the query string, is filled with the URL-encoded value `depends_on[name]` points at.
         search: Name of the query parameter that narrows the list on the server. Without it a client fetches
             the list once and filters it itself.
+        lookup: URL of one option, such as `"/api/customers/{value}"`: `{value}` is filled with the URL-encoded
+            value of the field, any other placeholder as in `url`. The response is one item, read with `value`
+            and `label` as an item of the list is; a 404 says the value is not an option. With it a client
+            labels a value it already has, and checks that it is an option, without the list: declare it beside
+            `search`, where the list is never whole.
         items: JSON pointer to the list inside the response, such as `"/data/customers"`. Without it the
             response is the list.
         value: Key of an item that is the field's value. Without it the item itself is, as for a list of strings.
@@ -55,6 +62,7 @@ class OptionsSource:
 
     url: str
     search: str | None = None
+    lookup: str | None = None
     items: str | None = None
     value: str | None = None
     label: str | None = None
@@ -73,6 +81,12 @@ class OptionsSource:
         pointers = dict(self.depends_on or {})
         if unmapped := placeholders - pointers.keys():
             raise ValueError(f"url names {sorted(unmapped)}, which depends_on does not map to a field")
+        if self.lookup is not None:
+            named = set(_PLACEHOLDER.findall(self.lookup))
+            if _LOOKUP_VALUE not in named or _LOOKUP_VALUE in pointers:
+                raise ValueError("lookup must name {value}, the field's own value, which depends_on does not map")
+            if unmapped := named - pointers.keys() - {_LOOKUP_VALUE}:
+                raise ValueError(f"lookup names {sorted(unmapped)}, which depends_on does not map to a field")
         if unused := pointers.keys() - placeholders:
             raise ValueError(f"depends_on maps {sorted(unused)}, which url does not name")
         if invalid := {name: pointer for name, pointer in pointers.items() if parse_pointer(pointer) is None}:
@@ -82,6 +96,7 @@ class OptionsSource:
         keys: dict[str, Any] = {
             "url": self.url,
             "search": self.search,
+            "lookup": self.lookup,
             "items": self.items,
             "value": self.value,
             "label": self.label,

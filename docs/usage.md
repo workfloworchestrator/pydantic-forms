@@ -369,6 +369,7 @@ Only `url` is required:
 |--------------|----------------------------------------------------------------------------------------------------------|
 | `url`        | Relative to the API that serves the form, or absolute, query string included. A `{name}` placeholder in the path or the query string is filled with the value `depends_on[name]` points at. |
 | `search`     | Name of the query parameter that narrows the list on the server. Without it a client fetches the list once and filters it itself. |
+| `lookup`     | URL of one option, such as `"/api/customers/{value}"`: `{value}` is filled with the field's value, any other placeholder as in `url`. The response is one item, read with `value` and `label`; a 404 says the value is not an option. |
 | `items`      | JSON pointer to the list inside the response, such as `"/data/customers"`. Without it the response is the list. |
 | `value`      | Key of an item that is the field's value. Without it the item itself is.                                 |
 | `label`      | Key of an item, or a `{key}` template, shown to a person. Without it the value is shown.                  |
@@ -378,6 +379,10 @@ The URL carries its own query string, written by the form author the way the rou
 all. The `{name}` placeholders are those of a [URI Template](https://www.rfc-editor.org/rfc/rfc6570) at its
 simplest level, so a client percent-encodes the value it fills in. It then appends `search` when it is declared,
 and fetches.
+
+A list that is searched on the server is never seen whole, so a client cannot tell from it what a value it already
+has is called, or whether it is an option at all. `lookup` answers that for one value: a prefilled field, or one a
+program submitted. Declare it beside `search`.
 
 `OptionsSource` only adds an `optionsSource` object to the field's JSON schema, with camelCase keys and the options
 that are not set left out. It does not change validation, and it composes with the `format` the type already has,
