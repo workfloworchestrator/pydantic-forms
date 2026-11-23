@@ -107,7 +107,7 @@ build-backend = "uv_build"
 
 [tool.uv]
 # Cooldown: don't resolve versions published in the last 3 days (supply-chain protection).
-# Keep in sync with minimumReleaseAge in renovate.json.
+# Keep in sync with minimumReleaseAge in the shared renovate-config base preset.
 exclude-newer = "3 days"
 # certifi is exempt so the emSign CA distrust (GHSA-6q48-6c7w-9gw2) is picked up immediately.
 exclude-newer-package = { certifi = false }

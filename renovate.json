@@ -1,44 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Shared policy: base schedule/automerge of CI-only bumps, Python/uv groups, library lock maintenance, release-note labels. Runtime dependencies, extras and exact build pins stay manual. Security PRs come from Dependabot only (see .github/dependabot.yml), so extras/security-alerts is deliberately not extended.",
   "extends": [
-    "config:recommended",
-    "helpers:pinGitHubActionDigests"
-  ],
-  "labels": ["kind/dependencies"],
-  "packageRules": [
-    {
-      "matchManagers": ["uv"]
-    },
-    {
-      "description": "Label GitHub Actions bumps so they land in the CI/Build release-notes section",
-      "matchManagers": ["github-actions"],
-      "labels": ["kind/ci"]
-    },
-    {
-      "matchPackageNames": ["python"],
-      "rangeStrategy": "widen",
-      "enabled": false
-    },
-    {
-      "description": "Development-only dependencies never reach users of this library; keep their bumps out of the release notes",
-      "matchManagers": ["pep621"],
-      "matchDepTypes": ["dependency-groups"],
-      "addLabels": ["dev-dependencies"]
-    }
-  ],
-  "minimumReleaseAge": "3 days",
-  "vulnerabilityAlerts": {
-    "enabled": false
-  },
-  "osvVulnerabilityAlerts": false,
-  "internalChecksFilter": "strict",
-  "lockFileMaintenance": {
-    "enabled": true,
-    "schedule": ["before 3am on Tuesday"]
-  },
-  "schedule": [
-    "* 1-5 * * *"
-  ],
-  "timezone": "Europe/Amsterdam",
-  "updateNotScheduled": false
+    "local>workfloworchestrator/renovate-config",
+    "local>workfloworchestrator/renovate-config//languages/python",
+    "local>workfloworchestrator/renovate-config//projects/library",
+    "local>workfloworchestrator/renovate-config//extras/release-notes"
+  ]
 }

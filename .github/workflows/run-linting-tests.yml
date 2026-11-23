@@ -5,8 +5,8 @@
 
 name: Linting tests
 
+# Called by ci.yml; no push trigger of its own, so a push is not run twice.
 on:
-  push:
   workflow_call:
 
 jobs:

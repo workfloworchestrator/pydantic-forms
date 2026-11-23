@@ -1,0 +1,41 @@
+# Single PR/push entry point for CI; the reusable test workflows are only called
+# from here, so a push does not run the same suites twice. The required check for a
+# PR is the 'CI result' job below.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    uses: ./.github/workflows/run-unit-tests.yml
+    # CODECOV_TOKEN for the coverage upload in the called workflow
+    secrets: inherit
+
+  linting-tests:
+    name: Linting tests
+    uses: ./.github/workflows/run-linting-tests.yml
+
+  mkdocs-build:
+    name: Docs (strict MkDocs build)
+    uses: ./.github/workflows/run-mkdocs-build.yml
+
+  gate:
+    name: CI result
+    # Runs even when a needed job fails or is cancelled, so the required check
+    # always reports a result instead of staying pending.
+    if: always()
+    needs:
+      - unit-tests
+      - linting-tests
+      - mkdocs-build
+    runs-on: ubuntu-slim
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@b5b5b37504aa4183270bd3d855c52a67f212be35 # v1.3.0
+        with:
+          jobs: ${{ toJSON(needs) }}
