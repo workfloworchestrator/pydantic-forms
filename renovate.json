@@ -1,10 +1,32 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Shared policy: base schedule/automerge of CI-only bumps, Python/uv groups, library lock maintenance, release-note labels. Runtime dependencies, extras and exact build pins stay manual. Security PRs come from Dependabot only (see .github/dependabot.yml), so extras/security-alerts is deliberately not extended.",
+  "description": "Shared policy from the four presets below. Runtime dependencies, extras and the exact build pins (mypy, the uv version inputs) stay manual: local automerge: false rules below protect those exact pins. Security PRs come from Dependabot only (see .github/dependabot.yml), so extras/security-alerts is deliberately not extended.",
   "extends": [
     "local>workfloworchestrator/renovate-config",
     "local>workfloworchestrator/renovate-config//languages/python",
     "local>workfloworchestrator/renovate-config//projects/library",
     "local>workfloworchestrator/renovate-config//extras/release-notes"
+  ],
+  "packageRules": [
+    {
+      "description": "[automerge] Keep the exact mypy pin manual. It sits in [dependency-groups] 'test', which the Python preset automerges; a mypy release could change the type check without the same reviewers seeing it",
+      "matchManagers": ["pep621"],
+      "matchDepTypes": ["dependency-groups"],
+      "matchPackageNames": ["mypy"],
+      "automerge": false
+    },
+    {
+      "description": "[automerge] Keep the exact uv version inputs manual. The Python preset groups and automerges the 'version' of astral-sh/setup-uv in the Saturday uv slot. Renovate reports that version input as astral-sh/uv with depType uses-with, in the same file as the action's uses-with ref, so this rule also keeps the action reference manual in these files; the action digest in the automerged GitHub Actions group still updates it. The same version pin in publish-release.yaml only runs on a release, which PR CI never exercises",
+      "matchManagers": ["github-actions"],
+      "matchDepTypes": ["uses-with"],
+      "matchPackageNames": ["astral-sh/uv"],
+      "matchFileNames": [
+        ".github/workflows/run-unit-tests.yml",
+        ".github/workflows/run-linting-tests.yml",
+        ".github/workflows/run-mkdocs-build.yml",
+        ".github/workflows/publish-release.yaml"
+      ],
+      "automerge": false
+    }
   ]
 }
