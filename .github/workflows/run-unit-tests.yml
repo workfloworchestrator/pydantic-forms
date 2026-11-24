@@ -1,6 +1,5 @@
 name: Unit tests
 on:
-  push:
   workflow_call:
 
 jobs:
